@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>PILOTO — Tu carrera deportiva</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+  <div id="app">
+
+    <!-- TOP BAR (shown after creation) -->
+    <div class="topbar" id="topbar" style="display:none">
+      <div>
+        <div class="pilot-name" id="tb-name">—</div>
+        <div class="label" id="tb-cat">—</div>
+      </div>
+      <div style="display:flex;gap:16px;align-items:center">
+        <div class="label" style="font-size:14px;color:var(--accent)">OVR: <span id="tb-ovr">40</span></div>
+        <div class="label" style="font-size:14px;color:var(--accent)">⭐ <span id="tb-rep">0</span></div>
+        <div class="money" id="tb-money">$0</div>
+      </div>
+    </div>
+
+    <!-- CATEGORY PATH (shown in game) -->
+    <div style="padding: 8px 20px 0; display:none" id="path-bar">
+      <div class="path-row" id="path-row"></div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+       SCREEN: TITLE
+  ══════════════════════════════════════════════ -->
+    <div class="screen active" id="screen-title">
+      <div class="label eyebrow">Una vida en la pista</div>
+      <div class="display">PILOTO</div>
+      <div class="tagline">Del karting a la F1. Cada decisión importa.</div>
+      <div class="title-actions">
+        <button class="btn btn-primary" onclick="goto('screen-create')">NUEVA CARRERA</button>
+        <button class="btn btn-secondary" onclick="showHallOfFame()" style="margin-top:12px;width:100%">SALÓN DE LA
+          FAMA</button>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+       SCREEN: CREATE PILOT
+  ══════════════════════════════════════════════ -->
+    <div class="screen" id="screen-create">
+      <div class="stripe"></div>
+      <div class="heading" style="margin-bottom:6px">Tu piloto</div>
+      <div class="sub" style="margin-bottom:24px">Configurá tu carrera antes de empezar</div>
+
+      <div class="scroll-content">
+        <div class="section-title">Nombre</div>
+        <input type="text" id="pilot-name" placeholder="ej. Marco Rossi" maxlength="24" style="margin-bottom:20px">
+
+        <div class="section-title">Número de carrera</div>
+        <input type="number" id="pilot-number" placeholder="44" min="1" max="99" style="margin-bottom:20px">
+
+        <div class="section-title">Nacionalidad</div>
+        <div class="nat-grid" id="nat-grid" style="margin-bottom:24px"></div>
+
+        <div class="section-title">Talento inicial</div>
+        <div id="talent-list"></div>
+        <div style="height:24px"></div>
+      </div>
+      <button class="btn btn-primary" onclick="startGame()" style="margin-top:12px">COMENZAR</button>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+       SCREEN: PRESEASON
+  ══════════════════════════════════════════════ -->
+    <div class="screen" id="screen-preseason">
+      <div class="stripe"></div>
+      <div class="label" id="pre-season-label">Temporada 2024</div>
+      <div class="heading" id="pre-cat-label" style="margin-bottom:4px">Karting</div>
+      <div class="sub" id="pre-team-label" style="margin-bottom:20px">Equipo: —</div>
+
+      <hr class="thin" style="margin-top:0">
+      <div class="section-title">Estadísticas del piloto</div>
+      <div id="stats-display" style="margin-bottom:20px"></div>
+
+      <hr class="thin">
+      <div class="section-title">Pretemporada — elige UNA actividad</div>
+      <div id="preseason-activities" class="scroll-content"></div>
+
+      <button class="btn btn-primary" id="btn-simulate" onclick="runSimulation()" style="margin-top:12px"
+        disabled>SIMULAR TEMPORADA</button>
+      <button class="btn btn-ghost btn-sm" onclick="goto('screen-upgrades')" style="margin-top:8px">🔧 Comprar mejoras
+        ($<span id="money-display2">0</span>)</button>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+       SCREEN: SIMULATING
+  ══════════════════════════════════════════════ -->
+    <div class="screen" id="screen-simulating"
+      style="justify-content:center;align-items:center;text-align:center;gap:20px">
+      <div class="label">Simulando temporada</div>
+      <div class="heading" id="sim-cat">Formula Regional</div>
+      <div style="width:100%;background:var(--border);border-radius:2px;overflow:hidden;height:3px;margin:8px 0">
+        <div class="load-bar" id="load-bar" style="--dur:200s"></div>
+      </div>
+      <div class="sub" id="sim-status">Calculando resultados...</div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+       SCREEN: SEASON SUMMARY
+  ══════════════════════════════════════════════ -->
+    <div class="screen" id="screen-summary">
+      <div class="label" id="sum-season-label">Temporada 2024</div>
+      <div class="heading" id="sum-cat-label" style="margin-bottom:16px">Karting</div>
+
+      <div class="stat-grid" id="sum-grid" style="margin-bottom:16px"></div>
+      <div class="card" style="margin-bottom:16px">
+        <div id="sum-extra-rows"></div>
+      </div>
+
+      <div id="sum-event-block"></div>
+
+      <button class="btn btn-primary" onclick="afterSummary()" id="btn-continue">CONTINUAR →</button>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+       SCREEN: RANDOM EVENT
+  ══════════════════════════════════════════════ -->
+    <div class="screen" id="screen-event" style="justify-content:center">
+      <div class="label" style="margin-bottom:8px">Evento especial</div>
+      <div class="card" style="margin-bottom:24px">
+        <div style="font-size:36px;margin-bottom:8px" id="ev-icon">⚡</div>
+        <div class="heading" id="ev-title" style="margin-bottom:8px">Título del evento</div>
+        <div class="sub" id="ev-desc">Descripción del evento que ocurrió en la temporada.</div>
+      </div>
+      <div class="section-title">Tu decisión</div>
+      <div id="ev-choices"></div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+       SCREEN: MINIGAME
+  ══════════════════════════════════════════════ -->
+    <div class="screen" id="screen-minigame" style="justify-content:center">
+      <div class="label" style="margin-bottom:8px">🏁 Momento decisivo</div>
+      <div class="card" style="margin-bottom:24px;border-color:var(--accent)">
+        <div style="font-size:32px;margin-bottom:8px" id="mg-icon">🏎️</div>
+        <div class="heading" id="mg-title" style="margin-bottom:6px">Título</div>
+        <div class="sub" id="mg-desc">Descripción</div>
+      </div>
+      <div class="section-title">¿Qué hacés?</div>
+      <div id="mg-choices"></div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+       SCREEN: CONTRACTS
+  ══════════════════════════════════════════════ -->
+    <div class="screen" id="screen-contracts">
+      <div class="stripe"></div>
+      <div class="heading" style="margin-bottom:4px">Ofertas de equipos</div>
+      <div class="sub" style="margin-bottom:24px">Elegí dónde correr la próxima temporada</div>
+      <div id="contracts-list" class="scroll-content"></div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+       SCREEN: UPGRADES
+  ══════════════════════════════════════════════ -->
+    <div class="screen" id="screen-upgrades">
+      <div class="stripe"></div>
+      <div class="heading" style="margin-bottom:4px">Mejoras personales</div>
+      <div class="sub" style="margin-bottom:6px">Inversiones que te acompañan toda la carrera</div>
+      <div class="label" style="margin-bottom:20px">Dinero disponible: <span id="upgrade-money"
+          style="color:var(--accent)">$0</span></div>
+      <div class="scroll-content">
+        <div id="upgrades-list"></div>
+      </div>
+      <button class="btn btn-secondary" onclick="goto('screen-preseason')" style="margin-top:12px">← VOLVER</button>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+       SCREEN: RETIREMENT
+  ══════════════════════════════════════════════ -->
+    <div class="screen" id="screen-retirement">
+      <div class="label" style="margin-bottom:4px" id="ret-years">2024 — 2030</div>
+      <div class="heading" style="margin-bottom:16px" id="ret-name">Marco Rossi</div>
+
+      <div id="ret-legacy-banner" style="margin-bottom:20px"></div>
+
+      <div class="section-title">Carrera completa</div>
+      <div class="card" style="margin-bottom:16px">
+        <div id="ret-stats-rows"></div>
+      </div>
+
+      <div class="section-title">Historia</div>
+      <div class="card" style="margin-bottom:24px">
+        <div id="ret-history-rows"></div>
+      </div>
+
+      <div class="section-title">Línea de tiempo</div>
+      <div class="card" style="margin-bottom:24px; max-height: 400px; overflow-y: auto;">
+        <div id="ret-timeline-rows"></div>
+      </div>
+
+      <button class="btn btn-primary" style="width:100%" onclick="endCareerAndSave()">VOLVER AL MENÚ</button>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+       SCREEN: HALL OF FAME
+  ══════════════════════════════════════════════ -->
+    <div class="screen" id="screen-hof">
+      <div class="stripe"></div>
+      <div class="heading" style="margin-bottom:6px">Salón de la Fama</div>
+      <div class="sub" style="margin-bottom:24px">Leyendas que dejaron su marca en la pista</div>
+
+      <div class="scroll-content" id="hof-list" style="margin-bottom:24px; padding-bottom:80px">
+        <!-- Leyendas inyectadas acá -->
+      </div>
+
+      <div style="position:absolute;bottom:20px;left:20px;right:20px;">
+        <button class="btn btn-secondary" style="width:100%" onclick="goto('screen-title')">VOLVER AL MENÚ</button>
+      </div>
+    </div>
+
+  </div><!-- #app -->
+
+  <script src="script.js"></script>
+</body>
+
+</html>

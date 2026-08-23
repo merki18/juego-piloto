@@ -120,9 +120,9 @@ const RANDOM_EVENTS = [
     ]
   },
   {
-    icon: '🔧', title: 'Nuevo paquete aerodinámico', desc: 'El equipo trae mejoras extremas pero no probadas a mitad de temporada.', choices: [
-      { text: 'Pasar la noche con los ingenieros', stat: 'quali', delta: 0, money: 0, skillStat: 'quali', skillBonus: 5, skillFail: -1, hint: '🏎 Clasificación determina si lográs configurar el auto.', successDesc: 'Amaneció con vos todavía en el box. La pizarra llena de números, el café frío. Pero cuando saliste a la pista por primera vez con las nuevas piezas, el auto respondía exactamente como querías. Los ingenieros te aplaudieron.', failDesc: 'Las horas nocturnas no alcanzaron. El nuevo paquete era demasiado complejo y terminaste confundiendo los mapas de motor. El auto fue a clasificación con un setup híbrido que no funcionó para ninguno de los dos.' },
-      { text: 'Probar el límite en pista directamente', stat: 'speed', delta: 2, money: 0, hint: 'Velocidad pura, sin depender de datos matemáticos.', fixedDesc: 'No hacías caso a los números: conéccion con el auto era instintiva. Cuatro vueltas cronometradas y ya sabías dónde estaba el límite. El ingeniero quedó boquiabierto con tu feedback.' },
+    icon: '🔧', title: 'Prueba del nuevo paquete aerodinámico', desc: 'Estás en los entrenamientos libres. El equipo acaba de montar una mejora extrema.', radioMsg: '"Acá el ing. Bianchi. Instalamos el paquete nuevo. Es un paso enorme pero los datos del túnel de viento a veces mienten. ¿Querés hacer tandas largas a velocidad constante para calibrar sensores, o apretás a fondo para ver el límite real?"', choices: [
+      { text: 'Tandas largas para calibrar sensores', stat: 'speed', delta: 2, money: 0, hint: 'Velocidad: el trabajo duro y constante rinde sus frutos.', fixedDesc: 'Giraste 30 vueltas siendo un reloj suizo. Entregaste un feedback perfecto y el equipo logró calibrar el auto para tener un ritmo de carrera demoledor.' },
+      { text: 'Apretar a fondo para buscar el límite', stat: 'quali', delta: 0, money: 0, skillStat: 'quali', skillBonus: 5, skillFail: -1, hint: '🏄 Clasificación: buscar el límite a una vuelta sin chocar.', successDesc: 'No hacías caso a los números: tu conexión con el auto era instintiva. Apretaste a fondo, marcaste el mejor tiempo de la sesión y el ingeniero quedó boquiabierto. En qualy fuiste intocable.', failDesc: 'Apretaste demasiado sin conocer los límites del nuevo paquete aerodinámico. Trompo en la curva rápida y directo contra el muro. El equipo pasó toda la noche reparando y clasificaste pésimo.' },
     ]
   },
   {
@@ -144,8 +144,8 @@ const RANDOM_EVENTS = [
     ]
   },
   {
-    icon: '🛠️', title: 'Avería mecánica en el peor momento', desc: 'El motor falló cuando peleabas el campeonato.', choices: [
-      { text: 'Pagar horas extras a mecánicos (-$30,000)', stat: 'quali', delta: 0, money: -30000, skillStat: 'quali', skillBonus: 5, skillFail: -1, hint: '🏎 Clasificación: liderás la reconstrucción del setup.', successDesc: 'Tres noches seguidas en el box, pizzas frías y telemetría hasta el amanecer. Cuando el auto volvió a la pista era otro. Los mecánicos te dieron un aplauso cuando saliste del garage.', failDesc: 'Los mecánicos trabajaron, pero la comunicación falló. El auto vino de vuelta con dos problemas nuevos y uno de los de antes todavía sin resolver. Una pesadilla logística.' },
+    icon: '🛠️', title: 'Avería mecánica en el peor momento', desc: 'El motor falló cuando peleabas el campeonato.', radioMsg: '"Piloto, hay una avería grave en el motor. Necesitamos parar o la temporada se termina acá. Decís vos: ¿pagamos a los mecánicos horas extras esta noche para arreglarlo o pasamos página y nos enfocamos en la siguiente?"', choices: [
+      { text: 'Pagar horas extras a mecánicos (-$30,000)', stat: 'quali', delta: 0, money: -30000, skillStat: 'quali', skillBonus: 5, skillFail: -1, hint: '🏄 Clasificación: liderás la reconstrucción del setup.', successDesc: 'Tres noches seguidas en el box, pizzas frías y telemetría hasta el amanecer. Cuando el auto volvió a la pista era otro. Los mecánicos te dieron un aplauso cuando saliste del garage.', failDesc: 'Los mecánicos trabajaron, pero la comunicación falló. Nuevos y uno de los de antes todavía sin resolver. Una pesadilla logística.' },
       { text: 'Aceptar la mala suerte', stat: 'speed', delta: 1, money: 0, hint: 'Te enfocás en la próxima carrera (+1 Velocidad).', fixedDesc: 'Tiraste el casco al garaje y te fuiste al hotel. A la mañana siguiente, una mente limpia. Ese fin de semana lograste el mejor tiempo de tu vuelta de clasificación de la temporada. A veces, soltar es la única salida.' },
     ]
   },
@@ -227,6 +227,27 @@ const RANDOM_EVENTS = [
       { text: 'Mantenerte al margen y enfocarte solo en el auto', stat: 'speed', delta: 2, money: 0, hint: 'Resultado fijo: mientras el caos rodea al equipo, vos vivís en tu burbuja (+2 Velocidad).', fixedDesc: 'No eras el director del equipo. No ibas a convertirte en mediador. Cerraste la puerta del motorhome, abriste la telemetría y te enfocaste en el setup del auto. El caos siguió afuera. Adentro de tu casco, había calma absoluta. Esa temporada fue una de las más consistentes de tu carrera.' },
     ]
   },
+  {
+    id: 'peer_choque',
+    icon: '💥', title: 'Incidente al límite con {{PEER_NAME}}', desc: 'Vos y {{PEER_NAME}} vienen peleando la misma porción de pista. Llegando a la horquilla, él frena tardísimo y te empuja hacia afuera. Es tu rival generacional, no podés ceder un milímetro.', choices: [
+      { text: 'Ir al roce y devolverle la gentileza en la siguiente curva', stat: 'speed', delta: 0, money: -25000, peerRelDelta: -20, pureLuck: true, baseBonus: 0.5, skillBonus: 4, skillFail: -3, successDesc: 'Le devolviste el auto en la siguiente frenada. Hubo toque, saltó fibra de carbono, pero lograste pasar. El público aplaudíó tu agresividad. Él se enfureció.', failDesc: 'Fuiste con demasiada furia. Le pegaste en el pontón lateral y rompiste tu suspensión delantera. Abandono inmediato y penalización.' },
+      { text: 'Aflojar, cuidar el auto y quejarte por radio', stat: 'tyres', delta: 2, money: 0, peerRelDelta: -10, hint: 'Resultado fijo: salvás el auto pero la rivalidad se endurece (+2 Gestión).', fixedDesc: 'Levantaste el pie. Sabías que un toque ahí arruinaba la carrera. Llegaste al final y sumaste puntos. La relación con él ahora es hielo puro.' },
+    ]
+  },
+  {
+    id: 'peer_amigo',
+    icon: '🤝', title: 'Alianza Estratégica con {{PEER_NAME}}', desc: 'En la Q3, en un circuito rapidísimo, vos y {{PEER_NAME}} salen juntos a la pista. Él te ofrece darse rebufo mutuamente para bajar los tiempos y arruinarle la pole a los favoritos.', choices: [
+      { text: 'Aceptar el trato y coordinar en pista', stat: 'quali', delta: 0, money: 0, peerRelDelta: +15, peerRelFailDelta: -25, skillStat: 'quali', skillBonus: 4, skillFail: -2, hint: '🏎 Clasificación: depende de tu capacidad técnica clavar los tiempos con el rebufo.', successDesc: 'Coordinación perfecta. Ambos bajaron tres décimas y clasificaron en primera fila. Al bajarse de los autos, chocaron los puños. Esto es respeto puro.', failDesc: 'Trataste de aprovechar el rebufo, pero frenaste tarde y bloqueaste los neumáticos. Le arruinaste la vuelta a él y perdiste la tuya. La tensión en boxes se corta con un cuchillo.' },
+      { text: 'Declinar y enfocarte en tu propia vuelta', stat: 'speed', delta: 1, money: 0, peerRelDelta: -5, hint: 'Resultado fijo: preferís no arriesgar y competir solo (+1 Velocidad).', fixedDesc: 'Le respondiste que preferías aire limpio. La vuelta fue buena pero sin el extra del rebufo. Él se quedó un poco decepcionado.' },
+    ]
+  },
+  {
+    id: 'peer_numero1',
+    icon: '📦', title: 'Prioridad de Desarrollo', desc: 'El equipo trajo una única mejora aerodinámica al circuito. Como {{PEER_NAME}} viene mejor en los puntos, los directivos deciden dársela a él.', choices: [
+      { text: 'Aceptar el rol de escudero', stat: 'speed', delta: -1, money: 100000, repDelta: 30, peerRelDelta: +20, hint: 'Resultado fijo: perdés 1 Velocidad, pero ganás Reputación y Relación (+20).', fixedDesc: 'Aceptaste la decisión por el bien del equipo. Tu auto fue más lento este finde, pero todos valoraron tu madurez.' },
+      { text: 'Armar un escándalo y exigir la pieza', stat: 'speed', delta: 1, money: -50000, repDelta: -50, peerRelDelta: -30, hint: 'Resultado fijo: te quedás la mejora (+1 Vel) pero destruís la relación y tu reputación.', fixedDesc: 'Te plantaste en la oficina del jefe y amenazaste con irte. Te dieron la mejora, volaste en pista, pero nadie te felicitó al bajar.' }
+    ]
+  }
 ];
 
 
@@ -239,14 +260,14 @@ const MINIGAMES = [
     ]
   },
   {
-    icon: '🌧️', title: 'Lluvia inesperada a 5 vueltas del final', desc: 'Pista mojándose. Todos están en slicks. Cada segundo cuenta.', choices: [
+    icon: '🌧️', title: 'Lluvia inesperada a 5 vueltas del final', desc: 'Pista mojándose. Todos están en slicks. Cada segundo cuenta.', radioMsg: '"Piloto, acá el muro. Pista mojándose rápido, 5 vueltas para el final. Necesito tu lectura: ¿entrás a cambiar o aguantás afuera? Decidí ya, no hay tiempo."', choices: [
       { text: 'Entrar a boxes para gomas de lluvia', skillStat: 'rain', baseBonus: 0.25, statBonus: 0.45, desc: 'Mojado es tu ambiente.', successDesc: 'El cambio fue rápido. Saliste en lluvia y en la primera vuelta afuera ya le habías sacado 4 segundos a los que se quedaron afuera. Remontaste cinco posiciones en tres vueltas.', failDesc: 'El pit fue lento y saliste en tráfico. Para cuando las gomas calentaron, la lluvia amáinó. Todos los que se quedaron afuera llegaron mejor que vos.' },
       { text: 'Seguir en pista y ajustar el frenado', skillStat: 'tyres', baseBonus: 0.2, statBonus: 0.4, desc: 'Gestionar slicks en agua es arte.', successDesc: 'Frenabas 40 metros antes que todos, pero cuánto antes era el secreto. Encontraste el ritmo exacto y mientras todos caían en slicks, vos sumabas posiciones sin pisar el mojado directo.', failDesc: 'La pista estaba demasiado mojada para aguantar. Perdiste el tren trasero en la curva 8 y tocaste el borde interior. Giraste en pista y perdiste cinco posiciones.' },
       { text: 'Comunicar en tiempo real con el muro', skillStat: 'quali', baseBonus: 0.3, statBonus: 0.2, desc: 'Tu lectura técnica puede salvar la carrera.', successDesc: 'Pediste datos al muro y le dijiste exactamente qué surgías. La decisión fue conjunta y fue la correcta. Terminaste cuarto ganando tres posiciones. Trabajo en equipo.', failDesc: 'El muro tardó demasiado en darte respuesta. Para cuando tomaste la decisión, los demás ya habían entrado o aguantado y vos quedaste en tierra de nadie.' },
     ]
   },
   {
-    icon: '🔧', title: 'Problemas de frenos a mitad de carrera', desc: 'El pedal está yendo al fondo. ¿Qué hacés?', choices: [
+    icon: '🔧', title: 'Problemas de frenos a mitad de carrera', desc: 'El pedal está yendo al fondo. ¿Qué hacés?', radioMsg: '"Piloto, tenemos un problema de presión en los frenos. El pedal está cediendo. Necesito que me digas exactamente qué sentís ahí adentro. ¿Cómo está la mordida? ¿Entramos o seguís?"', choices: [
       { text: 'Gestionar frenando más temprano', skillStat: 'tyres', baseBonus: 0.3, statBonus: 0.3, desc: 'Gestión te permite llegar al final.', successDesc: 'Adaptaste todos tus puntos de frenada. Perdiste ritmo pero el auto no falló. En las últimas vueltas, cuando los que apretaron sufrieron el mismo problema, vos aún tenías freno suficiente para atacar.', failDesc: 'Frenaste antes, pero no alcanzó. En la vuelta 38 el pedal tocó el piso directo. La bandera de averría mecánica fue inevitable.' },
       { text: 'Atacar igual con frenadas minimizadas', skillStat: 'speed', baseBonus: 0.1, statBonus: 0.45, desc: 'Velocidad pura: ignorar el problema y apretar.', successDesc: 'Convertiste el problema en arma. Sin usar los frenos convencionales, usabas el motor y las curvas lentas para frenar. Llegaste al final en un manejo impecablemente creativo.', failDesc: 'Vuelta 42, curva 1. El auto no paró. Fuiste derecho al box de escape. Retiro mécanico. El ingeniero prefirió no preguntar qué pensabas.' },
       { text: 'Entrar a boxes para ajuste rápido', skillStat: 'quali', baseBonus: 0.25, statBonus: 0.25, desc: 'Técnica: sabés qué pedirle al equipo.', successDesc: 'Describiste exactamente lo que sentías. El mecánico ajustó el bias trasero en 2 segundos. Saliste de boxes con un auto diferente y recuperaste cuatro posiciones en las últimas vueltas.', failDesc: 'El stop fue largo. El ajuste no era el que pedías y tuviste que entrar de vuelta una vuelta más adelante. Salió fuera de los puntos.' },
@@ -256,21 +277,21 @@ const MINIGAMES = [
     icon: '⚔️', title: 'Duelo épico por el podio', desc: 'Dos vueltas restantes. Tu rival está pegado atrás tuyo.', choices: [
       { text: 'Defender agresivamente la posición', skillStat: 'overtake', baseBonus: 0.2, statBonus: 0.35, desc: 'Adelantamientos: defendé como sabés atacar.', successDesc: 'Lo mandaste afuera en la frenada, despues te cubríste la interior. No hubo forma de pasarte. En el último sector lo miraste por el espejo alejarse. Podio tuyo.', failDesc: 'Una defensa demasiado agresiva. Te dan una penalización de 5 segundos después de carrera. El podio se convierte en cuarto lugar.' },
       { text: 'Confiar en el ritmo y ser limpio', skillStat: 'tyres', baseBonus: 0.35, statBonus: 0.2, desc: 'Gestión: gomas frescas ganan al final.', successDesc: 'No te moviste. Manejaste tu ritmo, dejaste que él desgastara sus gomas presíonándote. En la última vuelta, sus ruedas ya no respondían. El podio fue tuyo sin dramas.', failDesc: 'Tus gomas tampoco aguantaron. Perdiste la defensa en la curva 12 del último sector. Demasiado justo al límite.' },
-      { text: 'Abrir un hueco con frenada tardía', skillStat: 'speed', baseBonus: 0.15, statBonus: 0.45, desc: 'Velocidad: sorprendelo con pura potencia.', successDesc: 'Frenaste tardísimo en la curva más lenta. Él no pudo cubrir el espacio que abriste. Saliste acelerado de la curva con dos cuerpos de ventaja y ya no te alcanzó.', failDesc: 'Frenaste demasiado tarde. Te fuiste largo, él te pasó por adentro. Perdiste el podio en la penúltima vuelta. Amargo.' },
+      { text: 'Abrir un hueco con frenada tardía', skillStat: 'speed', baseBonus: 0.15, statBonus: 0.45, desc: 'Velocidad: sorprendelo con pura potencia.', successDesc: 'Frenaste tardísimo en la curva más lenta. Él no pudo cubrir el espacio que abriste. Saliste acelerado de la curva con dos cuerpos de ventaja y ya no te alcanzó.', failDesc: 'Frenaste demasiado tarde. Te fuiste largo, él te pasó por adentro. Perdiste el podio en la penúltima vuelta.' },
     ]
   },
   {
-    icon: '🏎️', title: 'Safety Car sale con 3 vueltas restantes', desc: 'El campo se agrupa. Momentazo para el final de carrera.', choices: [
+    icon: '🏎️', title: 'Safety Car sale con 3 vueltas restantes', desc: 'El campo se agrupa. Momentazo para el final de carrera.', radioMsg: '"Piloto, Safety Car en pista, 3 vueltas para el final. El campo se cierra. Esto se decide en el restart — en cómo salgás vos. Dame tu plan ya."', choices: [
       { text: 'Atacar más fuerte que nadie al restart', skillStat: 'overtake', baseBonus: 0.2, statBonus: 0.45, desc: 'Los mejores adelantadores dominan restarts.', successDesc: 'En la línea del Safety Car, arrancaste antes que nadie. El de adelante no reaccionó y lo pasaste en la primera chicana. Desde ese punto, nadie te alcanzó.', failDesc: 'Adelantaste la línea del restart. La dirección de carrera te notificó: penalización de 5 segundos. El agarre del restart te costó el resultado.' },
       { text: 'Salir perfecto de la chicana de salida', skillStat: 'quali', baseBonus: 0.3, statBonus: 0.3, desc: 'Técnica de clasificación: la salida lo decide.', successDesc: 'Salió el SC y tomaste la mejor línea de salida que existía. Tres autos pasaron por fuera tuyo pero vos llevabas más velocidad en la salida de curva. Perdiste una y ganaste dos en el mismo movimiento.', failDesc: 'El de adelante apretó el freno antes de la línea. Tuviste que pegar un frenazo y perdiste todo el impulso. Los de atrás te pasaron como si estuvieras parado.' },
       { text: 'Defender la posición y aguantar', skillStat: 'tyres', baseBonus: 0.35, statBonus: 0.15, desc: 'Gestión: preservar gomas para resistir.', successDesc: 'Tres vueltas de ataque constante desde atrás. Pero tus gomas aguantaron. Cada vuelta que pasaba ellos se desesperaban más y vos más tranquilo. Bandera a cuadros, posición mantenida.', failDesc: 'Los tres últimos ataques erosionaron tus gomas. En la última vuelta no podías defender más. Pasaste quinto al cuarto, pero perdiste dos puestos en el último sector.' },
     ]
   },
   {
-    icon: '⚽', title: '¿Entrar a cambiar gomas a mitad de carrera?', desc: 'Tu rival directo ya paró. Tenés gomas desgastadas pero estás adelante.', choices: [
-      { text: 'Parar y hacer undercut (gomas frescas)', skillStat: 'speed', baseBonus: 0.25, statBonus: 0.35, desc: 'Velocidad con gomas frescas = ventaja.', successDesc: 'El pit fue impecable. 2.3 segundos y afuera. Las gomas frescas te dieron 1.5 segundos por vuelta. Recuperaste la posición en cuatro vueltas y te alejaste.', failDesc: 'El pit fue lento: 4.8 segundos. Saliste detrás de él y tus gomas nuevas nunca calentaron bien en ese stint. Quedaste tercero cuando podías haber sido primero.' },
+    icon: '⚽', title: '¿Entrar a cambiar gomas a mitad de carrera?', desc: 'Tu rival directo acaba de parar. Tenés gomas desgastadas pero estás adelante.', radioMsg: '"Piloto, el 47 ya entró a boxes. Vos seguís afuera con gomas que ya andan al límite. Te doy los datos: podés evitar su undercut o intentar el overcut. ¿Qué elegís?"', choices: [
+      { text: 'Parar y evitar su undercut (gomas frescas)', skillStat: 'speed', baseBonus: 0.25, statBonus: 0.35, desc: 'Velocidad con gomas frescas = ventaja.', successDesc: 'El pit fue impecable. 2.3 segundos y afuera. Las gomas frescas te dieron 1.5 segundos por vuelta. Recuperaste la posición en cuatro vueltas y te alejaste.', failDesc: 'El pit fue lento: 4.8 segundos. Saliste detrás de él y tus gomas nuevas nunca calentaron bien en ese stint. Oportunidad perdida.' },
       { text: 'Quedarte afuera y aguantar (overcut)', skillStat: 'tyres', baseBonus: 0.2, statBonus: 0.4, desc: 'Gestionar gomas al límite requiere maestría.', successDesc: 'Vuelta a vuelta, exprimiós cada milímetro de goma. Cuando él salió de boxes, ya le habías sacado el tiempo suficiente para que su parada no sirviera. Ganaste la posición sin siquiera moverte del frente.', failDesc: 'Las gomas ya no respondían. En la vuelta 34 empezaste a perder más de un segundo por vuelta. Cuando finalmente paraste, saliste detrás de dos pilotos más.' },
-      { text: 'Pedir datos al muro y decidir', skillStat: 'quali', baseBonus: 0.3, statBonus: 0.25, desc: 'La técnica correcta en el momento correcto.', successDesc: 'Pediste los datos exactos: degradación de tu goma, velocidad del rival saliendo de boxes, y el tráfico. Con esa información, la decisión fue obvia. Y fue correcta.', failDesc: 'Los datos llegaron con un retraso de dos vueltas. Para cuando decidiste, la ventana de oportunidad ya se había cerrado y terminaste tomando la peor decisión posible.' },
+      { text: 'Esperar unas vueltas y decidir con los datos', skillStat: 'quali', baseBonus: 0.3, statBonus: 0.25, desc: 'La técnica correcta en el momento correcto.', successDesc: 'Pediste los datos exactos: degradación de tu goma, velocidad del rival saliendo de boxes, y el tráfico. Con esa información, la decisión fue obvia. Y fue correcta.', failDesc: 'Los datos llegaron con un retraso de dos vueltas. Para cuando decidiste, la ventana de oportunidad ya se había cerrado y terminaste tomando la peor decisión posible.' },
     ]
   },
   {
@@ -281,18 +302,32 @@ const MINIGAMES = [
     ]
   },
   {
-    icon: '🎀', title: 'Oportunidad de adelantamiento (Pura Suerte)', desc: 'Tenés rebufo y llegás rapidísimo a la zona de frenada. El piloto de adelante duda.', choices: [
-      { text: 'Tirarte por el interior (Derecha)', pureLuck: true, baseBonus: 0.33, desc: 'Apostar al interior ciegamente. Si te cierra la puerta, chocás.', successDesc: 'La puerta estaba apenas abierta. Te metiste igual. Tocó algo de fibra de carbono pero no lo suficiente. Saliste del interior primero y no hubo pelea.', failDesc: 'Te cerró la puerta. Golpe en el alerón, tuío suyo y los dos al pasto. La dirección de carrera no tardó en investigar.' },
-      { text: 'Ir por el exterior (Izquierda)', pureLuck: true, baseBonus: 0.33, desc: 'Arriesgar por fuera. Podés quedarte sin pista o hacer una genialidad.', successDesc: 'Se quedó en el interior y te dejó el exterior libre. Con la velocidad que traías, saliste de la curva 1.5 segundos adelante. Genialidad pura.', failDesc: 'Te empujó hacia afuera del asfalto. Rodaste por la grava y cuando volviste estabas décimo. La radio del ingeniero estuvo en silencio varios segundos.' },
-      { text: 'Frenar y esperar a la próxima recta', pureLuck: true, baseBonus: 0.85, desc: 'Seguro, te mantenés vivo pero quizás se escape.', successDesc: 'Frenaste a tiempo. Conserés la posición y tres vueltas más tarde se abrió un hueco mejor en la recta principal. Paciencia pagada.', failDesc: 'Frenaste y perdiste el rebufo. Nunca más se volviste a acercar tanto al piloto de adelante. Quedaste donde estabas hasta el final.' },
+    icon: '🎀', title: 'Oportunidad de adelantamiento', hidePct: true, desc: 'Tenés rebufo y llegás rapidísimo a la zona de frenada. El piloto de adelante duda.', choices: [
+      { text: 'Tirarte por el interior (Derecha)', pureLuck: true, baseBonus: 0.40, desc: 'Apostar al interior ciegamente. Si te cierra la puerta, chocás.', successDesc: 'La puerta estaba apenas abierta. Te metiste igual. Tocó algo de fibra de carbono pero no lo suficiente. Saliste del interior primero y no hubo pelea.', failDesc: 'Te cerró la puerta. Golpe en el alerón, daño y los dos al pasto. La dirección de carrera no tardó en investigar.' },
+      { text: 'Ir por el exterior (Izquierda)', pureLuck: true, baseBonus: 0.40, desc: 'Arriesgar por fuera. Podés quedarte sin pista o hacer una genialidad.', successDesc: 'Se quedó en el interior y te dejó el exterior libre. Con la velocidad que traías, saliste de la curva 1.5 segundos adelante. Genialidad pura.', failDesc: 'Te empujó hacia afuera del asfalto. Rodaste por la grava y cuando volviste estabas décimo. La radio del ingeniero estuvo en silencio varios segundos.' },
+      { text: 'No arriesgar y frenar', pureLuck: true, baseBonus: 0.10, neutralFail: true, desc: 'Llegar sano en tu posición o esperar a que el de adelante se equivoque.', successDesc: 'Frenaste conservando el auto y el de adelante, por mirar los espejos, se pasó de largo en la curva. Heredaste la posición gratis.', failDesc: 'Frenaste a tiempo. No pasó nada, cruzaste la meta en la posición que estabas sin tomar riesgos.' },
     ]
   },
   {
-    icon: '🎀', title: 'Ruleta de la fiabilidad (Pura Suerte)', desc: 'Tu ingeniero te avisa por radio: "Tenemos alertas raras en el motor".', choices: [
+    icon: '🎀', title: 'Ruleta de la fiabilidad (Pura Suerte)', desc: 'El motor se comporta raro.', radioMsg: '"Piloto, acá ing. Park. Tenemos alertas raras en el motor desde la vuelta 38. Todavía no sabemos qué es. ¿Querés que bajes modo o seguís apretando y vemos qué pasa?"', choices: [
       { text: 'Ignorar y seguir apretando', pureLuck: true, baseBonus: 0.50, desc: 'Cara o cruz: ganás ritmo o expotás el motor.', successDesc: 'Las alertas eran falsas. El motor aguantó las últimas vueltas y terminaste sin ningún problema. A veces hay que confiar en el auto.', failDesc: 'Vuelta 54. El motor expotó en la recta más larga. Columna de humo blanco. Retiro mécanico desde la primera curva. Las alertas no eran falsas.' },
-      { text: 'Bajar la potencia y rezar', pureLuck: true, baseBonus: 0.90, desc: 'Muy probable que llegues, pero perdés chances de atacar.', successDesc: 'Llegaste. Sin el ritmo para atacar, pero llegaste. El motor extraño nunca fue un problema real. Puntos asegurados.', failDesc: 'Incluso en modo bajo consumo, el motor no aguantó. Se apagó solo en la vuelta 58. El motor iba a romperse sin importar nada.' },
+      { text: 'Bajar la potencia y rezar', pureLuck: true, baseBonus: 0.90, noWinOnSuccess: true, desc: 'Muy probable que llegues, pero perdés chances de atacar.', successDesc: 'Llegaste. Sin el ritmo para atacar, pero llegaste. El motor extraño nunca fue un problema real. Puntos asegurados.', failDesc: 'Incluso en modo bajo consumo, el motor no aguantó. Se apagó solo en la vuelta 58. El motor iba a romperse sin importar nada.', onFailDnf: true },
     ]
   },
+  {
+    id: 'peer_ordenes',
+    icon: '📻', title: '"Multi 21" - Órdenes de equipo', desc: 'Tu compañero de equipo viene muy pegado atrás con mejor ritmo.', radioMsg: '"Piloto, muro. Necesito que dejes pasar al {{PEER_NAME}}. Tiene mejor estrategia de gomas desde acá. Es decisión de equipo. Confirmá recepción."', choices: [
+      { text: 'Acatar la orden y dejarlo pasar', pureLuck: true, baseBonus: 1.0, peerRelDelta: +15, repDelta: +20, successDesc: 'Levantaste el pie en la recta. El equipo te agradeció y sumaste puntos vitales para los constructores. Eres un jugador de equipo.', failDesc: 'Levantaste el pie.' },
+      { text: 'Ignorar la radio y apretar el ritmo', skillStat: 'overtake', statBonus: 0.8, baseBonus: 0.2, onFailDnf: 0.5, peerRelDelta: -30, repDelta: -40, failDesc: 'Lo ignoraste, pero él se tiró igual por adentro. ¡Toque entre compañeros! Los dos afuera. El jefe de equipo está furioso.', failSurviveDesc: 'Lo ignoraste, él intentó pasar pero aflojó a último momento. Conservaste la posición, pero el clima en boxes es cortante (-10 Relación, -10 Reputación).', successDesc: 'Fingiste que no escuchabas, bajaste los tiempos y te escapaste. El equipo no pudo decir nada al verte cruzar la meta primero.' }
+    ]
+  },
+  {
+    id: 'peer_brake_test',
+    icon: '🛑', title: 'Brake Test Bajo Safety Car', desc: 'La tensión es máxima. Están detrás del Auto de Seguridad.', radioMsg: '"¡PILOTO, CUIDADO! {{PEER_NAME}} FRENÓ FUERTE AHORA MISMO DELANTE TUYO. ¡REACCIONÁ!"', choices: [
+      { text: 'Volantazo ciego', pureLuck: true, baseBonus: 0.5, onFailDnf: true, repDelta: +10, failDesc: 'Pegaste el volantazo pero enganchaste su rueda trasera y terminaste contra el muro. Abandono absurdo.', successDesc: 'Tus reflejos salvaron el auto por milímetros. Pasaste por al lado y le hiciste un gesto a la cámara. ¡Reflejos de gato!' },
+      { text: 'Frenar a fondo en línea recta', pureLuck: true, baseBonus: 0.5, onFailDnf: true, repDelta: +10, failDesc: 'No llegaste a frenar. Le destruiste el alerón trasero y rompiste tu suspensión. Los dos afuera.', successDesc: 'Clavaste los frenos y te detuviste a un milímetro de su caja de cambios. Hubo humo, pero no contacto.' }
+    ]
+  }
 ];
 
 
@@ -356,7 +391,9 @@ function initState(name, number, nat, talent) {
     _goldenBoyChecked: false,
     _pendriveUsed: false,
     f1ConsecutiveTitles: 0,
-    _directivaUsed: false
+    _directivaUsed: false,
+    peer: null,
+    _peerInitialized: false
   };
   // apply talent
   const t = TALENTS.find(x => x.id === talent);
@@ -570,6 +607,122 @@ function buildActivities() {
 }
 
 // ═══════════════════════════════════════════════════════════
+//  RACE VISUALIZER
+// ═══════════════════════════════════════════════════════════
+let _raceAnimFrame = null;
+let _raceRacers = null;
+let _raceStartTime = null;
+
+const RACE_W = 360, RACE_H = 170;
+const RT = { x0: 60, x1: 300, cy: 85, r: 52 };
+const RACE_STRAIGHT = RT.x1 - RT.x0;
+const RACE_ARC = Math.PI * RT.r;
+const RACE_PERIM = 2 * RACE_STRAIGHT + 2 * RACE_ARC;
+
+function trackPoint(t) {
+  t = ((t % 1) + 1) % 1;
+  let d = t * RACE_PERIM;
+  if (d < RACE_STRAIGHT) return { x: RT.x0 + d, y: RT.cy - RT.r };
+  d -= RACE_STRAIGHT;
+  if (d < RACE_ARC) {
+    const a = -Math.PI / 2 + (d / RACE_ARC) * Math.PI;
+    return { x: RT.x1 + RT.r * Math.cos(a), y: RT.cy + RT.r * Math.sin(a) };
+  }
+  d -= RACE_ARC;
+  if (d < RACE_STRAIGHT) return { x: RT.x1 - d, y: RT.cy + RT.r };
+  d -= RACE_STRAIGHT;
+  const a = Math.PI / 2 + (d / RACE_ARC) * Math.PI;
+  return { x: RT.x0 + RT.r * Math.cos(a), y: RT.cy + RT.r * Math.sin(a) };
+}
+
+function initRaceRacers() {
+  const N = 9;
+  const racers = [];
+  for (let i = 0; i < N; i++) {
+    racers.push({
+      startOffset: i / N,
+      speed: 0.55 + Math.random() * 0.18,
+      oscAmp: 0.010 + Math.random() * 0.02,
+      oscFreq: 0.6 + Math.random() * 1.1,
+      oscPhase: Math.random() * Math.PI * 2,
+      color: RACE_COLORS[i % RACE_COLORS.length],
+    });
+  }
+  return racers;
+}
+
+const RACE_COLORS = ['#e84a4a', '#4a90e8', '#4ae87a', '#c084fc', '#f0a04a', '#4ae0e8', '#e84ac0', '#9ae84a'];
+
+function drawRaceTrack(ctx) {
+  ctx.clearRect(0, 0, RACE_W, RACE_H);
+  ctx.lineWidth = 26;
+  ctx.strokeStyle = '#1c1c2c';
+  ctx.lineJoin = 'round';
+  ctx.beginPath();
+  ctx.moveTo(RT.x0, RT.cy - RT.r);
+  ctx.lineTo(RT.x1, RT.cy - RT.r);
+  ctx.arc(RT.x1, RT.cy, RT.r, -Math.PI / 2, Math.PI / 2, false);
+  ctx.lineTo(RT.x0, RT.cy + RT.r);
+  ctx.arc(RT.x0, RT.cy, RT.r, Math.PI / 2, Math.PI * 1.5, false);
+  ctx.closePath();
+  ctx.stroke();
+
+  ctx.lineWidth = 1;
+  ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+  ctx.stroke();
+
+  const sfX = RT.x0 + 14;
+  for (let i = 0; i < 6; i++) {
+    ctx.fillStyle = i % 2 === 0 ? 'rgba(255,255,255,0.55)' : 'rgba(0,0,0,0.55)';
+    ctx.fillRect(sfX, RT.cy - RT.r - 13 + i * 4.4, 4, 4.4);
+  }
+}
+
+function raceAnimFrame(ts) {
+  if (!_raceStartTime) _raceStartTime = ts;
+  const elapsed = (ts - _raceStartTime) / 1000;
+  const canvas = document.getElementById('race-canvas');
+  if (!canvas) { _raceAnimFrame = null; return; }
+  const ctx = canvas.getContext('2d');
+  drawRaceTrack(ctx);
+
+  const withPos = _raceRacers.map(r => {
+    const t = r.startOffset + elapsed * r.speed * 0.28 + r.oscAmp * Math.sin(elapsed * r.oscFreq + r.oscPhase);
+    return { r, t: ((t % 1) + 1) % 1 };
+  }).sort((a, b) => a.t - b.t);
+
+  withPos.forEach(({ r, t }) => {
+    const p = trackPoint(t);
+    ctx.fillStyle = r.color;
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 4.5, 0, Math.PI * 2);
+    ctx.fill();
+  });
+  _raceAnimFrame = requestAnimationFrame(raceAnimFrame);
+}
+
+function startRaceAnimation() {
+  stopRaceAnimation();
+  const canvas = document.getElementById('race-canvas');
+  if (!canvas) return;
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = RACE_W * dpr;
+  canvas.height = RACE_H * dpr;
+  canvas.getContext('2d').setTransform(dpr, 0, 0, dpr, 0, 0);
+
+  _raceRacers = initRaceRacers();
+  _raceStartTime = null;
+  _raceAnimFrame = requestAnimationFrame(raceAnimFrame);
+}
+
+function stopRaceAnimation() {
+  if (_raceAnimFrame) {
+    cancelAnimationFrame(_raceAnimFrame);
+    _raceAnimFrame = null;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════
 //  SIMULATION
 // ═══════════════════════════════════════════════════════════
 function runSimulation() {
@@ -600,9 +753,21 @@ function runSimulation() {
   lb.style.animation = '';
   lb.style.setProperty('--dur', '2s');
 
+  let raceWrap = document.querySelector('.race-track-wrap');
+  if (!raceWrap) {
+    raceWrap = document.createElement('div');
+    raceWrap.className = 'race-track-wrap';
+    raceWrap.innerHTML = '<canvas id="race-canvas" width="360" height="170"></canvas>';
+    const simScreen = document.getElementById('screen-simulating');
+    const loadBarWrap = lb.parentElement;
+    simScreen.insertBefore(raceWrap, loadBarWrap);
+  }
+
   goto('screen-simulating');
+  startRaceAnimation();
   setTimeout(() => {
     clearInterval(iv);
+    stopRaceAnimation();
 
     G._seasonSteps = [];
     G._seasonEventLogs = [];
@@ -689,18 +854,35 @@ function processSeasonStep() {
 function computeSeasonResult() {
   const cat = CATEGORIES[G.catIndex];
 
+  const effStats = { ...G.stats };
+  let extraDnf = 0;
+  
+  if (cat === 'F1' && G.peer) {
+    if (G.peer.relationship < -30) {
+      effStats.speed = clamp(effStats.speed + 8, 1, 99);
+      effStats.tyres = clamp(effStats.tyres - 10, 1, 99);
+      extraDnf = 1;
+      G._seasonEventLogs.push(`⚔️ Enemistad con ${G.peer.name}: +Agresividad, -Gestión y +Riesgo.`);
+    } else if (G.peer.relationship > 30) {
+      effStats.tyres = clamp(effStats.tyres + 6, 1, 99);
+      effStats.quali = clamp(effStats.quali + 6, 1, 99);
+      extraDnf = -1;
+      G._seasonEventLogs.push(`🤝 Sintonía con ${G.peer.name}: +Gestión, +Clasificación y -Riesgo.`);
+    }
+  }
+
   // 1. Weighted base rating
   const weightedBase = (
-    G.stats.speed * 0.35 +
-    G.stats.quali * 0.25 +
-    G.stats.tyres * 0.20 +
-    G.stats.overtake * 0.15 +
-    G.stats.rain * 0.05
+    effStats.speed * 0.35 +
+    effStats.quali * 0.25 +
+    effStats.tyres * 0.20 +
+    effStats.overtake * 0.15 +
+    effStats.rain * 0.05
   );
 
   // 2. Wet season mechanics
   const wetSeason = Math.random() < 0.30;
-  const rainBonus = wetSeason ? (G.stats.rain - 50) * 0.15 : 0;
+  const rainBonus = wetSeason ? (effStats.rain - 50) * 0.15 : 0;
   if (wetSeason) {
     G._seasonEventLogs.push(`¡Temporada lluviosa! (Bonus por Lluvia: ${rainBonus > 0 ? '+' : ''}${Math.round(rainBonus)})`);
   }
@@ -736,9 +918,9 @@ function computeSeasonResult() {
   const champ = calcChampPosition(rating);
 
   // Base stat modifiers (0 to 1) to influence where in the range they land
-  const overtakeFactor = (G.stats.overtake - 1) / 98;
-  const consistencyFactor = (G.stats.tyres - 1) / 98;
-  const qualiFactor = (G.stats.quali - 1) / 98;
+  const overtakeFactor = (effStats.overtake - 1) / 98;
+  const consistencyFactor = (effStats.tyres - 1) / 98;
+  const qualiFactor = (effStats.quali - 1) / 98;
 
   let wins = 0;
   let podiums = 0;
@@ -785,8 +967,8 @@ function computeSeasonResult() {
   podiums = Math.max(podiums, wins); // Sanity check
 
   // Tyres reduces DNFs
-  const dnfBase = rand(0, 3);
-  const tyreFactor = (G.stats.tyres - 50) / 100;
+  const dnfBase = rand(0, 3) + extraDnf;
+  const tyreFactor = (effStats.tyres - 50) / 100;
   const dnfs = Math.max(0, Math.round(dnfBase - tyreFactor * 2));
 
   // 6. Financials and Reputation
@@ -797,6 +979,42 @@ function computeSeasonResult() {
     : (G.team && G.team.focus === 'desarrollo') ? 0.7
       : 1.0;
   const rep = Math.round(((100 - champ) * 2 + wins * 5) * focusRepMult);
+
+  if (cat === 'F1' && G.peer) {
+    const peerTeam = TEAMS['F1'].find(t => t.name === G.peer.team);
+    const peerCarStars = peerTeam ? peerTeam.stars : 1;
+    // Compare car levels and championship position
+    const playerAdvantage = G.team.stars - peerCarStars + (champ <= 3 ? 1 : 0);
+    
+    let peerAhead = false;
+    if (champ === 1) peerAhead = false;
+    else if (playerAdvantage < -1) peerAhead = true;
+    else if (playerAdvantage === -1) peerAhead = Math.random() > 0.3;
+    else if (playerAdvantage === 0) peerAhead = Math.random() > 0.5;
+    else if (playerAdvantage === 1) peerAhead = Math.random() > 0.8;
+    
+    if (peerAhead) {
+      G.peer.h2hWins++;
+      if (wins > 0 && Math.random() < 0.6) {
+        const stolen = Math.max(1, Math.floor(wins * 0.4));
+        wins -= stolen;
+        G._seasonEventLogs.push(`🏎️ ${G.peer.name} te superó en el mundial y te peleó ${stolen} victoria(s).`);
+      } else {
+        G._seasonEventLogs.push(`🏎️ ${G.peer.name} terminó por delante tuyo en el mundial esta temporada.`);
+      }
+    } else {
+      G.peer.h2hLosses++;
+      G._seasonEventLogs.push(`🏎️ Terminaste por delante de ${G.peer.name} en el mundial.`);
+    }
+
+    // Lógica del Escudero: Si ambos están en el mismo equipo, el equipo es competitivo, 
+    // el rival queda delante tuyo y vos terminás 2do o 3ro.
+    if (G.team && G.team.name === G.peer.team) {
+      if (peerAhead && peerCarStars >= 4 && (champ === 2 || champ === 3)) {
+        G.wasEscudero = true;
+      }
+    }
+  }
 
   G.reputation += rep;
   G.money += earned;
@@ -976,6 +1194,9 @@ function checkNicknames() {
   } else if (legendNick && currentNick !== legendNick && !has(legendNick)) {
     newNick = legendNick;
     newDesc = `Ganaste tres o más campeonatos mundiales con ${legendTeam}. Tu nombre y el de la escudería quedarán grabados juntos en la historia.`;
+  } else if (titles >= 1 && (has('El Escudero') || G.wasEscudero) && currentNick !== 'El Heredero' && !has('El Heredero')) {
+    newNick = 'El Heredero';
+    newDesc = 'Dejaste de vivir a la sombra de tu compañero de equipo. Rompiste tu destino de piloto secundario y finalmente reclamaste la corona mundial.';
   } else if (G.nonRenewalsCount >= 3 && currentNick !== 'El Mercenario' && !has('El Mercenario') && titles < 3) {
     newNick = 'El Mercenario';
     newDesc = 'Múltiples cambios de equipo en poco tiempo. Tu lealtad está con el mejor postor, o el auto más rápido.';
@@ -988,15 +1209,15 @@ function checkNicknames() {
   } else if (G.stats.rain >= 85 && currentNick !== 'El Mago del Mojado' && !has('El Mago del Mojado')) {
     newNick = 'El Mago del Mojado';
     newDesc = 'Cuando el cielo se oscurece y la pista se moja, encontrás un agarre que nadie más puede ver.';
-  } else if (G.stats.tyres >= 85 && G.stats.quali >= 85 && currentNick !== 'El Profesor' && !has('El Profesor')) {
+  } else if (G.stats.tyres >= 90 && G.stats.quali >= 90 && totalF1Wins >= 5 && currentNick !== 'El Profesor' && !has('El Profesor')) {
     newNick = 'El Profesor';
     newDesc = 'Frío, calculador y estratégico. Cuidás las gomas como nadie y ganás carreras usando la cabeza.';
   } else if (G.stats.speed >= 85 && G.stats.overtake >= 85 && G.stats.tyres <= 60 && currentNick !== 'El Kamikaze' && !has('El Kamikaze')) {
     newNick = 'El Kamikaze';
     newDesc = 'Espectáculo garantizado. Ataques al límite y velocidad pura, a costa de devorar los neumáticos.';
-  } else if (f1Seasons.filter(s => s.champ === 2 || s.champ === 3).length >= 3 && titles === 0 && currentNick !== 'El Escudero' && !has('El Escudero')) {
+  } else if ((G.wasEscudero || f1Seasons.filter(s => s.champ === 2 || s.champ === 3).length >= 3) && titles === 0 && currentNick !== 'El Escudero' && !has('El Escudero')) {
     newNick = 'El Escudero';
-    newDesc = 'Siempre sumando puntos y en el podio final, pero nunca en el escalón más alto. Un piloto número dos de oro.';
+    newDesc = 'Fiel compañero, sacrificaste tus propias chances de gloria para asegurar campeonatos de equipo y de tu rival.';
   }
   
   if (newNick) {
@@ -1047,6 +1268,29 @@ function buildSummary() {
       </div>
     `;
     G.newNicknameThisSeason = null;
+  }
+
+  if (G.peer && G.catIndex === 5) {
+    const rel = G.peer.relationship;
+    const relPct = Math.round((rel + 100) / 2); // 0% = -100, 100% = +100
+    const relIcon = rel > 50 ? '🤝' : rel < -50 ? '⚔️' : '😐';
+    const relLabel = rel > 50 ? 'Aliados' : rel < -50 ? 'Enemigos juramentados' : rel > 0 ? 'Buena onda' : rel < 0 ? 'Tensión' : 'Neutral';
+    const relColor = rel > 30 ? '#4ade80' : rel < -30 ? '#f87171' : '#facc15';
+    document.getElementById('sum-extra-rows').innerHTML += `
+      <div style="margin-top:16px; padding:14px; border-radius:8px; background:rgba(255,255,255,0.04); border:1px solid var(--border)">
+        <div style="font-size:12px; color:var(--muted); margin-bottom:6px; text-transform:uppercase; letter-spacing:1px">Contemporáneo de Generación</div>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px">
+          <div style="font-weight:bold">${relIcon} ${G.peer.name} <span style="font-size:12px; color:var(--muted); font-weight:normal">(${G.peer.nat.flag} ${G.peer.team})</span></div>
+          <div style="font-size:12px; color:${relColor}; font-weight:bold">${relLabel}</div>
+        </div>
+        <div style="background:rgba(0,0,0,0.3); border-radius:4px; height:8px; position:relative; overflow:hidden">
+          <div style="position:absolute; left:0; top:0; height:100%; width:${relPct}%; background:${relColor}; border-radius:4px; transition:width 0.4s"></div>
+        </div>
+        <div style="display:flex; justify-content:space-between; margin-top:4px; font-size:10px; color:var(--muted)">
+          <span>⚔️ Enemigo</span><span>H2H: ${G.peer.h2hLosses}–${G.peer.h2hWins}</span><span>Aliado 🤝</span>
+        </div>
+      </div>
+    `;
   }
 
   updateTopBar();
@@ -1207,6 +1451,24 @@ function goToContracts(oldCatIdx, repeatCat = false, skipContracts = false) {
     G.nonRenewalsCount = 0;
   }
 
+  const steps = [];
+
+  // Initialize or update peer when entering F1
+  if (G.catIndex === 5) {
+    if (!G._peerInitialized) {
+      G._peerInitialized = true;
+      generatePeer();
+      steps.push({ type: 'message', title: '💥 Nueva Cara en la F1', desc: `${G.peer.name} (${G.peer.nat.flag}) debuta en la misma temporada que vos con ${G.peer.team}. ¡Tu carrera estará atada a la de él!` });
+    } else {
+      const peerMove = updatePeerContract();
+      if (peerMove && peerMove.action === 'moves') {
+        const peerNewTeamData = TEAMS['F1'].find(t => t.name === peerMove.newTeam);
+        const peerLogoHtml = peerNewTeamData ? `<img src="${peerNewTeamData.logo}" style="height:14px;vertical-align:middle;margin-left:4px">` : '';
+        steps.push({ type: 'message', title: '🔄 Mercado de Pilotos', desc: `${G.peer.name} firmó con ${peerMove.newTeam}${peerLogoHtml}.` });
+      }
+    }
+  }
+
   // Golden Boy: check when entering F1 from F2
   if (oldCatIdx === 4 && G.catIndex === 5 && !G._goldenBoyChecked) {
     G._goldenBoyChecked = true;
@@ -1218,7 +1480,6 @@ function goToContracts(oldCatIdx, repeatCat = false, skipContracts = false) {
     }
   }
 
-  const steps = [];
   if (!skipContracts) steps.push('contracts');
   steps.push('preseason');
   G._nextSteps = steps;
@@ -1259,12 +1520,37 @@ function showNoOfferScreen(catIdx, r, reqsFailed = false) {
   goto('screen-contracts');
 }
 
+function showMessageScreen(title, desc) {
+  let screen = document.getElementById('screen-message');
+  if (!screen) {
+    screen = document.createElement('div');
+    screen.className = 'screen';
+    screen.id = 'screen-message';
+    screen.style.justifyContent = 'center';
+    screen.innerHTML = `
+      <div class="label" style="margin-bottom:8px">Notificación</div>
+      <div class="card" style="margin-bottom:24px">
+        <div class="heading" id="msg-title" style="margin-bottom:8px"></div>
+        <div class="sub" id="msg-desc" style="line-height:1.5"></div>
+      </div>
+      <button class="btn btn-primary" onclick="processNextStep()" style="width:100%">Continuar →</button>
+    `;
+    document.getElementById('app').appendChild(screen);
+  }
+  document.getElementById('msg-title').innerHTML = title;
+  document.getElementById('msg-desc').innerHTML = desc;
+  goto('screen-message');
+}
+
 function processNextStep() {
   if (!G._nextSteps || G._nextSteps.length === 0) return;
   const step = G._nextSteps.shift();
 
-  if (step === 'contracts') showContracts();
-  else if (step === 'preseason') {
+  if (typeof step === 'object' && step.type === 'message') {
+    showMessageScreen(step.title, step.desc);
+  } else if (step === 'contracts') {
+    showContracts();
+  } else if (step === 'preseason') {
     // Ensure the pilot has a valid team for their current category
     const validTeams = TEAMS[CATEGORIES[G.catIndex]];
     if (!validTeams.find(t => t.name === G.team.name)) {
@@ -1279,6 +1565,21 @@ function processNextStep() {
 //  RANDOM EVENT
 // ═══════════════════════════════════════════════════════════
 const STAT_LABELS = { speed: 'Velocidad', quali: 'Clasificación', rain: 'Lluvia', tyres: 'Gestión', overtake: 'Adelantamientos' };
+
+// ── TYPEWRITER ──
+function typewriterRadio(elId, text, speed = 18) {
+  const el = document.getElementById(elId);
+  if (!el) return;
+  el.textContent = '';
+  let i = 0;
+  const tick = () => {
+    if (i < text.length) {
+      el.textContent += text[i++];
+      setTimeout(tick, speed);
+    }
+  };
+  tick();
+}
 
 function showRandomEvent() {
   const playerStars = G.team ? G.team.stars : 0;
@@ -1307,14 +1608,38 @@ function showRandomEvent() {
       if (G._directivaUsed) return false; // Only once per career
       if (Math.random() >= 0.5) return false; // 50% chance if conditions met
     }
+    if (ev.id === 'peer_choque' || ev.id === 'peer_amigo' || ev.id === 'peer_numero1') {
+      if (!G.peer) return false; // Peer must exist
+      if (G.catIndex < 5) return false; // F1 only
+      // peer_choque more likely when relationship is neutral or hostile
+      if (ev.id === 'peer_choque' && G.peer.relationship > 30) return false;
+      // peer_amigo more likely when relationship is neutral or friendly
+      if (ev.id === 'peer_amigo' && G.peer.relationship < -30) return false;
+      if (ev.id === 'peer_numero1') {
+        if (!G.team || G.team.name !== G.peer.team) return false;
+        if (G.peer.h2hWins <= G.peer.h2hLosses) return false;
+      }
+    }
     return true;
   });
   if (pool.length === 0) pool = RANDOM_EVENTS;
+
+  // Boost probability of peer events so they appear more often
+  const peerEvents = pool.filter(ev => ev.id && ev.id.startsWith('peer_'));
+  if (peerEvents.length > 0) {
+    // Add them 3 more times to the pool to make them much more likely
+    pool.push(...peerEvents, ...peerEvents, ...peerEvents);
+  }
 
   // Resolve dynamic descriptions (e.g. pendrive engineer team name)
   const evTemplate = randFrom(pool);
   // Deep-clone so we can safely mutate descriptions
   const ev = JSON.parse(JSON.stringify(evTemplate));
+
+  if (G.peer) {
+    ev.title = ev.title.replace('{{PEER_NAME}}', G.peer.name);
+    ev.desc = ev.desc.replace('{{PEER_NAME}}', G.peer.name);
+  }
 
   if (ev.id === 'pendrive') {
     G._pendriveUsed = true;
@@ -1333,6 +1658,23 @@ function showRandomEvent() {
   document.getElementById('ev-icon').textContent = ev.icon;
   document.getElementById('ev-title').textContent = ev.title;
   document.getElementById('ev-desc').textContent = ev.desc;
+
+  // Team Radio block
+  const existingRadio = document.getElementById('ev-radio-block');
+  if (existingRadio) existingRadio.remove();
+  if (ev.radioMsg) {
+    let radioMsg = ev.radioMsg.replace('{{PEER_NAME}}', G.peer ? G.peer.name : 'tu compañero');
+    radioMsg = radioMsg.replace(/Piloto/g, G.name).replace(/PILOTO/g, G.name.toUpperCase());
+    const radioBlock = document.createElement('div');
+    radioBlock.id = 'ev-radio-block';
+    radioBlock.innerHTML = `
+      <div style="font-family:monospace;font-size:12px;color:#4ade80;background:#0a1a0a;border:1px solid #1a3a1a;border-radius:6px;padding:10px 14px;margin-bottom:14px;text-align:left">
+        <div style="font-size:10px;letter-spacing:2px;color:#22c55e;margin-bottom:6px;opacity:0.7">📻 TEAM RADIO ▬▬▬</div>
+        <div id="ev-radio-text" style="line-height:1.5;min-height:1.2em"></div>
+      </div>`;
+    document.getElementById('ev-choices').insertAdjacentElement('beforebegin', radioBlock);
+    typewriterRadio('ev-radio-text', radioMsg, 18);
+  }
 
   const ch = document.getElementById('ev-choices');
   ch.innerHTML = '';
@@ -1357,6 +1699,13 @@ function showRandomEvent() {
     b.innerHTML = `<h3>${c.text}</h3>${hintHtml}`;
 
     b.onclick = () => {
+      let relChange = c.peerRelDelta || 0;
+      if (success === false && c.peerRelFailDelta !== undefined) {
+        relChange = c.peerRelFailDelta;
+      }
+      if (relChange && G.peer) {
+        G.peer.relationship = clamp(G.peer.relationship + relChange, -100, 100);
+      }
       G.stats[c.stat] = clamp(G.stats[c.stat] + resolvedDelta, 1, G.potential);
       // Handle base money cost (e.g. doctor)
       if (c.money) { G.money += c.money; G.totalMoney += Math.max(0, c.money); }
@@ -1406,10 +1755,33 @@ function showRandomEvent() {
 //  MINIGAME
 // ═══════════════════════════════════════════════════════════
 function showMinigame() {
-  const mg = randFrom(MINIGAMES);
+  let pool = MINIGAMES.filter(mg => {
+    if (mg.id === 'peer_ordenes') return G.peer && G.team && G.team.name === G.peer.team;
+    if (mg.id === 'peer_brake_test') return G.peer && G.peer.relationship < -30;
+    return true;
+  });
+  if (pool.length === 0) pool = MINIGAMES;
+  const mg = randFrom(pool);
   document.getElementById('mg-icon').textContent = mg.icon;
-  document.getElementById('mg-title').textContent = mg.title;
-  document.getElementById('mg-desc').textContent = mg.desc;
+  document.getElementById('mg-title').textContent = mg.title.replace('{{PEER_NAME}}', G.peer ? G.peer.name : 'tu compañero');
+  document.getElementById('mg-desc').textContent = mg.desc.replace('{{PEER_NAME}}', G.peer ? G.peer.name : 'tu compañero');
+
+  // Team Radio block
+  const existingMgRadio = document.getElementById('mg-radio-block');
+  if (existingMgRadio) existingMgRadio.remove();
+  if (mg.radioMsg) {
+    let radioMsg = mg.radioMsg.replace('{{PEER_NAME}}', G.peer ? G.peer.name : 'tu compañero');
+    radioMsg = radioMsg.replace(/Piloto/g, G.name).replace(/PILOTO/g, G.name.toUpperCase());
+    const radioBlock = document.createElement('div');
+    radioBlock.id = 'mg-radio-block';
+    radioBlock.innerHTML = `
+      <div style="font-family:monospace;font-size:12px;color:#4ade80;background:#0a1a0a;border:1px solid #1a3a1a;border-radius:6px;padding:10px 14px;margin-bottom:14px;text-align:left">
+        <div style="font-size:10px;letter-spacing:2px;color:#22c55e;margin-bottom:6px;opacity:0.7">📻 TEAM RADIO ▬▬▬</div>
+        <div id="mg-radio-text" style="line-height:1.5;min-height:1.2em"></div>
+      </div>`;
+    document.getElementById('mg-choices').insertAdjacentElement('beforebegin', radioBlock);
+    typewriterRadio('mg-radio-text', radioMsg, 18);
+  }
 
   // Remove any old stat hint
   const mgCard = document.querySelector('#screen-minigame .card');
@@ -1441,7 +1813,7 @@ function showMinigame() {
       <p style="margin-bottom:6px">${c.desc}</p>
       <div style="font-size:12px;display:flex;align-items:center;justify-content:space-between;gap:8px">
         ${skillText}
-        <span style="color:var(--muted)">Éxito: <strong style="color:${pctColor}">${pct}%</strong></span>
+        ${mg.hidePct ? '' : `<span style="color:var(--muted)">Éxito: <strong style="color:${pctColor}">${pct}%</strong></span>`}
       </div>`;
     b.onclick = () => {
       const success = Math.random() < successChance;
@@ -1449,26 +1821,52 @@ function showMinigame() {
       const logName = c.pureLuck ? "Suerte" : STAT_LABELS[c.skillStat];
       const logStat = c.pureLuck ? "" : ` ${Math.round(G.stats[c.skillStat] || 50)}`;
 
-      if (success) {
+      let repDelta = c.repDelta || 0;
+      let peerRelDelta = c.peerRelDelta || 0;
+      let narrative = success ? (c.successDesc || '') : (c.failDesc || '');
+      const isNeutralFail = !success && c.neutralFail;
+
+      if (success && !c.noWinOnSuccess) {
         G.lastResult.wins = Math.min(G.lastResult.wins + 1, 99);
         G.wins++;
         G.lastResult.podiums = Math.max(G.lastResult.podiums, G.lastResult.wins);
         G.podiums++;
-        logText = `En pista: "${c.text}" [${logName}${logStat} → ${pct}%] — ¡Éxito! +1 Victoria`;
+        logText = `En pista: "${c.text}" [${logName}${logStat}${mg.hidePct ? '' : ' → ' + pct + '%'}] — ¡Éxito! +1 Victoria`;
+      } else if (success && c.noWinOnSuccess) {
+        logText = `En pista: "${c.text}" [${logName}${logStat}${mg.hidePct ? '' : ' → ' + pct + '%'}] — ¡Llegaste! Sin DNF.`;
+      } else if (isNeutralFail) {
+        logText = `En pista: "${c.text}" [${logName}${logStat}${mg.hidePct ? '' : ' → ' + pct + '%'}] — Posición mantenida (Sin sobresaltos)`;
       } else {
-        logText = `En pista: "${c.text}" [${logName}${logStat} → ${pct}%] — Fallaste`;
+        logText = `En pista: "${c.text}" [${logName}${logStat}${mg.hidePct ? '' : ' → ' + pct + '%'}] — Fallaste`;
+        if (c.onFailDnf) {
+          const didCrash = c.onFailDnf === true ? true : (Math.random() < c.onFailDnf);
+          if (didCrash) {
+            G.lastResult.dnfs++;
+            G.dnfs++;
+            logText += ' (Abandono)';
+          } else {
+            repDelta = Math.floor(repDelta / 4);
+            peerRelDelta = Math.floor(peerRelDelta / 3);
+            if (c.failSurviveDesc) narrative = c.failSurviveDesc;
+          }
+        }
+      }
+      
+      if (repDelta) G.reputation += repDelta;
+      if (c.moneyDelta) { G.money += c.moneyDelta; G.totalMoney += c.moneyDelta; }
+      if (peerRelDelta && G.peer) {
+        G.peer.relationship = clamp(G.peer.relationship + peerRelDelta, -100, 100);
       }
       G._seasonEventLogs.push(logText);
 
-      const narrative = success ? (c.successDesc || '') : (c.failDesc || '');
       const narrativeHtml = narrative
-        ? `<div style="font-size:14px;line-height:1.6;color:var(--text);background:rgba(255,255,255,0.04);border-radius:10px;padding:14px 16px;margin-bottom:16px;text-align:left;border-left:3px solid ${success ? '#4ade80' : '#f87171'}">${narrative}</div>`
+        ? `<div style="font-size:14px;line-height:1.6;color:var(--text);background:rgba(255,255,255,0.04);border-radius:10px;padding:14px 16px;margin-bottom:16px;text-align:left;border-left:3px solid ${success ? '#4ade80' : isNeutralFail ? '#9ca3af' : '#f87171'}">${narrative}</div>`
         : '';
 
       ch.innerHTML = `
         <div class="card" style="padding: 24px">
-          <div style="font-size:48px;margin-bottom:8px;text-align:center">${success ? '🏆' : '💥'}</div>
-          <div class="heading" style="font-size:20px;margin-bottom:4px;text-align:center">${success ? '¡Éxito en pista!' : 'Mala suerte'}</div>
+          <div style="font-size:48px;margin-bottom:8px;text-align:center">${success ? '🏆' : isNeutralFail ? '😐' : '💥'}</div>
+          <div class="heading" style="font-size:20px;margin-bottom:4px;text-align:center">${success ? '¡Éxito en pista!' : isNeutralFail ? 'Sin incidentes' : 'Mala suerte'}</div>
           <div style="font-size:13px;color:var(--muted);margin-bottom:12px;text-align:center">${logText}</div>
           ${narrativeHtml}
           <button class="btn btn-primary" style="width:100%" onclick="processSeasonStep()">Continuar</button>
@@ -1613,35 +2011,91 @@ function showContracts() {
     let badges = '';
     if (isRenewal) badges += '<span class="badge badge-green" style="font-size:10px;margin-left:6px;vertical-align:middle">Renovación</span>';
     if (isOpportunity) badges += '<span class="badge" style="background-color:#fbbf24;color:#000;font-size:10px;margin-left:6px;vertical-align:middle;padding:2px 6px;border-radius:4px;font-weight:bold">OPORTUNIDAD</span>';
+    
+    const isPeerTeam = (G.peer && team.name === G.peer.team);
+    if (isPeerTeam) badges += `<span class="badge" style="background-color:#6366f1;color:#fff;font-size:10px;margin-left:6px;vertical-align:middle;padding:2px 6px;border-radius:4px;font-weight:bold">Compañero/Rival (${G.peer.name})</span>`;
 
     const c = document.createElement('div');
-    c.className = 'card offer-card selectable';
-    const logoHtml = team.logo
-      ? `<div style="width:56px;height:48px;background:rgba(255,255,255,0.06);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:4px"><img src="${team.logo}" alt="${team.name}" style="max-width:48px;max-height:38px;object-fit:contain"></div>`
-      : `<div style="width:56px;height:48px;border-radius:8px;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">🏎️</div>`;
-    c.innerHTML = `
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
-        <div style="display:flex;align-items:center;gap:12px">
-          ${logoHtml}
-          <div>
-            <div class="heading" style="font-size:20px">${team.name} ${badges}</div>
-            <div style="font-size:12px;color:var(--muted);margin-top:2px">📍 ${cat} | Req: ⭐ ${reqRep} / OVR ${reqOvr}</div>
-            ${team.focus ? `<div style="font-size:12px;margin-top:2px;color:${team.focus === 'desarrollo' ? '#60a5fa' : team.focus === 'ganar' ? '#f87171' : '#facc15'}">${team.focus === 'desarrollo' ? '📚 Prioriza desarrollo' : team.focus === 'ganar' ? '🏆 Prioriza ganar' : '⚖️ Equilibrado'}</div>` : ''}
-            ${contractLabel ? `<div style="font-size:12px;color:var(--accent);margin-top:2px">${contractLabel}</div>` : ''}
+
+    if (isF1) {
+      // ── F1: Holographic premium card ──
+      c.className = 'card offer-card selectable holo-card' + (isOpportunity ? ' opportunity' : '');
+      const teamColors = {
+        'Cadillac': '#f0f0f0',
+        'Audi': '#1a1a1a',
+        'Haas F1': '#e8002d',
+        'Williams': '#00a3e0',
+        'Racing Bulls': '#1b3fa0',
+        'Alpine': '#0093cc',
+        'Aston Martin': '#00665e',
+        'McLaren': '#ff8000',
+        'Mercedes': '#00d2be',
+        'Ferrari': '#dc0000',
+        'Red Bull': '#3671c6'
+      };
+      c.style.setProperty('--team-color', teamColors[team.name] || 'var(--accent)');
+
+      const logoHtml = team.logo
+        ? `<div style="width:56px;height:48px;background:rgba(255,255,255,0.06);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:4px;box-shadow:inset 0 0 5px rgba(0,0,0,0.3)"><img src="${team.logo}" alt="${team.name}" style="max-width:48px;max-height:38px;object-fit:contain"></div>`
+        : `<div style="width:56px;height:48px;border-radius:8px;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">🏎️</div>`;
+
+      c.innerHTML = `
+        <div class="holo-content">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <div style="display:flex;align-items:center;gap:12px">
+              ${logoHtml}
+              <div>
+                <div class="heading" style="font-size:20px; text-shadow: 0 0 8px var(--team-color)">${team.name} ${badges}</div>
+                <div style="font-size:12px;color:var(--muted);margin-top:2px">📍 ${cat} | Req: ⭐ ${reqRep} / OVR ${reqOvr}</div>
+                ${team.focus ? `<div style="font-size:12px;margin-top:2px;color:${team.focus === 'desarrollo' ? '#60a5fa' : team.focus === 'ganar' ? '#f87171' : '#facc15'}">${team.focus === 'desarrollo' ? '📚 Prioriza desarrollo' : team.focus === 'ganar' ? '🏆 Prioriza ganar' : '⚖️ Equilibrado'}</div>` : ''}
+              </div>
+            </div>
+            <div class="offer-star">${stars}</div>
+          </div>
+          <hr class="thin" style="margin: 10px 0; border-color: rgba(255,255,255,0.05)">
+          <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-bottom:12px;">
+            <div>
+              <div style="font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1px">Sueldo Anual</div>
+              <div style="font-family:'Barlow Condensed', sans-serif; font-size:22px; font-weight:bold; color:var(--green); text-shadow: 0 0 5px rgba(74,232,122,0.3)">${fmt$(salarySpin)}</div>
+              ${salaryTotal ? `<div style="font-size:11px; color:var(--muted); margin-top:2px">${salaryTotal}</div>` : ''}
+            </div>
+            <div style="text-align:right">
+              <div style="font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1px">Contrato</div>
+              <div style="font-size:14px; font-weight:bold; color:var(--accent); margin-top:4px">${contractLabel ? contractLabel.replace('⏳ Contrato: ', '') : '1 temporada'}</div>
+              <div style="font-size:11px; color:var(--muted); margin-top:6px">Prob. Ganar: <span style="color:#fff">${WIN_PROBS[probIdx]}</span></div>
+            </div>
           </div>
         </div>
-        <div class="offer-star">${stars}</div>
-      </div>
-      <div class="result-row" style="padding:8px 0;border-color:var(--border)">
-        <div class="r-label">Salario / temporada</div>
-        <div class="r-val" style="font-size:17px">${fmt$(salarySpin)}</div>
-      </div>
-      ${salaryTotal ? `<div class="result-row" style="padding:4px 0;border-color:transparent"><div class="r-label" style="font-size:12px">${salaryTotal}</div></div>` : ''}
-      <div class="result-row" style="padding:8px 0;border-color:transparent">
-        <div class="r-label">Prob. de ganar</div>
-        <div class="offer-prob">${WIN_PROBS[probIdx]}</div>
-      </div>
-    `;
+      `;
+
+    } else {
+      // ── Formativas: layout clásico simple ──
+      c.className = 'card offer-card selectable';
+      const logoHtml = team.logo
+        ? `<div style="width:56px;height:48px;background:rgba(255,255,255,0.06);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:4px"><img src="${team.logo}" alt="${team.name}" style="max-width:48px;max-height:38px;object-fit:contain"></div>`
+        : `<div style="width:56px;height:48px;border-radius:8px;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">🏎️</div>`;
+      c.innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div style="display:flex;align-items:center;gap:12px">
+            ${logoHtml}
+            <div>
+              <div class="heading" style="font-size:20px">${team.name} ${badges}</div>
+              <div style="font-size:12px;color:var(--muted);margin-top:2px">📍 ${cat} | Req: ⭐ ${reqRep} / OVR ${reqOvr}</div>
+              ${team.focus ? `<div style="font-size:12px;margin-top:2px;color:${team.focus === 'desarrollo' ? '#60a5fa' : team.focus === 'ganar' ? '#f87171' : '#facc15'}">${team.focus === 'desarrollo' ? '📚 Prioriza desarrollo' : team.focus === 'ganar' ? '🏆 Prioriza ganar' : '⚖️ Equilibrado'}</div>` : ''}
+            </div>
+          </div>
+          <div class="offer-star">${stars}</div>
+        </div>
+        <div class="result-row" style="padding:8px 0;border-color:var(--border)">
+          <div class="r-label">Salario / temporada</div>
+          <div class="r-val" style="font-size:17px">${fmt$(salarySpin)}</div>
+        </div>
+        <div class="result-row" style="padding:8px 0;border-color:transparent">
+          <div class="r-label">Prob. de ganar</div>
+          <div class="offer-prob">${WIN_PROBS[probIdx]}</div>
+        </div>
+      `;
+    }
     c.onclick = () => {
       if (G.team && team.name === G.team.name) {
         G.renewalsCount++;
@@ -1760,6 +2214,17 @@ function showRetirement() {
     legacyCompare = 'Incomparable. Destrozaste todos los récords de la historia de la Fórmula 1.';
   }
 
+  // Sobreescribir con apodos dinámicos si aplican
+  if (G.wasEscudero) {
+    if (G.f1Titles === 0) {
+      legacyClass = 'legacy-good'; legacyIcon = '🛡️'; legacyTitle = 'El Escudero';
+      legacyCompare = 'Fiel compañero, sacrificaste tus propias chances de gloria para asegurar campeonatos de equipo y de tu rival.';
+    } else {
+      legacyClass = 'legacy-champion'; legacyIcon = '⚔️'; legacyTitle = 'El Heredero';
+      legacyCompare = 'Después de años a la sombra como escudero, reclamaste el trono y demostraste que eras un campeón por derecho propio.';
+    }
+  }
+
   G._legacyTitle = legacyTitle;
   G._legacyClass = legacyClass;
 
@@ -1796,6 +2261,31 @@ function showRetirement() {
 
   // Timeline
   let timelineHtml = '';
+  
+  if (G.peer && f1Seasons > 0) {
+    const rel = G.peer.relationship;
+    const relPct = Math.round((rel + 100) / 2); // 0% = -100, 100% = +100
+    const relIcon = rel > 50 ? '🤝' : rel < -50 ? '⚔️' : '😐';
+    const relLabel = rel > 50 ? 'Aliados' : rel < -50 ? 'Enemigos juramentados' : rel > 0 ? 'Buena onda' : rel < 0 ? 'Tensión' : 'Neutral';
+    const relColor = rel > 30 ? '#4ade80' : rel < -30 ? '#f87171' : '#facc15';
+    const h2hClass = G.peer.h2hWins > G.peer.h2hLosses ? 'bad' : G.peer.h2hWins < G.peer.h2hLosses ? 'good' : '';
+    const peerHtml = `
+      <div class="section-title">Rivalidad Generacional</div>
+      <div class="card" style="margin-bottom:24px">
+        <div class="result-row"><div class="r-label">Nombre</div><div class="r-val" style="font-weight:bold">${G.peer.name} <span style="font-size:12px;color:var(--muted)">(${G.peer.nat.flag})</span></div></div>
+        <div class="result-row"><div class="r-label">H2H (Tú vs Él)</div><div class="r-val ${h2hClass}" style="font-weight:bold">${G.peer.h2hLosses} a ${G.peer.h2hWins}</div></div>
+        
+        <div style="margin-top:16px; padding:16px; border-radius:8px; background:rgba(255,255,255,0.04); text-align:center">
+          <div style="font-size:14px; margin-bottom:8px; color:var(--muted)">Relación</div>
+          <div style="font-size:18px; margin-bottom:8px">${relIcon} ${relLabel}</div>
+          <div style="width:100%; height:6px; background:#333; border-radius:3px; overflow:hidden">
+            <div style="width:${relPct}%; height:100%; background:${relColor}; transition:width 0.3s"></div>
+          </div>
+        </div>
+      </div>
+    `;
+    document.getElementById('ret-history-rows').parentElement.insertAdjacentHTML('afterend', peerHtml);
+  }
   G.seasons.forEach(s => {
     let positionColor = '';
     if (s.champ === 1) positionColor = 'color: #ffd700;'; // Oro
@@ -1854,7 +2344,10 @@ function endCareerAndSave() {
     legacyTitle: G._legacyTitle || 'Piloto',
     legacyClass: G._legacyClass || 'legacy-promise',
     bestTeam: bestTeam,
-    date: new Date().toLocaleDateString()
+    date: new Date().toLocaleDateString(),
+    peerName: G.peer ? G.peer.name : null,
+    peerWins: G.peer ? G.peer.h2hLosses : 0, // from player perspective: peer's losses are player's wins
+    peerLosses: G.peer ? G.peer.h2hWins : 0
   };
 
   hof.push(profile);
@@ -1905,10 +2398,83 @@ function showHallOfFame() {
           <div>🍾 Podios: <strong>${p.podiums}</strong></div>
           <div>⏱️ Poles: <strong>${p.poles}</strong></div>
         </div>
-      `;
-      list.appendChild(card);
-    });
+        ${p.peerName ? `<div style="font-size:12px; color:var(--muted); padding-top:8px; margin-top:8px; border-top:1px solid rgba(255,255,255,0.05)">⚔️ Rival histórico: <strong>${p.peerName}</strong> (H2H: ${p.peerWins} a ${p.peerLosses})</div>` : ''}
+    `;
+    list.appendChild(card);
+  });
+  }
+  
+  goto('screen-hof');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  PEER (COMPAÑERO / RIVAL GENERACIONAL)
+// ═══════════════════════════════════════════════════════════
+
+const FIRST_NAMES = ["Oliver", "Jack", "Harry", "Jacob", "Charlie", "Thomas", "George", "Oscar", "James", "William", "Noah", "Leo", "Lucas", "Mateo", "Alex", "David", "Juan", "Pedro", "Pablo", "Diego", "Carlos", "Luis", "Fernando", "Jorge", "Javier", "Arthur", "Louis", "Jules", "Hugo", "Enzo", "Max", "Lando", "Charles", "Pierre", "Esteban", "Yuki", "Kevin", "Nico", "Lance", "Logan", "Valtteri", "Guanyu"];
+const LAST_NAMES = ["Smith", "Jones", "Taylor", "Brown", "Williams", "Wilson", "Johnson", "Davies", "Robinson", "Wright", "Thompson", "Evans", "Walker", "White", "Roberts", "Green", "Hall", "Wood", "Jackson", "Clarke", "García", "Martínez", "López", "González", "Rodríguez", "Fernández", "Pérez", "Gómez", "Sánchez", "Romero", "Sosa", "Torres", "Álvarez", "Ruiz", "Ramírez", "Flores", "Benítez", "Acosta", "Medina", "Herrera", "Suárez", "Dupont", "Dubois", "Lefebvre", "Leroy", "Roux", "Müller", "Schmidt", "Schneider", "Fischer", "Weber", "Meyer", "Wagner", "Becker"];
+
+function generatePeer() {
+  const f1Teams = TEAMS['F1'];
+  // Talent level: Random between 2 and 5 stars
+  const r = Math.random();
+  let stars = 2;
+  if (r < 0.2) stars = 5;       // Generational talent (20%)
+  else if (r < 0.5) stars = 4;  // Very good (30%)
+  else if (r < 0.8) stars = 3;  // Midfield (30%)
+  else stars = 2;               // Backmarker (20%)
+
+  // Assign to a team corresponding to their star level, or lower.
+  const validTeams = f1Teams.filter(t => t.stars <= stars);
+  const initialTeam = validTeams.length > 0 ? randFrom(validTeams).name : f1Teams[f1Teams.length - 1].name;
+
+  G.peer = {
+    name: randFrom(FIRST_NAMES) + ' ' + randFrom(LAST_NAMES),
+    nat: randFrom(NATIONALITIES),
+    talent: stars,
+    team: initialTeam,
+    relationship: 0, // -100 to +100
+    h2hWins: 0,
+    h2hLosses: 0,
+    contractYearsLeft: Math.random() < 0.5 ? 1 : 2 // 2 to 3 years initially
+  };
+}
+
+function updatePeerContract() {
+  if (!G.peer) return null;
+  
+  if (G.peer.contractYearsLeft > 0) {
+    G.peer.contractYearsLeft--;
+    return { action: 'stays', newTeam: G.peer.team };
   }
 
-  goto('screen-hof');
+  const f1Teams = TEAMS['F1'];
+  
+  // Decide if they move. Generational talents are more likely to move UP.
+  const r = Math.random();
+  let currentTeam = f1Teams.find(t => t.name === G.peer.team);
+  if (!currentTeam) currentTeam = f1Teams[0];
+
+  let newTeam = G.peer.team;
+  let action = 'renews';
+
+  if (currentTeam.stars < G.peer.talent && r < 0.6) {
+    // Moves up! Try to find a team with more stars up to their talent level
+    const betterTeams = f1Teams.filter(t => t.stars > currentTeam.stars && t.stars <= G.peer.talent);
+    if (betterTeams.length > 0) {
+      newTeam = randFrom(betterTeams).name;
+      action = 'moves';
+    }
+  } else if (r < 0.2) {
+    // Random sideways or slight down move
+    const lateralTeams = f1Teams.filter(t => t.stars === currentTeam.stars && t.name !== currentTeam.name);
+    if (lateralTeams.length > 0) {
+      newTeam = randFrom(lateralTeams).name;
+      action = 'moves';
+    }
+  }
+
+  G.peer.team = newTeam;
+  G.peer.contractYearsLeft = Math.random() < 0.5 ? 1 : 2;
+  return { action, newTeam };
 }

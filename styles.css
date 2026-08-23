@@ -285,8 +285,23 @@
   .scroll-content { overflow-y: auto; flex: 1; padding-bottom: 8px; scrollbar-width: none; }
   .scroll-content::-webkit-scrollbar { display: none; }
 
-  /* SECTION TITLE */
+  /* ── SECTION TITLE ── */
   .section-title { font-family: 'Barlow Condensed',sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 3px; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+
+  /* ── RACE TRACK VISUALIZER ── */
+  .race-track-wrap {
+    width: 100%;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 8px;
+    overflow: hidden;
+  }
+  .race-track-wrap canvas {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
 
   /* ── LOADING BAR ── */
   @keyframes loadbar { from { width: 0%; } to { width: 100%; } }
@@ -297,3 +312,62 @@
   .result-row:last-child { border-bottom: none; }
   .result-row .r-label { font-size: 14px; color: var(--muted); }
   .result-row .r-val   { font-family: 'Barlow Condensed',sans-serif; font-weight: 700; font-size: 20px; }
+
+  /* ── HOLOGRAPHIC CARDS ── */
+  .holo-card {
+    position: relative;
+    overflow: hidden;
+    transition: box-shadow 0.25s ease-out;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+  .holo-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    box-shadow: inset 0 0 0 2px var(--team-color, transparent);
+    opacity: 0.3;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    z-index: 2;
+  }
+  .holo-card:hover::before {
+    opacity: 1;
+  }
+  .holo-card::after {
+    content: '';
+    position: absolute;
+    inset: -50%;
+    background: radial-gradient(
+      circle at var(--mouseX, 50%) var(--mouseY, 50%),
+      rgba(255, 255, 255, 0.4) 0%,
+      rgba(255, 255, 255, 0.05) 30%,
+      transparent 60%
+    );
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+    z-index: 1;
+    mix-blend-mode: overlay;
+  }
+  .holo-card:hover::after {
+    opacity: 1;
+  }
+  .holo-card.opportunity {
+    animation: pulse-neon 2.5s infinite alternate ease-in-out;
+  }
+  @keyframes pulse-neon {
+    0% { box-shadow: 0 0 5px var(--team-color, transparent), inset 0 0 2px var(--team-color, transparent); }
+    100% { box-shadow: 0 0 18px var(--team-color, transparent), inset 0 0 8px var(--team-color, transparent); }
+  }
+  .holo-card:hover {
+    box-shadow: 0 10px 30px -10px var(--team-color, rgba(0,0,0,0.5)) !important;
+  }
+  .holo-content {
+    position: relative;
+    z-index: 3;
+    pointer-events: none; /* Let the card catch all mouse events */
+  }
+  .holo-content * {
+    pointer-events: none; /* Sub-elements shouldn't block mouse movements */
+  }

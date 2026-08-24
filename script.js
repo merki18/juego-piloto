@@ -393,7 +393,8 @@ function initState(name, number, nat, talent) {
     f1ConsecutiveTitles: 0,
     _directivaUsed: false,
     peer: null,
-    _peerInitialized: false
+    _peerInitialized: false,
+    wetWins: 0
   };
   // apply talent
   const t = TALENTS.find(x => x.id === talent);
@@ -486,7 +487,7 @@ function updatePathBar() {
     const logo = CAT_LOGOS[c];
     const label = SHORT[c] || c;
     if (logo) {
-      s.innerHTML = `<img src="${logo}" alt="${label}" style="height:16px;object-fit:contain;opacity:${i <= G.catIndex ? '1' : '0.35'}">${label}`;
+      s.innerHTML = `<img src="${logo}" alt="${label}" style="height:20px;object-fit:contain;opacity:${i <= G.catIndex ? '1' : '0.35'}">`;
     } else {
       s.textContent = label;
     }
@@ -511,7 +512,7 @@ function buildPreseason() {
   const catLogoSrc = CAT_LOGOS[cat];
   const catEl = document.getElementById('pre-cat-label');
   if (catLogoSrc) {
-    catEl.innerHTML = `<img src="${catLogoSrc}" alt="${cat}" style="height:28px;object-fit:contain;vertical-align:middle;margin-right:8px">${cat}`;
+    catEl.innerHTML = `<img src="${catLogoSrc}" alt="${cat}" style="height:34px;object-fit:contain;vertical-align:middle">`;
   } else {
     catEl.textContent = cat;
   }
@@ -1020,6 +1021,7 @@ function computeSeasonResult() {
   G.money += earned;
   G.totalMoney += earned;
   G.wins += wins;
+  if (wetSeason && cat === 'F1') G.wetWins += wins;
   G.podiums += podiums;
   G.poles += poles;
   G.dnfs += dnfs;
@@ -1206,7 +1208,7 @@ function checkNicknames() {
   } else if (totalF1Poles >= 15 && totalF1Poles > totalF1Wins * 2 && currentNick !== 'Mr. Sábado' && !has('Mr. Sábado') && titles < 2) {
     newNick = 'Mr. Sábado';
     newDesc = 'Nadie te iguala a una vuelta rápida en clasificación, pero los domingos suelen ser más difíciles de cerrar.';
-  } else if (G.stats.rain >= 85 && currentNick !== 'El Mago del Mojado' && !has('El Mago del Mojado')) {
+  } else if (G.stats.rain >= 92 && G.catIndex === 5 && G.wetWins >= 3 && currentNick !== 'El Mago del Mojado' && !has('El Mago del Mojado')) {
     newNick = 'El Mago del Mojado';
     newDesc = 'Cuando el cielo se oscurece y la pista se moja, encontrás un agarre que nadie más puede ver.';
   } else if (G.stats.tyres >= 90 && G.stats.quali >= 90 && totalF1Wins >= 5 && currentNick !== 'El Profesor' && !has('El Profesor')) {
@@ -1587,8 +1589,9 @@ function showRandomEvent() {
   // Build candidate event pool — filter out special one-time or conditional events
   let pool = RANDOM_EVENTS.filter(ev => {
     if (ev.id === 'pendrive') {
-      // Only show if: player is on a 5-star team, hasn't seen it this career
+      // Only show if: player is in F1, on a 5-star team, and hasn't seen it this career
       if (G._pendriveUsed) return false;
+      if (G.catIndex < 5) return false; // F1 only
       if (playerStars < 5) return false;
     }
     if (ev.id === 'rookie') {

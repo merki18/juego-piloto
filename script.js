@@ -80,18 +80,28 @@ const ACTIVITIES_COMMON = [
   { name: 'Analizar telemetría', icon: '📊', bonus: '+2 adelantamientos', stats: { overtake: 2 }, rarity: 'common' },
   { name: 'Prácticas en lluvia', icon: '🌧️', bonus: '+2 lluvia', stats: { rain: 2 }, rarity: 'common' },
   { name: 'Preparación integral', icon: '🏔️', bonus: '+1 en 3 stats', stats: { speed: 1, quali: 1, tyres: 1 }, rarity: 'common' },
+  { name: 'Revisar vueltas anteriores', icon: '🎥', bonus: '+1 velocidad, +1 clasif', stats: { speed: 1, quali: 1 }, rarity: 'common' },
+  { name: 'Briefing con el equipo', icon: '🎧', bonus: '+1 clasif, +1 lluvia', stats: { quali: 1, rain: 1 }, rarity: 'common' },
+  { name: 'Trabajar en simulador', icon: '💻', bonus: '+1 clasificación, +1 gestión', stats: { quali: 1, tyres: 1 }, rarity: 'common' },
+  { name: 'Análisis de rivales', icon: '🎯', bonus: '+1 adelantamientos, +1 clasificación', stats: { overtake: 1, quali: 1 }, rarity: 'common' },
 ];
 const ACTIVITIES_RARE = [
   { name: 'Carrera de Karting invernal', icon: '❄️', bonus: '+4 lluvia, +1 gestión', stats: { rain: 4, tyres: 1 }, rarity: 'rare' },
   { name: 'Test aerodinámico en pista', icon: '🏎️', bonus: '+3 vel, +2 clasif', stats: { speed: 3, quali: 2 }, rarity: 'rare' },
   { name: 'Coaching mental deportivo', icon: '🧠', bonus: '+3 const, +2 adelant', stats: { tyres: 3, overtake: 2 }, rarity: 'rare' },
   { name: 'Curso avanzado de neumáticos', icon: '🛞', bonus: '+4 gestión, +1 const', stats: { tyres: 4, quali: 1 }, rarity: 'rare' },
+  { name: 'Simulación de clasificación', icon: '⏱️', bonus: '+4 clasificación', stats: { quali: 4 }, rarity: 'rare' },
+  { name: 'Análisis de los mejores sectores', icon: '📈', bonus: '+3 clasificación, +1 velocidad', stats: { quali: 3, speed: 1 }, rarity: 'rare' },
+  { name: 'Test de conducción en lluvia', icon: '🌧️', bonus: '+5 lluvia', stats: { rain: 5 }, rarity: 'rare' },
 ];
 const ACTIVITIES_LEGENDARY = [
   { name: '🌟 Mentoría con un Campeón', icon: '🏆', bonus: '+3 vel, +2 clas, +2 const', stats: { speed: 3, quali: 2, tyres: 2, overtake: 2 }, rarity: 'legendary' },
   { name: '🌟 Masterclass extrema en lluvia', icon: '⛈️', bonus: '+7 lluvia, +2 vel', stats: { rain: 7, speed: 2 }, rarity: 'legendary' },
   { name: '🌟 Campamento de élite', icon: '⭐', bonus: '+4 vel, +4 clasif', stats: { speed: 4, quali: 4 }, rarity: 'legendary' },
   { name: '🌟 Hallazgo de setup perfecto', icon: '🔧', bonus: '+5 const, +3 adelant', stats: { tyres: 5, overtake: 3 }, rarity: 'legendary' },
+  { name: '🌟 Test privado de Fórmula 1', icon: '🏎️', bonus: '+6 velocidad, +3 clasificación', stats: { speed: 6, quali: 3 }, rarity: 'legendary' },
+  { name: '🌟 Día perfecto de simulador', icon: '🖥️', bonus: '+5 clasificación, +3 adelantamientos', stats: { quali: 5, overtake: 3 }, rarity: 'legendary' },
+  { name: '🌟 Preparación de campeón', icon: '👑', bonus: '+3 en 3 stats', stats: { speed: 3, quali: 3, tyres: 3 }, rarity: 'legendary' },
 ];
 
 const RANDOM_EVENTS = [
@@ -99,6 +109,17 @@ const RANDOM_EVENTS = [
     icon: '🤕', title: 'Lesión en entrenamiento', desc: 'Te lastimaste la muñeca. La temporada arranca complicada.', choices: [
       { text: 'Pagar la mejor operación (-$50,000)', stat: 'tyres', delta: 1, money: -50000, hint: 'Te recuperás impecable y volvés con más resistencia (+1 Gestión).', fixedDesc: 'El cirujano hizo un trabajo impecable. Semanas de rehabilitación intensa, pero volviste a la pista más fuerte que antes. Los meses de recuperación te hicieron entender tu cuerpo de otra manera.' },
       { text: 'Aguantar con dolor y correr igual', stat: 'quali', delta: 0, money: 0, skillStat: 'tyres', skillBonus: 1, skillFail: -3, hint: '🛞 Gestión: si sos resistente, te fortalecerás. Si no, recaés y perdés stats.', successDesc: 'Carrera tras carrera, la adrenalina tapó el dolor. Sin darte cuenta, tu cuerpo se adaptó y saliste de la temporada más curtido que nunca.', failDesc: 'La muñeca no aguantó. A mitad de temporada tuviste que bajarte del auto tres fines de semana. El doctor fue tajante: "Esto podría haberte costado la carrera entera."' },
+    ]
+  },
+  {
+    icon: '🛞', title: 'El neumático experimental', desc: 'Pirelli trae un compuesto experimental para probar durante los libres. Nadie sabe exactamente cómo se comportará en tandas largas.', choices: [
+      { text: 'Probarlo durante una tanda larga', stat: 'tyres', delta: 0, money: 0, skillStat: 'tyres', skillBonus: 5, skillFail: -2, hint: '🛞 Gestión: cuanto mejor entiendas la degradación, más podés sacar del compuesto.', successDesc: 'Encontraste la ventana perfecta del neumático. Tus datos fueron tan precisos que el equipo pudo diseñar una estrategia alrededor del compuesto.', failDesc: 'El neumático se degradó muchísimo antes de lo esperado. Tu tanda terminó siendo poco útil y el equipo perdió una oportunidad de recopilar datos.' },
+      { text: 'No arriesgar y usar el compuesto conocido', stat: 'quali', delta: 1, money: 0, hint: 'Resultado fijo: trabajás con algo que ya conocés (+1 Clasificación).', fixedDesc: 'Mientras los demás experimentaban, vos perfeccionaste el setup conocido. No descubriste nada revolucionario, pero tu auto quedó perfectamente equilibrado.' }
+    ]
+  },
+  { icon: '🧪', title: 'Setup experimental', desc: 'Tu ingeniero propone un setup completamente diferente al que venís usando. Los datos del simulador son prometedores, pero nadie lo probó en carrera.', choices: [
+      { text: 'Confiar en los ingenieros', stat: 'quali', delta: 0, money: 0, skillStat: 'quali', skillBonus: 6, skillFail: -2, hint: '🏎️ Clasificación: el setup puede darte una gran ventaja a una vuelta.', successDesc: 'El setup era exactamente lo que necesitabas. El auto cobró vida en clasificación y encontraste varias décimas que nadie esperaba.', failDesc: 'Los datos del simulador engañaron. El auto era impredecible y tu confianza desapareció durante el fin de semana.' },
+      { text: 'Mantener el setup conocido', stat: 'tyres', delta: 1, money: 0, hint: '🛞 +1 Gestión por apostar a la consistencia.', fixedDesc: 'No necesitabas inventar nada. Conocías perfectamente el comportamiento del auto y eso te permitió completar el fin de semana sin sorpresas.' }
     ]
   },
   {
@@ -253,7 +274,7 @@ const RANDOM_EVENTS = [
 
 const MINIGAMES = [
   {
-    icon: '🏁', title: '¡Última vuelta por la victoria!', desc: 'Estás a 0.3 segundos del líder. Última vuelta. Decidí bien.', choices: [
+    icon: '🏁', title: '¡Última vuelta por la victoria!', desc: 'Estás a 0.5 segundos del líder. Última vuelta. Decidí bien.', choices: [
       { text: 'Frenar tardísimo en la primera curva', skillStat: 'speed', baseBonus: 0.15, statBonus: 0.50, desc: 'Velocidad pura: el que más aprieta gana.', successDesc: 'Frenaste 20 metros más tarde que nadie. El auto patinaba pero se mantuvo. Lo metiste adentro y cruzaste la línea con 0.08 segundos de ventaja. Esa maniobra sale en todas las repeticiones de TV.', failDesc: 'El auto fue recto. Bloqueo de ruedas, pista afuera y el líder te pasó por izquierda. Tan cerca, y tan lejos.' },
       { text: 'Esperar la recta final y dar todo', skillStat: 'quali', baseBonus: 0.3, statBonus: 0.3, desc: 'Clasificación: sabés exactamente dónde atacar.', successDesc: 'Cerraste la DRS en la recta. El rebufo fue perfecto. En el punto de frenada exacto, te fuiste por dentro. Lo pasás limpio y llegaste primero sin tocar nada. Clásico.', failDesc: 'El hueco no se abrió. El líder defendíó su línea y no tuviste espacio. Cruzaste segundo a 0.14 segundos. Así es la Fórmula 1.' },
       { text: 'Arriesás por afuera en la chicana', skillStat: 'overtake', baseBonus: 0.1, statBonus: 0.55, desc: 'Adelantamiento supremo: el más arriesgado.', successDesc: 'Él no lo esperó por afuera. Te fuiste al límite del asfalto, casi tocando el pasto, y saliste más rápido de la chicana. Victoria de las que se recuerdan décadas.', failDesc: 'No había espacio suficiente. Tocaste su rueda trasera en el apex, perdiste el aile y cruzaste cuarto. Un riesgo que no salió bien.' },
@@ -268,16 +289,16 @@ const MINIGAMES = [
   },
   {
     icon: '🔧', title: 'Problemas de frenos a mitad de carrera', desc: 'El pedal está yendo al fondo. ¿Qué hacés?', radioMsg: '"Piloto, tenemos un problema de presión en los frenos. El pedal está cediendo. Necesito que me digas exactamente qué sentís ahí adentro. ¿Cómo está la mordida? ¿Entramos o seguís?"', choices: [
-      { text: 'Gestionar frenando más temprano', skillStat: 'tyres', baseBonus: 0.3, statBonus: 0.3, desc: 'Gestión te permite llegar al final.', successDesc: 'Adaptaste todos tus puntos de frenada. Perdiste ritmo pero el auto no falló. En las últimas vueltas, cuando los que apretaron sufrieron el mismo problema, vos aún tenías freno suficiente para atacar.', failDesc: 'Frenaste antes, pero no alcanzó. En la vuelta 38 el pedal tocó el piso directo. La bandera de averría mecánica fue inevitable.' },
-      { text: 'Atacar igual con frenadas minimizadas', skillStat: 'speed', baseBonus: 0.1, statBonus: 0.45, desc: 'Velocidad pura: ignorar el problema y apretar.', successDesc: 'Convertiste el problema en arma. Sin usar los frenos convencionales, usabas el motor y las curvas lentas para frenar. Llegaste al final en un manejo impecablemente creativo.', failDesc: 'Vuelta 42, curva 1. El auto no paró. Fuiste derecho al box de escape. Retiro mécanico. El ingeniero prefirió no preguntar qué pensabas.' },
+      { text: 'Gestionar frenando más temprano', skillStat: 'tyres', baseBonus: 0.35, noWinOnSuccess: true, statBonus: 0.3, desc: 'Gestión te permite llegar al final.', successDesc: 'Adaptaste todos tus puntos de frenada. Perdiste ritmo pero el auto no falló. En las últimas vueltas, cuando los que apretaron sufrieron el mismo problema, vos aún tenías freno suficiente para atacar.', failDesc: 'Frenaste antes, pero no alcanzó. En la vuelta 38 el pedal tocó el piso directo. La bandera de averría mecánica fue inevitable.' },
+      { text: 'Atacar igual con frenadas minimizadas', skillStat: 'speed', baseBonus: 0.1, statBonus: 0.4, desc: 'Velocidad pura: ignorar el problema y apretar por la victoria.', successDesc: 'Convertiste el problema en arma. Sin usar los frenos convencionales, usabas el motor y las curvas lentas para frenar. Llegaste al final en un manejo impecablemente creativo.', failDesc: 'Vuelta 42, curva 1. El auto no paró. Fuiste derecho al box de escape. Retiro mécanico. El ingeniero prefirió no preguntar qué pensabas.' },
       { text: 'Entrar a boxes para ajuste rápido', skillStat: 'quali', baseBonus: 0.25, statBonus: 0.25, desc: 'Técnica: sabés qué pedirle al equipo.', successDesc: 'Describiste exactamente lo que sentías. El mecánico ajustó el bias trasero en 2 segundos. Saliste de boxes con un auto diferente y recuperaste cuatro posiciones en las últimas vueltas.', failDesc: 'El stop fue largo. El ajuste no era el que pedías y tuviste que entrar de vuelta una vuelta más adelante. Salió fuera de los puntos.' },
     ]
   },
   {
-    icon: '⚔️', title: 'Duelo épico por el podio', desc: 'Dos vueltas restantes. Tu rival está pegado atrás tuyo.', choices: [
-      { text: 'Defender agresivamente la posición', skillStat: 'overtake', baseBonus: 0.2, statBonus: 0.35, desc: 'Adelantamientos: defendé como sabés atacar.', successDesc: 'Lo mandaste afuera en la frenada, despues te cubríste la interior. No hubo forma de pasarte. En el último sector lo miraste por el espejo alejarse. Podio tuyo.', failDesc: 'Una defensa demasiado agresiva. Te dan una penalización de 5 segundos después de carrera. El podio se convierte en cuarto lugar.' },
-      { text: 'Confiar en el ritmo y ser limpio', skillStat: 'tyres', baseBonus: 0.35, statBonus: 0.2, desc: 'Gestión: gomas frescas ganan al final.', successDesc: 'No te moviste. Manejaste tu ritmo, dejaste que él desgastara sus gomas presíonándote. En la última vuelta, sus ruedas ya no respondían. El podio fue tuyo sin dramas.', failDesc: 'Tus gomas tampoco aguantaron. Perdiste la defensa en la curva 12 del último sector. Demasiado justo al límite.' },
-      { text: 'Abrir un hueco con frenada tardía', skillStat: 'speed', baseBonus: 0.15, statBonus: 0.45, desc: 'Velocidad: sorprendelo con pura potencia.', successDesc: 'Frenaste tardísimo en la curva más lenta. Él no pudo cubrir el espacio que abriste. Saliste acelerado de la curva con dos cuerpos de ventaja y ya no te alcanzó.', failDesc: 'Frenaste demasiado tarde. Te fuiste largo, él te pasó por adentro. Perdiste el podio en la penúltima vuelta.' },
+    icon: '⚔️', title: 'Duelo épico por la victoria', desc: 'Dos vueltas restantes. Tus rivales están pegados atrás tuyo.', choices: [
+      { text: 'Defender agresivamente la posición', skillStat: 'overtake', baseBonus: 0.2, statBonus: 0.35, desc: 'Adelantamientos: defendé como sabés atacar.', successDesc: 'Mandaste a uno largo en la frenada y cerraste la puerta al siguiente. Te defendiste de cada ataque sin dejar un solo hueco. En el último sector, miraste por los espejos y los viste quedarse atrás. Defensa perfecta. Victoria tuya.', failDesc: 'Una defensa demasiado agresiva. Trompeaste y te pasaron varios. la victoria se convierte en cuarto lugar.' },
+      { text: 'Confiar en el ritmo y ser limpio', skillStat: 'tyres', baseBonus: 0.35, statBonus: 0.2, desc: 'Gestión: gomas frescas ganan al final.', successDesc: 'No te moviste. Manejaste tu ritmo, dejaste que ellos desgastaran sus gomas presíonándote. En la última vuelta, sus ruedas ya no respondían. la victoria fue tuya sin dramas.', failDesc: 'Tus gomas tampoco aguantaron. Perdiste la defensa en la curva 12 del último sector. Demasiado justo al límite.' },
+      { text: 'Abrir un hueco con frenada tardía', skillStat: 'speed', baseBonus: 0.15, statBonus: 0.45, desc: 'Velocidad: sorprender con pura potencia.', successDesc: 'Frenaste tardísimo en la curva más lenta y te tiraste por el hueco justo antes de que pudiera cerrarlo. Saliste de la curva con dos cuerpos de ventaja y, a partir de ahí, ya no te alcanzaron', failDesc: 'Frenaste demasiado tarde. Te fuiste largo, te pasaron por adentro. Perdiste la victoria en la penúltima vuelta.' },
     ]
   },
   {
@@ -317,15 +338,15 @@ const MINIGAMES = [
   {
     id: 'peer_ordenes',
     icon: '📻', title: '"Multi 21" - Órdenes de equipo', desc: 'Tu compañero de equipo viene muy pegado atrás con mejor ritmo.', radioMsg: '"Piloto, muro. Necesito que dejes pasar al {{PEER_NAME}}. Tiene mejor estrategia de gomas desde acá. Es decisión de equipo. Confirmá recepción."', choices: [
-      { text: 'Acatar la orden y dejarlo pasar', pureLuck: true, baseBonus: 1.0, peerRelDelta: +15, repDelta: +20, successDesc: 'Levantaste el pie en la recta. El equipo te agradeció y sumaste puntos vitales para los constructores. Eres un jugador de equipo.', failDesc: 'Levantaste el pie.' },
+      { text: 'Acatar la orden y dejarlo pasar', pureLuck: true, baseBonus: 1.0, noWinOnSuccess: true, peerRelDelta: +15, repDelta: +20, successDesc: 'Levantaste el pie en la recta. El equipo te agradeció y sumaste puntos vitales para los constructores. Eres un jugador de equipo.', failDesc: 'Levantaste el pie.' },
       { text: 'Ignorar la radio y apretar el ritmo', skillStat: 'overtake', statBonus: 0.8, baseBonus: 0.2, onFailDnf: 0.5, peerRelDelta: -30, repDelta: -40, failDesc: 'Lo ignoraste, pero él se tiró igual por adentro. ¡Toque entre compañeros! Los dos afuera. El jefe de equipo está furioso.', failSurviveDesc: 'Lo ignoraste, él intentó pasar pero aflojó a último momento. Conservaste la posición, pero el clima en boxes es cortante (-10 Relación, -10 Reputación).', successDesc: 'Fingiste que no escuchabas, bajaste los tiempos y te escapaste. El equipo no pudo decir nada al verte cruzar la meta primero.' }
     ]
   },
   {
     id: 'peer_brake_test',
     icon: '🛑', title: 'Brake Test Bajo Safety Car', desc: 'La tensión es máxima. Están detrás del Auto de Seguridad.', radioMsg: '"¡PILOTO, CUIDADO! {{PEER_NAME}} FRENÓ FUERTE AHORA MISMO DELANTE TUYO. ¡REACCIONÁ!"', choices: [
-      { text: 'Volantazo ciego', pureLuck: true, baseBonus: 0.5, onFailDnf: true, repDelta: +10, failDesc: 'Pegaste el volantazo pero enganchaste su rueda trasera y terminaste contra el muro. Abandono absurdo.', successDesc: 'Tus reflejos salvaron el auto por milímetros. Pasaste por al lado y le hiciste un gesto a la cámara. ¡Reflejos de gato!' },
-      { text: 'Frenar a fondo en línea recta', pureLuck: true, baseBonus: 0.5, onFailDnf: true, repDelta: +10, failDesc: 'No llegaste a frenar. Le destruiste el alerón trasero y rompiste tu suspensión. Los dos afuera.', successDesc: 'Clavaste los frenos y te detuviste a un milímetro de su caja de cambios. Hubo humo, pero no contacto.' }
+      { text: 'Volantazo ciego', pureLuck: true, baseBonus: 0.5, noWinOnSuccess: true, onFailDnf: true, repDelta: +10, failDesc: 'Pegaste el volantazo pero enganchaste su rueda trasera y terminaste contra el muro. Abandono absurdo.', successDesc: 'Tus reflejos salvaron el auto por milímetros. Pasaste por al lado y le hiciste un gesto a la cámara. ¡Reflejos de gato!' },
+      { text: 'Frenar a fondo en línea recta', pureLuck: true, baseBonus: 0.5, noWinOnSuccess: true, onFailDnf: true, repDelta: +10, failDesc: 'No llegaste a frenar. Le destruiste el alerón trasero y rompiste tu suspensión. Los dos afuera.', successDesc: 'Clavaste los frenos y te detuviste a un milímetro de su caja de cambios. Hubo humo, pero no contacto.' }
     ]
   }
 ];

@@ -381,3 +381,78 @@
   .holo-content * {
     pointer-events: none; /* Sub-elements shouldn't block mouse movements */
   }
+  /* ── STAT GRID (3-up variant for secondary summary stats) ── */
+  .stat-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+
+  /* ── SEASON VERDICT / HERO (summary screen) ── */
+  .verdict-banner {
+    text-align: center;
+    padding: 8px 14px;
+    border-radius: 20px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .champ-hero {
+    text-align: center;
+    padding: 20px 16px;
+    border-radius: var(--r);
+    border: 1px solid var(--border);
+    margin-bottom: 14px;
+    position: relative;
+    overflow: hidden;
+  }
+  .champ-hero .champ-num {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 900;
+    font-size: 64px;
+    line-height: 1;
+    margin: 6px 0 4px;
+  }
+  .champ-hero .champ-trend { font-size: 12px; font-weight: 600; }
+
+  /* ── ACCORDION SECTIONS (summary screen) ── */
+  details.acc {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+  details.acc summary {
+    list-style: none;
+    cursor: pointer;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    color: var(--text);
+  }
+  details.acc summary::-webkit-details-marker { display: none; }
+  details.acc summary::after {
+    content: '▾';
+    color: var(--muted);
+    font-size: 12px;
+    transition: transform .2s;
+  }
+  details.acc[open] summary::after { transform: rotate(180deg); }
+  details.acc .acc-body { padding: 0 16px 14px; }
+
+  /* ── CONFETTI OVERLAY ── */
+  #confetti-canvas {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 200;
+  }

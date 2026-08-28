@@ -165,9 +165,9 @@ const RANDOM_EVENTS = [
     ]
   },
   {
-    icon: '🛠️', title: 'Avería mecánica en el peor momento', desc: 'El motor falló cuando peleabas el campeonato.', radioMsg: '"Piloto, hay una avería grave en el motor. Necesitamos parar o la temporada se termina acá. Decís vos: ¿pagamos a los mecánicos horas extras esta noche para arreglarlo o pasamos página y nos enfocamos en la siguiente?"', choices: [
-      { text: 'Pagar horas extras a mecánicos (-$30,000)', stat: 'quali', delta: 0, money: -30000, skillStat: 'quali', skillBonus: 5, skillFail: -1, hint: '🏄 Clasificación: liderás la reconstrucción del setup.', successDesc: 'Tres noches seguidas en el box, pizzas frías y telemetría hasta el amanecer. Cuando el auto volvió a la pista era otro. Los mecánicos te dieron un aplauso cuando saliste del garage.', failDesc: 'Los mecánicos trabajaron, pero la comunicación falló. Nuevos y uno de los de antes todavía sin resolver. Una pesadilla logística.' },
-      { text: 'Aceptar la mala suerte', stat: 'speed', delta: 1, money: 0, hint: 'Te enfocás en la próxima carrera (+1 Velocidad).', fixedDesc: 'Tiraste el casco al garaje y te fuiste al hotel. A la mañana siguiente, una mente limpia. Ese fin de semana lograste el mejor tiempo de tu vuelta de clasificación de la temporada. A veces, soltar es la única salida.' },
+    icon: '🛠️', title: 'Avería mecánica en el peor momento', desc: 'El motor falló antes de la carrera.', radioMsg: '"Piloto, hay una avería grave en el motor. Necesitamos parar. Decís vos: ¿pagamos a los mecánicos horas extras esta noche para arreglarlo o pasamos página y nos enfocamos en la siguiente carrera?"', choices: [
+      { text: 'Pagar horas extras a mecánicos (-$30,000)', stat: 'quali', delta: 0, money: -30000, skillStat: 'quali', skillBonus: 5, skillFail: -1, hint: '🏄 Clasificación: liderás la reconstrucción del setup.', successDesc: 'Toda la noche en el box, pizzas frías y telemetría hasta el amanecer. Cuando el auto volvió a la pista era otro. Los mecánicos te dieron un aplauso cuando saliste del garage.', failDesc: 'Los mecánicos trabajaron, pero la comunicación falló. Nuevos problemas y los de antes todavía sin resolver. Una pesadilla logística.' },
+      { text: 'Aceptar la mala suerte', stat: 'speed', delta: 1, money: 0, hint: 'Te enfocás en la próxima carrera (+1 Velocidad).', fixedDesc: 'Tiraste el casco al garaje y te fuiste al hotel. En la carrera siguiente, con una mente limpia, lograste el mejor tiempo de tu vuelta de clasificación de la temporada. A veces, soltar es la única salida.' },
     ]
   },
   {
@@ -339,7 +339,7 @@ const MINIGAMES = [
     id: 'peer_ordenes',
     icon: '📻', title: '"Multi 21" - Órdenes de equipo', desc: 'Tu compañero de equipo viene muy pegado atrás con mejor ritmo.', radioMsg: '"Piloto, muro. Necesito que dejes pasar al {{PEER_NAME}}. Tiene mejor estrategia de gomas desde acá. Es decisión de equipo. Confirmá recepción."', choices: [
       { text: 'Acatar la orden y dejarlo pasar', pureLuck: true, baseBonus: 1.0, noWinOnSuccess: true, peerRelDelta: +15, repDelta: +20, successDesc: 'Levantaste el pie en la recta. El equipo te agradeció y sumaste puntos vitales para los constructores. Eres un jugador de equipo.', failDesc: 'Levantaste el pie.' },
-      { text: 'Ignorar la radio y apretar el ritmo', skillStat: 'overtake', statBonus: 0.8, baseBonus: 0.2, onFailDnf: 0.5, peerRelDelta: -30, repDelta: -40, failDesc: 'Lo ignoraste, pero él se tiró igual por adentro. ¡Toque entre compañeros! Los dos afuera. El jefe de equipo está furioso.', failSurviveDesc: 'Lo ignoraste, él intentó pasar pero aflojó a último momento. Conservaste la posición, pero el clima en boxes es cortante (-10 Relación, -10 Reputación).', successDesc: 'Fingiste que no escuchabas, bajaste los tiempos y te escapaste. El equipo no pudo decir nada al verte cruzar la meta primero.' }
+      { text: 'Ignorar la radio y apretar el ritmo', skillStat: 'overtake', statBonus: 0.8, baseBonus: 0.2, noWinOnSuccess: true, onFailDnf: 0.5, peerRelDelta: -30, repDelta: -40, failDesc: 'Lo ignoraste, pero él se tiró igual por adentro. ¡Toque entre compañeros! Los dos afuera. El jefe de equipo está furioso.', failSurviveDesc: 'Lo ignoraste, él intentó pasar pero aflojó a último momento. Conservaste la posición, pero el clima en boxes es cortante (-10 Relación, -10 Reputación).', successDesc: 'Fingiste que no escuchabas, bajaste los tiempos y te escapaste. El equipo no pudo decir nada al verte cruzar la meta primero.' }
     ]
   },
   {
@@ -1240,7 +1240,7 @@ function checkNicknames() {
     newDesc = 'Espectáculo garantizado. Ataques al límite y velocidad pura, a costa de devorar los neumáticos.';
   } else if ((G.wasEscudero || f1Seasons.filter(s => s.champ === 2 || s.champ === 3).length >= 3) && titles === 0 && currentNick !== 'El Escudero' && !has('El Escudero')) {
     newNick = 'El Escudero';
-    newDesc = 'Fiel compañero, sacrificaste tus propias chances de gloria para asegurar campeonatos de equipo y de tu rival.';
+    newDesc = 'Fiel compañero, sacrificaste tus propias chances de gloria para asegurar campeonatos de equipo.';
   }
   
   if (newNick) {
@@ -1253,37 +1253,158 @@ function checkNicknames() {
 // ═══════════════════════════════════════════════════════════
 //  SUMMARY SCREEN
 // ═══════════════════════════════════════════════════════════
+// Idea #1 fix: count-up animation instead of numbers popping in static.
+function animateCount(el, endValue, opts) {
+  opts = opts || {};
+  const suffix = opts.suffix || '';
+  const duration = opts.duration || 700;
+  const start = performance.now();
+  function tick(now) {
+    const p = Math.min(1, (now - start) / duration);
+    const eased = 1 - Math.pow(1 - p, 3); // ease-out cubic
+    const val = Math.round(endValue * eased);
+    el.textContent = val + suffix;
+    if (p < 1) requestAnimationFrame(tick);
+    else el.textContent = endValue + suffix;
+  }
+  requestAnimationFrame(tick);
+}
+
+// Idea #2: a one-line "verdict" headline for the season, colored by tone.
+function getSeasonVerdict(r, cat, firstInCat) {
+  if (firstInCat) {
+    return { title: `Primer año en ${cat}`, color: '#a78bfa', icon: '✨' };
+  }
+  if (r.champ === 1) {
+    return { title: r.wins >= 6 ? '¡Temporada histórica!' : 'Temporada de campeón', color: '#e8c84a', icon: '🏆' };
+  }
+  if (r.champ === 2) {
+    return { title: 'Al borde de la gloria', color: '#f97316', icon: '🥈' };
+  }
+  if (r.champ <= 3) {
+    return { title: 'Temporada sólida', color: '#4ae87a', icon: '🥉' };
+  }
+  if (r.dnfs >= 3 && r.champ > 8) {
+    return { title: 'Temporada para el olvido', color: '#e84a4a', icon: '💥' };
+  }
+  if (r.champ <= 8) {
+    return { title: 'Temporada de consolidación', color: '#4a90e8', icon: '📈' };
+  }
+  return { title: 'Temporada irregular', color: '#7070a0', icon: '〰️' };
+}
+
+
+
+// Idea #6: quick canvas confetti burst for championship-winning seasons.
+function launchConfetti() {
+  const canvas = document.getElementById('confetti-canvas');
+  if (!canvas) return;
+  canvas.style.display = 'block';
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const ctx = canvas.getContext('2d');
+  const colors = ['#e8c84a', '#e84a4a', '#4a90e8', '#4ae87a', '#ffffff'];
+  const pieces = Array.from({ length: 90 }, () => ({
+    x: Math.random() * canvas.width,
+    y: -20 - Math.random() * canvas.height * 0.4,
+    r: 3 + Math.random() * 4,
+    vy: 2 + Math.random() * 3,
+    vx: -1.5 + Math.random() * 3,
+    rot: Math.random() * Math.PI,
+    vrot: -0.2 + Math.random() * 0.4,
+    color: colors[Math.floor(Math.random() * colors.length)],
+  }));
+  const start = performance.now();
+  function tick(now) {
+    const elapsed = now - start;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    pieces.forEach(p => {
+      p.x += p.vx; p.y += p.vy; p.rot += p.vrot;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(-p.r, -p.r * 0.6, p.r * 2, p.r * 1.2);
+      ctx.restore();
+    });
+    if (elapsed < 2600) requestAnimationFrame(tick);
+    else { canvas.style.display = 'none'; ctx.clearRect(0, 0, canvas.width, canvas.height); }
+  }
+  requestAnimationFrame(tick);
+}
+
 function buildSummary() {
   const r = G.lastResult;
+
   document.getElementById('sum-season-label').textContent = `Temporada ${r.year} (Edad: ${G.age})`;
   document.getElementById('sum-cat-label').textContent = r.cat;
 
+  // ── verdict banner ──
+  const firstInCat = !G.seasons.slice(0, -1).some(s => s.cat === r.cat);
+  const verdict = getSeasonVerdict(r, r.cat, firstInCat);
+  document.getElementById('sum-verdict-wrap').innerHTML = `
+    <div class="verdict-banner" style="background:${verdict.color}22; color:${verdict.color}; border:1px solid ${verdict.color}55">
+      <span>${verdict.icon}</span><span>${verdict.title}</span>
+    </div>`;
+
+  // ── Idea #3 (hero): championship position front and center ──
   const champClass = r.champ === 1 ? 'good' : r.champ <= 3 ? '' : 'bad';
-  document.getElementById('sum-grid').innerHTML = `
-    <div class="stat-box"><div class="val ${champClass}">${r.champ}°</div><div class="key">Campeonato</div></div>
-    <div class="stat-box"><div class="val ${r.wins > 0 ? 'good' : ''}">${r.wins}</div><div class="key">Victorias</div></div>
-    <div class="stat-box"><div class="val">${r.podiums}</div><div class="key">Podios</div></div>
-    <div class="stat-box"><div class="val">${r.poles}</div><div class="key">Poles</div></div>
+  const champColor = r.champ === 1 ? 'var(--accent)' : r.champ <= 3 ? 'var(--green)' : 'var(--accent2)';
+  document.getElementById('sum-hero').innerHTML = `
+    <div class="champ-hero" style="background:linear-gradient(160deg, ${champColor}14, transparent); border-color:${champColor}55">
+      <div class="label">Posición en el campeonato</div>
+      <div class="champ-num ${champClass}" id="sum-champ-num" style="color:${champColor}">0°</div>
+    </div>`;
+  animateCount(document.getElementById('sum-champ-num'), r.champ, { suffix: '°' });
+
+  // ── Idea #4: count-up secondary stats (3-up grid) ──
+  const secondary = [
+    { key: 'wins', label: 'Victorias', val: r.wins, cls: r.wins > 0 ? 'good' : 'zero' },
+    { key: 'podiums', label: 'Podios', val: r.podiums, cls: r.podiums > 0 ? '' : 'zero' },
+    { key: 'poles', label: 'Poles', val: r.poles, cls: r.poles > 0 ? '' : 'zero' },
+  ];
+  document.getElementById('sum-grid').innerHTML = secondary.map(s => `
+    <div class="stat-box">
+      <div class="val ${s.cls}" id="sum-stat-${s.key}">0</div>
+      <div class="key">${s.label}</div>
+    </div>`).join('');
+  secondary.forEach(s => animateCount(document.getElementById(`sum-stat-${s.key}`), s.val));
+
+  // ── Idea #7: accordions for Resultados / Finanzas / Sucesos ──
+  const hasEvents = G._seasonEventLogs && G._seasonEventLogs.length > 0;
+  const eventsHtml = hasEvents
+    ? G._seasonEventLogs.map(l => `<div style="font-size:13px; margin-top:4px; color:var(--muted)">• ${l}</div>`).join('')
+    : `<div class="sub">Sin sucesos destacados esta temporada.</div>`;
+
+  document.getElementById('sum-accordions').innerHTML = `
+    <details class="acc" open>
+      <summary>📊 Resultados deportivos</summary>
+      <div class="acc-body">
+        <div class="result-row"><div class="r-label">Abandonos</div><div class="r-val ${r.dnfs > 2 ? 'bad' : ''}">${r.dnfs}</div></div>
+        <div class="result-row"><div class="r-label">Rating de temporada</div><div class="r-val">${Math.round(r.rating || 0)}</div></div>
+        <div class="result-row"><div class="r-label">Equipo</div><div class="r-val" style="font-size:15px">${r.teamName || '—'}</div></div>
+      </div>
+    </details>
+    <details class="acc" open>
+      <summary>💰 Finanzas</summary>
+      <div class="acc-body">
+        <div class="result-row"><div class="r-label">Dinero ganado</div><div class="r-val">${fmt$(r.earned)}</div></div>
+        <div class="result-row"><div class="r-label">Reputación</div><div class="r-val good">+${r.rep}</div></div>
+        <div class="result-row"><div class="r-label">Total acumulado</div><div class="r-val">${fmt$(G.money)}</div></div>
+      </div>
+    </details>
+    <details class="acc" open>
+      <summary>⚡ Sucesos de la temporada</summary>
+      <div class="acc-body">${eventsHtml}</div>
+    </details>
   `;
 
-  document.getElementById('sum-extra-rows').innerHTML = `
-    <div class="result-row"><div class="r-label">Abandonos</div><div class="r-val ${r.dnfs > 2 ? 'bad' : ''}">${r.dnfs}</div></div>
-    <div class="result-row"><div class="r-label">Dinero ganado</div><div class="r-val">${fmt$(r.earned)}</div></div>
-    <div class="result-row"><div class="r-label">Reputación</div><div class="r-val good">+${r.rep}</div></div>
-    <div class="result-row"><div class="r-label">Total acumulado</div><div class="r-val">${fmt$(G.money)}</div></div>
-  `;
-
-  if (G._seasonEventLogs && G._seasonEventLogs.length > 0) {
-    const logsHtml = G._seasonEventLogs.map(l => `<div style="font-size:13px; margin-top:4px; color:var(--muted)">• ${l}</div>`).join('');
-    document.getElementById('sum-event-block').innerHTML = `<div class="sub" style="margin-bottom:12px;color:var(--accent)">⚡ Sucesos de la temporada:</div>${logsHtml}`;
-  } else {
-    document.getElementById('sum-event-block').innerHTML = '';
-  }
-
+  // ── Highlights (nickname press release + generational peer) ──
+  let highlightsHtml = '';
   if (G.newNicknameThisSeason) {
     const n = G.newNicknameThisSeason;
-    document.getElementById('sum-extra-rows').innerHTML += `
-      <div style="margin-top:16px; padding:16px; border-radius:8px; background:rgba(255, 215, 0, 0.1); border:1px solid #fbbf24; text-align:center">
+    highlightsHtml += `
+      <div style="margin-top:6px; padding:16px; border-radius:8px; background:rgba(255, 215, 0, 0.1); border:1px solid #fbbf24; text-align:center">
         <div style="font-size:24px; margin-bottom:4px">📰</div>
         <div style="font-size:14px; color:#fbbf24; font-weight:bold; margin-bottom:4px">LA PRENSA HABLA</div>
         <div style="font-size:13px; color:var(--text); font-style:italic; margin-bottom:8px">"${n.desc}"</div>
@@ -1299,8 +1420,8 @@ function buildSummary() {
     const relIcon = rel > 50 ? '🤝' : rel < -50 ? '⚔️' : '😐';
     const relLabel = rel > 50 ? 'Aliados' : rel < -50 ? 'Enemigos juramentados' : rel > 0 ? 'Buena onda' : rel < 0 ? 'Tensión' : 'Neutral';
     const relColor = rel > 30 ? '#4ade80' : rel < -30 ? '#f87171' : '#facc15';
-    document.getElementById('sum-extra-rows').innerHTML += `
-      <div style="margin-top:16px; padding:14px; border-radius:8px; background:rgba(255,255,255,0.04); border:1px solid var(--border)">
+    highlightsHtml += `
+      <div style="margin-top:10px; padding:14px; border-radius:8px; background:rgba(255,255,255,0.04); border:1px solid var(--border)">
         <div style="font-size:12px; color:var(--muted); margin-bottom:6px; text-transform:uppercase; letter-spacing:1px">Contemporáneo de Generación</div>
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px">
           <div style="font-weight:bold">${relIcon} ${G.peer.name} <span style="font-size:12px; color:var(--muted); font-weight:normal">(${G.peer.nat.flag} ${G.peer.team})</span></div>
@@ -1315,9 +1436,14 @@ function buildSummary() {
       </div>
     `;
   }
+  document.getElementById('sum-highlights').innerHTML = highlightsHtml;
+
+  // ── Idea #6: confetti for championship-winning seasons ──
+  if (r.champ === 1) launchConfetti();
 
   updateTopBar();
 }
+
 
 function afterSummary() {
   const catIdx = G.catIndex;

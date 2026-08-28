@@ -111,15 +111,19 @@
       <div class="label" id="sum-season-label">Temporada 2024</div>
       <div class="heading" id="sum-cat-label" style="margin-bottom:16px">Karting</div>
 
-      <div class="stat-grid" id="sum-grid" style="margin-bottom:16px"></div>
-      <div class="card" style="margin-bottom:16px">
-        <div id="sum-extra-rows"></div>
+      <div class="scroll-content">
+        <div style="text-align:center" id="sum-verdict-wrap"></div>
+        <div id="sum-hero"></div>
+        <div class="stat-grid-3" id="sum-grid" style="margin-bottom:16px"></div>
+
+        <div id="sum-accordions"></div>
+        <div id="sum-highlights"></div>
       </div>
 
-      <div id="sum-event-block"></div>
-
-      <button class="btn btn-primary" onclick="afterSummary()" id="btn-continue">CONTINUAR →</button>
+      <button class="btn btn-primary" onclick="afterSummary()" id="btn-continue" style="margin-top:12px">CONTINUAR →</button>
     </div>
+    <canvas id="confetti-canvas" style="display:none"></canvas>
+
 
     <!-- ══════════════════════════════════════════════
        SCREEN: RANDOM EVENT

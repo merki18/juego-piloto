@@ -173,7 +173,7 @@ const RANDOM_EVENTS = [
   },
   {
     icon: '📸', title: 'Entrevista polémica', desc: 'Hiciste un comentario que generó revuelo en los medios.', choices: [
-      { text: 'Mantener la postura', stat: 'speed', delta: 0, money: 0, skillStat: 'speed', skillBonus: 3, skillFail: -2, hint: '🚀 Velocidad: si tus resultados te respaldan, salís ganando.', successDesc: 'El GP siguiente te dio la razón. Ganaste desde la pole y en la conferencia de prensa te preguntaron por la polémica. Respondiste con calma: "Dején que el crono hable por mí". Silencio total en la sala.', failDesc: 'El fin de semana siguiente fue horrible. Saliste décimo, rodaste en la carrera y los periodistas te cargaron con todo. Sin resultados, tus palabras fueron solo ruido.' },
+      { text: 'Mantener la postura', stat: 'speed', delta: 0, money: 0, skillStat: 'speed', skillBonus: 3, skillFail: -2, hint: '🚀 Velocidad: si tus resultados te respaldan, salís ganando.', successDesc: 'El GP siguiente te dio la razón. Lograste un resultado brillante y en la conferencia de prensa te preguntaron por la polémica. Respondiste con calma: "Dejen que la pista hable por mí". Silencio total en la sala.', failDesc: 'El fin de semana siguiente fue horrible. Saliste décimo, rodaste en la carrera y los periodistas te cargaron con todo. Sin resultados, tus palabras fueron solo ruido.' },
       { text: 'Suavizar el mensaje', stat: 'tyres', delta: 2, money: 0, hint: 'Resultado fijo, calmás las aguas.', fixedDesc: 'La clásica disculpa corporativa. "Mis palabras fueron malinterpretadas." La polémica murió a las 48 horas y pudiste enfocarte en el auto. A veces el silencio tiene su valor.' },
     ]
   },
@@ -274,6 +274,34 @@ const RANDOM_EVENTS = [
 
 
 const MINIGAMES = [
+  {
+    id: 'midfield',
+    icon: '🛡️', title: 'Defendiendo los puntos', desc: 'Estás décimo. Un auto más rápido viene detrás a falta de 3 vueltas.', choices: [
+      { text: 'Defender cada curva agresivamente', skillStat: 'overtake', baseBonus: 0.2, statBonus: 0.35, noWinOnSuccess: true, desc: 'Adelantamientos: defender es igual a atacar.', successDesc: 'Le cerraste la puerta vuelta tras vuelta. Terminaste décimo y el garaje lo festejó como una victoria. ¡Sumaste puntos valiosos!', failDesc: 'Te pasó por afuera en la última vuelta. Perdiste el punto y terminaste 11mo. Así es la zona media.' },
+      { text: 'Cuidar las gomas y traccionar mejor', skillStat: 'tyres', baseBonus: 0.35, statBonus: 0.2, noWinOnSuccess: true, desc: 'Gestión: salir rápido de las curvas lentas.', successDesc: 'Traccionaste perfecto en cada salida. Él tenía DRS pero no le alcanzó la recta para pasarte. Puntos a casa.', failDesc: 'Tus gomas cedieron en el último sector. Un pequeño derrape fue suficiente para que te pasara sin esfuerzo.' },
+    ]
+  },
+  {
+    id: 'midfield',
+    icon: '⏱️', title: 'Heroicidad en Clasificación', desc: 'Llegaste a la Q2 de milagro. Las condiciones de pista mejoran rápido y te la jugás a pasar a Q3 con un auto inferior.', choices: [
+      { text: 'Frenar más tarde en el tercer sector', skillStat: 'quali', baseBonus: 0.2, statBonus: 0.4, noWinOnSuccess: true, desc: 'Clasificación: riesgo puro para ganar décimas.', successDesc: '¡Magia pura! Pasaste a Q3 y largás noveno. Una locura en el box.', failDesc: 'Te pasaste de frenada y terminaste en la leca. Largás 15to.' },
+      { text: 'Usar el mapa de motor más agresivo', pureLuck: true, baseBonus: 0.4, noWinOnSuccess: true, desc: 'Pura Suerte: exprimir el motor al máximo.', successDesc: 'El motor aguantó y el empuje extra te dejó décimo por dos milésimas. ¡A Q3!', failDesc: 'El motor dio un tirón feo y perdiste medio segundo. Quedaste eliminado y preocupado por la fiabilidad.' },
+    ]
+  },
+  {
+    id: 'midfield',
+    icon: '🚨', title: 'Lotería del Safety Car', desc: 'Accidente fuerte adelante. Sale el Auto de Seguridad. Vos tenes gomas para seguir hasta el final.', choices: [
+      { text: 'Parar igual y salir a atacar', skillStat: 'overtake', baseBonus: 0.25, statBonus: 0.35, noWinOnSuccess: true, desc: 'Adelantamientos: aprovechar gomas frescas en la relanzada.', successDesc: 'Saliste 8vo con gomas frescas. Te comiste a dos más en la relanzada. ¡Puntazos!', failDesc: 'Saliste bien pero te emocionaste en la relanzada y tocaste a otro auto. Alerón roto, a boxes de nuevo.' },
+      { text: 'Quedarte afuera y aguantar hasta el final', skillStat: 'tyres', baseBonus: 0.3, statBonus: 0.3, noWinOnSuccess: true, desc: 'Gestión: aprovechar que los demas paran y ganar posiciones.', successDesc: 'Te quedaste afuera mientras todos paraban. Subiste hasta el 7mo y después defendiste como pudiste. ¡Puntos enormes!', failDesc: 'Te quedaste afuera y subiste posiciones, pero la diferencia de neumaticos era mucha. Cuando la carrera volvió a ritmo normal, te pasaron uno tras otro.' },
+    ]
+  },
+  {
+    id: 'midfield',
+    icon: '🎲', title: 'Tirada de Dados Estratégica', desc: 'Estás estancado en el puesto 14. El ingeniero te propone ir a una parada menos que el resto.', choices: [
+      { text: 'Cuidar gomas a niveles extremos', skillStat: 'tyres', baseBonus: 0.2, statBonus: 0.45, noWinOnSuccess: true, desc: 'Gestión: paciencia zen para que la táctica funcione.', successDesc: 'Paciencia zen. Llegaste al final con las telas pero 9no. El equipo te ovaciona por la radio.', failDesc: 'Imposible. Tuviste que parar igual y terminaste 16to.' },
+      { text: 'Ignorar el plan y pedir blandas para volar', skillStat: 'speed', baseBonus: 0.2, statBonus: 0.4, noWinOnSuccess: true, desc: 'Velocidad: ir a fondo cortando por lo sano.', successDesc: 'Paraste, pusiste blandas y empezaste a volar. Pasaste a cuatro autos y entraste en los puntos en la última curva.', failDesc: 'Volaste un rato pero te estancaste. La estrategia agresiva no rindió.' },
+    ]
+  },
   {
     icon: '🏁', title: '¡Última vuelta por la victoria!', desc: 'Estás a 0.5 segundos del líder. Última vuelta. Decidí bien.', choices: [
       { text: 'Frenar tardísimo en la primera curva', skillStat: 'speed', baseBonus: 0.15, statBonus: 0.50, desc: 'Velocidad pura: el que más aprieta gana.', successDesc: 'Frenaste 20 metros más tarde que nadie. El auto patinaba pero se mantuvo. Lo metiste adentro y cruzaste la línea con 0.08 segundos de ventaja. Esa maniobra sale en todas las repeticiones de TV.', failDesc: 'El auto fue recto. Bloqueo de ruedas, pista afuera y el líder te pasó por izquierda. Tan cerca, y tan lejos.' },
@@ -414,6 +442,15 @@ const INTERVIEWS = [
     ]
   },
   {
+    id: 'f1_epic_champion',
+    title: 'El Milagro Inesperado',
+    desc: 'Acabás de ganar el campeonato del mundo con un auto inferior, algo que nadie pensaba posible. La prensa enloquece.',
+    choices: [
+      { text: '"Yo sabía que era posible"', pers: 'aggressiveness', delta: 25, hint: 'Demostrás una confianza inquebrantable (+Agresividad).', fixedDesc: '"Nunca dudé de mi talento, ni siquiera cuando nos daban por muertos." Dejaste al paddock boquiabierto.' },
+      { text: '"Es mérito exclusivo del equipo"', pers: 'team', delta: 25, hint: 'Compartís la gloria con todos (+Equipo).', fixedDesc: '"Este auto lo construyeron con sangre y sudor. Este título es de ellos." Aumentaste la moral del equipo al máximo.' }
+    ]
+  },
+  {
     id: 'f1_championship_contender',
     title: 'Peleando el mundial',
     desc: 'Terminaste en el Top 3 del campeonato. Eres oficialmente un contendiente al título.',
@@ -525,9 +562,15 @@ function showInterview() {
       return true;
     }
     
+    if (iv.id === 'f1_epic_champion') {
+      if (!G.lastResult || G.lastResult.cat !== 'F1') return false;
+      if (G.lastResult.champ !== 1 || G.team.stars > 4) return false;
+      return true;
+    }
+    
     if (iv.id === 'f1_championship_contender') {
       if (!G.lastResult || G.lastResult.cat !== 'F1') return false;
-      if (G.lastResult.champ > 3) return false;
+      if (G.lastResult.champ !== 2 && G.lastResult.champ !== 3) return false;
       return true;
     }
     
@@ -669,6 +712,7 @@ function initState(name, number, nat, talent) {
     careerBest: null,
     historicRival: null,
     f1Titles: 0,
+    epicTitles: 0,
     f1ContractYearsLeft: 0,
     regulationBonus: 0,      // rating bonus for THIS season (player focused on current)
     nextSeasonRegBonus: 0,   // star bonus applied when reg change fires
@@ -810,15 +854,8 @@ function buildPreseason() {
     catEl.textContent = cat;
   }
 
-  // Handle temporary surprise performance
-  G._tempStarBonus = 0;
+  // Temporary surprise performance already calculated in processNextStep
   const isRegChange = cat === 'F1' && G.lastRegChangeYear === (G.year - 1);
-  if (cat === 'F1' && !isRegChange && Math.random() < 0.2) {
-    const delta = Math.random() < 0.5 ? 1 : -1;
-    if (G.team.stars + delta >= 1 && G.team.stars + delta <= 5) {
-      G._tempStarBonus = delta;
-    }
-  }
 
   const effectiveStars = G.team.stars + (G._tempStarBonus || 0);
 
@@ -828,7 +865,7 @@ function buildPreseason() {
   let regChangeHtml = '';
   if (isRegChange) {
     regChangeHtml = `<div style="color:#facc15;font-size:13px;margin-top:4px">⚠️ Nuevo Reglamento: Tu equipo tiene ${effectiveStars} estrellas</div>`;
-  } else if (G._tempStarBonus !== 0) {
+  } else if (G._tempStarBonus) {
     const msg = G._tempStarBonus > 0
       ? `🚀 ¡Sorpresa! El auto rinde mejor de lo esperado. (+1 Estrella esta temporada)`
       : `📉 Problemas de diseño. El auto rinde peor de lo esperado. (-1 Estrella esta temporada)`;
@@ -1234,23 +1271,35 @@ function computeSeasonResult() {
   };
 
   if (champ === 1) {
-    // Campeón: introducimos un factor de "dominancia" para que haya años ajustados y años de aplastamiento
-    const dom = Math.random(); // 0 a 1
-    wins = clamp(pickRange(races * 0.20, races * (0.50 + 0.45 * dom), overtakeFactor), 1, races);
-    podiums = clamp(pickRange(races * 0.50, races * (0.70 + 0.30 * dom), consistencyFactor), wins, races);
-    poles = clamp(pickRange(races * 0.15, races * (0.45 + 0.45 * dom), qualiFactor), 0, races);
+    // Campeón: usamos un dominio base y le aplicamos ruido para que haya variabilidad pero manteniendo coherencia
+    let baseDom = Math.random();
+    let domWins = clamp(baseDom + (Math.random() * 0.4 - 0.2), 0, 1);
+    let domPods = clamp(baseDom + (Math.random() * 0.4 - 0.2), 0, 1);
+    let domPoles = clamp(baseDom + (Math.random() * 0.4 - 0.2), 0, 1);
+    
+    // Si el auto es de 4 estrellas o menos, forzamos un campeonato MUY ajustado
+    if (cat === 'F1' && (G.team.stars + (G._tempStarBonus || 0)) <= 4) {
+      baseDom = Math.random() * 0.15;
+      domWins = clamp(baseDom + (Math.random() * 0.1 - 0.05), 0, 1);
+      domPods = clamp(baseDom + (Math.random() * 0.1 - 0.05), 0, 1);
+      domPoles = clamp(baseDom + (Math.random() * 0.1 - 0.05), 0, 1);
+    }
+
+    wins = clamp(pickRange(races * 0.15, races * (0.40 + 0.45 * domWins), overtakeFactor), 1, races);
+    podiums = clamp(pickRange(races * 0.45, races * (0.55 + 0.40 * domPods), consistencyFactor), wins, races);
+    poles = clamp(pickRange(races * 0.10, races * (0.35 + 0.45 * domPoles), qualiFactor), 0, races);
   } else if (champ === 2) {
-    wins = clamp(pickRange(races * 0.10, races * 0.30, overtakeFactor), 0, races);
-    podiums = clamp(pickRange(races * 0.35, races * 0.60, consistencyFactor), wins, races);
-    poles = clamp(pickRange(races * 0.10, races * 0.35, qualiFactor), 0, races);
+    wins = clamp(pickRange(races * 0.12, races * 0.35, overtakeFactor), 0, races);
+    podiums = clamp(pickRange(races * 0.40, races * 0.70, consistencyFactor), wins, races);
+    poles = clamp(pickRange(races * 0.12, races * 0.40, qualiFactor), 0, races);
   } else if (champ === 3) {
-    wins = clamp(pickRange(races * 0.05, races * 0.15, overtakeFactor), 0, races);
-    podiums = clamp(pickRange(races * 0.20, races * 0.45, consistencyFactor), wins, races);
-    poles = clamp(pickRange(races * 0.05, races * 0.20, qualiFactor), 0, races);
+    wins = clamp(pickRange(races * 0.08, races * 0.20, overtakeFactor), 0, races);
+    podiums = clamp(pickRange(races * 0.30, races * 0.55, consistencyFactor), wins, races);
+    poles = clamp(pickRange(races * 0.08, races * 0.25, qualiFactor), 0, races);
   } else if (champ <= 5) {
-    wins = clamp(pickRange(0, races * 0.08, overtakeFactor), 0, races);
-    podiums = clamp(pickRange(races * 0.10, races * 0.30, consistencyFactor), wins, races);
-    poles = clamp(pickRange(0, races * 0.10, qualiFactor), 0, races);
+    wins = clamp(pickRange(races * 0.04, races * 0.12, overtakeFactor), 0, races);
+    podiums = clamp(pickRange(races * 0.20, races * 0.40, consistencyFactor), wins, races);
+    poles = clamp(pickRange(races * 0.04, races * 0.15, qualiFactor), 0, races);
   } else if (champ <= 8) {
     wins = Math.random() < 0.25 * overtakeFactor ? 1 : 0;
     podiums = clamp(pickRange(0, races * 0.15, consistencyFactor), wins, races);
@@ -1332,6 +1381,7 @@ function computeSeasonResult() {
   if (result.champ === 1 && result.cat === 'F1') {
     G.f1Titles++;
     G.f1ConsecutiveTitles++;
+    if (G.team.stars <= 4) G.epicTitles++;
   } else if (result.cat === 'F1') {
     G.f1ConsecutiveTitles = 0;
   }
@@ -1548,6 +1598,9 @@ function animateCount(el, endValue, opts) {
 
 // Idea #2: a one-line "verdict" headline for the season, colored by tone.
 function getSeasonVerdict(r, cat, firstInCat) {
+  if (r.champ === 1 && cat === 'F1' && G.team.stars <= 4) {
+    return { title: 'CAMPEÓN ÉPICO', color: '#c084fc', icon: '💎' };
+  }
   if (firstInCat) {
     return { title: `Primer año en ${cat}`, color: '#a78bfa', icon: '✨' };
   }
@@ -1782,7 +1835,7 @@ function afterSummary() {
   goToContracts(catIdx);
 }
 
-function showGoldenBoyEvent() {
+function showGoldenBoyEvent(pendingSteps = []) {
   const topTeams = TEAMS['F1'].filter(t => t.stars >= 4);
   const offerTeam = randFrom(topTeams);
 
@@ -1803,7 +1856,7 @@ function showGoldenBoyEvent() {
     G.money += salary; G.totalMoney += salary;
 
     G._prevCatIdx = 4;
-    G._nextSteps = ['preseason'];
+    G._nextSteps = [...pendingSteps, 'preseason'];
     processNextStep();
   };
   ch.appendChild(b1);
@@ -1813,7 +1866,8 @@ function showGoldenBoyEvent() {
   b2.innerHTML = `<h3>Rechazar y ver el mercado</h3><p style="margin-bottom:6px">Prefiero explorar otras opciones y contratos menores primero.</p>`;
   b2.onclick = () => {
     G._prevCatIdx = 4;
-    goToContracts(4);
+    G._nextSteps = [...pendingSteps, 'contracts', 'preseason'];
+    processNextStep();
   };
   ch.appendChild(b2);
 
@@ -1900,7 +1954,7 @@ function goToContracts(oldCatIdx, repeatCat = false, skipContracts = false) {
     const formativeWins = G.seasons.filter(s => s.cat !== 'F1').reduce((acc, s) => acc + s.wins, 0);
     const top5F2 = G.lastResult && G.lastResult.champ <= 5;
     if (top5F2 && formativeWins >= 5 && Math.random() < 0.5) {
-      showGoldenBoyEvent();
+      showGoldenBoyEvent(steps);
       return;
     }
   }
@@ -1976,6 +2030,39 @@ function processNextStep() {
   } else if (step === 'contracts') {
     showContracts();
   } else if (step === 'preseason') {
+    const cat = CATEGORIES[G.catIndex];
+    if (G._tempStarBonusCalculatedForYear !== G.year) {
+      G._tempStarBonusCalculatedForYear = G.year;
+      G._tempStarBonus = 0;
+      const isRegChange = cat === 'F1' && G.lastRegChangeYear === (G.year - 1);
+      
+      let msgTitle = null;
+      let msgDesc = null;
+
+      if (isRegChange) {
+        msgTitle = '⚠️ Nuevo Reglamento';
+        msgDesc = `Los cambios técnicos entraron en vigor. Tras los test de pretemporada, se confirmó que tu auto rinde al nivel de <strong>${G.team.stars} estrellas</strong>.`;
+      } else if (cat === 'F1' && Math.random() < 0.2) {
+        const delta = Math.random() < 0.5 ? 1 : -1;
+        if (G.team.stars + delta >= 1 && G.team.stars + delta <= 5) {
+          G._tempStarBonus = delta;
+          if (delta > 0) {
+            msgTitle = '🚀 Desarrollo brillante en invierno';
+            msgDesc = `Los ingenieros encontraron rendimiento extra en el simulador y túnel de viento. Tu auto rendirá como de <strong>${G.team.stars + 1} estrellas</strong> esta temporada.`;
+          } else {
+            msgTitle = '📉 Problemas en el túnel de viento';
+            msgDesc = `Hubo problemas de correlación con el diseño. Tu auto rendirá peor de lo esperado, como de <strong>${G.team.stars - 1} estrellas</strong> esta temporada.`;
+          }
+        }
+      }
+
+      if (msgTitle) {
+        G._nextSteps.unshift('preseason');
+        showMessageScreen(msgTitle, msgDesc);
+        return;
+      }
+    }
+
     // Ensure the pilot has a valid team for their current category
     const validTeams = TEAMS[CATEGORIES[G.catIndex]];
     if (!validTeams.find(t => t.name === G.team.name)) {
@@ -2023,6 +2110,7 @@ function showRandomEvent() {
     }
     if (ev.id === 'monaco' || ev.id === 'casino') {
       if (G.catIndex < 5) return false; // F1 only
+      if (playerStars < 3) return false; // Only 3+ star teams can win Monaco
     }
     if (ev.id === 'fuga') {
       if (G.catIndex < 4) return false; // F2 or F1 only
@@ -2182,6 +2270,7 @@ function showRandomEvent() {
 // ═══════════════════════════════════════════════════════════
 function showMinigame() {
   let pool = MINIGAMES.filter(mg => {
+    if (mg.id === 'midfield' && G.team && G.team.stars > 3) return false;
     if (mg.id === 'peer_ordenes') return G.peer && G.team && G.team.name === G.peer.team;
     if (mg.id === 'peer_brake_test') return G.peer && G.peer.relationship < -30;
 
@@ -2191,7 +2280,10 @@ function showMinigame() {
     }
     return true;
   });
-  if (pool.length === 0) pool = MINIGAMES;
+  if (pool.length === 0) {
+    processSeasonStep();
+    return;
+  }
   const mg = randFrom(pool);
   document.getElementById('mg-icon').textContent = mg.icon;
   document.getElementById('mg-title').textContent = mg.title.replace('{{PEER_NAME}}', G.peer ? G.peer.name : 'tu compañero');
@@ -2454,7 +2546,7 @@ function showContracts() {
       c.className = 'card offer-card selectable holo-card' + (isOpportunity ? ' opportunity' : '');
       const teamColors = {
         'Cadillac': '#f0f0f0',
-        'Audi': '#1a1a1a',
+        'Audi': '#830404ff',
         'Haas F1': '#e8002d',
         'Williams': '#00a3e0',
         'Racing Bulls': '#1b3fa0',
@@ -2697,11 +2789,15 @@ function showRetirement() {
   const f1TitlesHtml = G.f1Titles > 0
     ? `<div class="result-row"><div class="r-label">🏆 Títulos de F1</div><div class="r-val good">${G.f1Titles}</div></div>`
     : '';
+  const epicTitlesHtml = G.epicTitles > 0
+    ? `<div class="result-row"><div class="r-label" style="color:#c084fc">💎 Títulos Épicos</div><div class="r-val" style="color:#c084fc;font-weight:bold">${G.epicTitles}</div></div>`
+    : '';
   document.getElementById('ret-history-rows').innerHTML = `
     <div class="result-row"><div class="r-label">Mejor temporada</div><div class="r-val">${bestSeason ? bestSeason.year : '—'}</div></div>
     <div class="result-row"><div class="r-label">Llegó a F1</div><div class="r-val">${f1Seasons > 0 ? 'Sí ✓' : 'No'}</div></div>
     <div class="result-row"><div class="r-label">Temporadas F1</div><div class="r-val">${f1Seasons}</div></div>
     ${f1TitlesHtml}
+    ${epicTitlesHtml}
   `;
 
   // Timeline
@@ -2923,3 +3019,30 @@ function updatePeerContract() {
   G.peer.contractYearsLeft = Math.random() < 0.5 ? 1 : 2;
   return { action, newTeam };
 }
+// ═══════════════════════════════════════════════════════════
+//  HOLO-CARD EFFECTS
+// ═══════════════════════════════════════════════════════════
+document.addEventListener('mousemove', e => {
+  document.querySelectorAll('.holo-card').forEach(card => {
+    const rect = card.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    card.style.setProperty('--mouseX', `${x}px`);
+    card.style.setProperty('--mouseY', `${y}px`);
+  });
+});
+
+document.addEventListener('touchstart', e => {
+  const card = e.target.closest('.holo-card');
+  if (card) card.classList.add('touch-hover');
+}, {passive: true});
+
+document.addEventListener('touchend', e => {
+  const card = e.target.closest('.holo-card');
+  if (card) card.classList.remove('touch-hover');
+}, {passive: true});
+
+document.addEventListener('touchcancel', e => {
+  const card = e.target.closest('.holo-card');
+  if (card) card.classList.remove('touch-hover');
+}, {passive: true});

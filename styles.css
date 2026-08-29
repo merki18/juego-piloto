@@ -335,14 +335,15 @@
     opacity: 1;
   }
   /* Mobile touch hover effect */
-  .holo-card.touch-hover::before {
+  .holo-card:active::before, .holo-card.touch-hover::before {
     opacity: 1;
   }
-  .holo-card.touch-hover::after {
+  .holo-card:active::after, .holo-card.touch-hover::after {
     opacity: 1;
   }
-  .holo-card.touch-hover {
+  .holo-card:active, .holo-card.touch-hover {
     box-shadow: 0 10px 30px -10px var(--team-color, rgba(0,0,0,0.5)) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
   }
   .holo-card::after {
     content: '';
@@ -372,6 +373,7 @@
   }
   .holo-card:hover {
     box-shadow: 0 10px 30px -10px var(--team-color, rgba(0,0,0,0.5)) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
   }
   .holo-content {
     position: relative;

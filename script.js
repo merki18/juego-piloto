@@ -29,24 +29,24 @@ const TEAMS = {
     { name: 'CRG Factory', stars: 5, logo: null, focus: 'ganar' },
   ],
   'F4': [
-    { name: 'Iron Lynx', stars: 3, logo: null, focus: 'desarrollo' },
-    { name: 'Van Amersfoort', stars: 4, logo: null, focus: 'equilibrado' },
-    { name: 'Prema', stars: 5, logo: null, focus: 'ganar' },
+    { name: 'Campos', stars: 3, logo: 'assets/images/logo campos.png', focus: 'desarrollo' },
+    { name: 'Van Amersfoort', stars: 4, logo: 'assets/images/logo van amersfoort.png', focus: 'equilibrado' },
+    { name: 'Prema', stars: 5, logo: 'assets/images/logo prema.png', focus: 'ganar' },
   ],
   'Formula Regional': [
-    { name: 'Trident', stars: 3, logo: null, focus: 'desarrollo' },
-    { name: 'ART Grand Prix', stars: 4, logo: null, focus: 'equilibrado' },
-    { name: 'Prema', stars: 5, logo: null, focus: 'ganar' },
+    { name: 'Trident', stars: 3, logo: 'assets/images/logo trident.png', focus: 'desarrollo' },
+    { name: 'ART Grand Prix', stars: 4, logo: 'assets/images/logo art grand prix.png', focus: 'equilibrado' },
+    { name: 'Prema', stars: 5, logo: 'assets/images/logo prema.png', focus: 'ganar' },
   ],
   'F3': [
-    { name: 'Hitech', stars: 3, logo: null, focus: 'desarrollo' },
-    { name: 'DAMS', stars: 4, logo: null, focus: 'equilibrado' },
-    { name: 'Prema', stars: 5, logo: null, focus: 'ganar' },
+    { name: 'Hitech', stars: 3, logo: 'assets/images/logo hitech.png', focus: 'desarrollo' },
+    { name: 'AIX Racing', stars: 4, logo: 'assets/images/logo aix racing.png', focus: 'equilibrado' },
+    { name: 'Prema', stars: 5, logo: 'assets/images/logo prema.png', focus: 'ganar' },
   ],
   'F2': [
-    { name: 'MP Motorsport', stars: 3, logo: null, focus: 'desarrollo' },
-    { name: 'Prema', stars: 4, logo: null, focus: 'equilibrado' },
-    { name: 'Invicta', stars: 5, logo: null, focus: 'ganar' },
+    { name: 'MP Motorsport', stars: 3, logo: 'assets/images/logo mp motorsports.png', focus: 'desarrollo' },
+    { name: 'Prema', stars: 4, logo: 'assets/images/logo prema.png', focus: 'equilibrado' },
+    { name: 'Invicta', stars: 5, logo: 'assets/images/logo invicta.png', focus: 'ganar' },
   ],
   'F1': [
     { name: 'Cadillac', stars: 1, logo: 'assets/images/logo cadillac.png' },
@@ -64,6 +64,7 @@ const TEAMS = {
 };
 
 const CAT_LOGOS = {
+  'Formula Regional': 'assets/images/logo FR.png',
   'F1': 'assets/images/logo F1.png',
   'F2': 'assets/images/logo F2.png',
   'F3': 'assets/images/logo F3.png',
@@ -289,7 +290,7 @@ const MINIGAMES = [
   },
   {
     icon: '🔧', title: 'Problemas de frenos a mitad de carrera', desc: 'El pedal está yendo al fondo. ¿Qué hacés?', radioMsg: '"Piloto, tenemos un problema de presión en los frenos. El pedal está cediendo. Necesito que me digas exactamente qué sentís ahí adentro. ¿Cómo está la mordida? ¿Entramos o seguís?"', choices: [
-      { text: 'Gestionar frenando más temprano', skillStat: 'tyres', baseBonus: 0.35, noWinOnSuccess: true, statBonus: 0.3, desc: 'Gestión te permite llegar al final.', successDesc: 'Adaptaste todos tus puntos de frenada. Perdiste ritmo pero el auto no falló. En las últimas vueltas, cuando los que apretaron sufrieron el mismo problema, vos aún tenías freno suficiente para atacar.', failDesc: 'Frenaste antes, pero no alcanzó. En la vuelta 38 el pedal tocó el piso directo. La bandera de averría mecánica fue inevitable.' },
+      { text: 'Gestionar frenando más temprano', skillStat: 'tyres', baseBonus: 0.35, noWinOnSuccess: true, statBonus: 0.3, desc: 'Gestión te permite llegar al final.', successDesc: 'Adaptaste todos tus puntos de frenada. Pudiste terminar la carrera sin abandonar y sumaste buenos puntos.', failDesc: 'Frenaste antes, pero no alcanzó. En la vuelta 38 el pedal tocó el piso directo. La bandera de avería mecánica fue inevitable.' },
       { text: 'Atacar igual con frenadas minimizadas', skillStat: 'speed', baseBonus: 0.1, statBonus: 0.4, desc: 'Velocidad pura: ignorar el problema y apretar por la victoria.', successDesc: 'Convertiste el problema en arma. Sin usar los frenos convencionales, usabas el motor y las curvas lentas para frenar. Llegaste al final en un manejo impecablemente creativo.', failDesc: 'Vuelta 42, curva 1. El auto no paró. Fuiste derecho al box de escape. Retiro mécanico. El ingeniero prefirió no preguntar qué pensabas.' },
       { text: 'Entrar a boxes para ajuste rápido', skillStat: 'quali', baseBonus: 0.25, statBonus: 0.25, desc: 'Técnica: sabés qué pedirle al equipo.', successDesc: 'Describiste exactamente lo que sentías. El mecánico ajustó el bias trasero en 2 segundos. Saliste de boxes con un auto diferente y recuperaste cuatro posiciones en las últimas vueltas.', failDesc: 'El stop fue largo. El ajuste no era el que pedías y tuviste que entrar de vuelta una vuelta más adelante. Salió fuera de los puntos.' },
     ]
@@ -353,6 +354,275 @@ const MINIGAMES = [
 
 
 
+
+const INTERVIEWS = [
+  {
+    id: 'first_win',
+    title: 'Primera Victoria en F1',
+    desc: 'Acabas de conseguir tu primera victoria en la máxima categoría. El paddock entero te está mirando.',
+    choices: [
+      { text: 'Agradecer al equipo por el auto', pers: 'team', delta: 20, hint: 'Demostrás ser un hombre de equipo (+Equipo).', fixedDesc: '"Este triunfo es de los cientos de personas en la fábrica. Yo solo manejé el auto." El equipo adoró tus palabras.' },
+      { text: 'Celebrar tu talento individual', pers: 'aggressiveness', delta: 20, hint: 'Mostrás confianza y agresividad (+Agresividad).', fixedDesc: '"Sabía que si me daban la oportunidad iba a ganar. Es el primero de muchos." Tus rivales tomaron nota de tu arrogancia.' },
+      { text: 'Dar un show para las cámaras', pers: 'media', delta: 20, hint: 'Los sponsors te amarán (+Mediático).', fixedDesc: 'Hiciste chistes, saltaste al público y dejaste frases célebres. Te ganaste a los fans y a los patrocinadores.' }
+    ]
+  },
+  {
+    id: 'bad_streak',
+    title: 'Racha de malos resultados',
+    desc: 'Llevás tres carreras fuera de los puntos. La prensa te presiona: "¿Qué está pasando con tu rendimiento?"',
+    choices: [
+      { text: 'Asumir toda la responsabilidad', pers: 'team', delta: 15, hint: 'Protegés al equipo de las críticas (+Equipo).', fixedDesc: '"Soy yo el que tiene que mejorar. El equipo me está dando todo." Los mecánicos te lo agradecieron en privado.' },
+      { text: 'Culpar sutilmente a la estrategia', pers: 'aggressiveness', delta: -10, pers2: 'team', delta2: -15, hint: 'Genera tensión pero desvía la culpa (-Equipo, -Agresividad).', fixedDesc: '"A veces las llamadas desde el muro no ayudan, pero somos un equipo." El jefe de estrategia no te miró el resto del día.' },
+      { text: 'Responder con una broma evasiva', pers: 'media', delta: 15, hint: 'Calmás las aguas en los medios (+Mediático).', fixedDesc: '"Bueno, al menos mis sponsors tienen más tiempo de TV porque voy más lento." La prensa rió y la tensión bajó.' }
+    ]
+  },
+  {
+    id: 'rival_crash',
+    title: 'Toque polémico en pista',
+    desc: 'Un piloto experimentado te chocó en carrera. Ambos quedaron fuera. ¿Qué le decís a la TV?',
+    choices: [
+      { text: 'Llamarlo ciego y viejo', pers: 'aggressiveness', delta: 25, hint: 'Guerra declarada (+Agresividad).', fixedDesc: '"Evidentemente ya no ve bien. Debería pensar en el retiro." Iniciaste una guerra en el paddock.' },
+      { text: '"Son cosas de las carreras"', pers: 'media', delta: -5, pers2: 'team', delta2: 10, hint: 'Diplomático, no entrás en juegos.', fixedDesc: 'Mantuviste la calma. Tu equipo apreció que no generaras un circo mediático extra.' }
+    ]
+  },
+  {
+    id: 'f1_transfer_rumors',
+    title: 'Rumores en el Paddock',
+    desc: 'Tu contrato termina este año y estás rindiendo por encima del coche. La prensa pregunta sobre tu futuro.',
+    choices: [
+      { text: '"Soy leal a mi equipo"', pers: 'team', delta: 20, hint: 'Demostrás lealtad (+Equipo).', fixedDesc: '"Ellos me dieron la oportunidad, mi cabeza está acá." El equipo agradeció tu lealtad.' },
+      { text: '"Siempre busco el mejor auto"', pers: 'aggressiveness', delta: 20, hint: 'Ponés presión a la directiva (+Agresividad).', fixedDesc: '"Soy un ganador. Si no me dan el auto para ganar, miraré otras opciones." Pusiste presión a la directiva.' },
+      { text: '"Mi mánager se encarga de eso"', pers: 'media', delta: 15, hint: 'Esquivás la polémica (+Mediático).', fixedDesc: 'Esquivaste la bala mediática con elegancia. Tu mánager tuvo mucho trabajo esa semana.' }
+    ]
+  },
+  {
+    id: 'f1_underperform',
+    title: 'Dura comparación',
+    desc: 'Tenés un coche competitivo, pero tus resultados no acompañan. Tu compañero suma muchos más puntos.',
+    choices: [
+      { text: 'Admitir el mal rendimiento', pers: 'team', delta: 15, hint: 'Humildad pura (+Equipo).', fixedDesc: '"No le encontré la vuelta al coche. Mi compañero hizo un gran trabajo, debo aprender de él." Humildad pura.' },
+      { text: 'Culpar al estilo de manejo del coche', pers: 'aggressiveness', delta: 10, pers2: 'team', delta2: -15, hint: 'Atacas a los ingenieros (+Agresividad, -Equipo).', fixedDesc: '"El auto está hecho a medida para él. No se adapta a mi estilo." Los ingenieros se ofendieron.' }
+    ]
+  },
+  {
+    id: 'f1_return_to_win',
+    title: 'El regreso a la victoria',
+    desc: 'Llevabas años sin ganar en F1. Finalmente volviste a subir al escalón más alto del podio.',
+    choices: [
+      { text: '"Nunca dejé de creer"', pers: 'media', delta: 20, hint: 'Respuesta que emociona a la TV (+Mediático).', fixedDesc: '"Fue un camino largo, pero el trabajo duro siempre paga." Los fans estallaron de emoción.' },
+      { text: '"Solo necesitaba el auto correcto"', pers: 'aggressiveness', delta: 15, hint: 'Confianza pura (+Agresividad).', fixedDesc: '"El talento siempre estuvo, solo faltaba la herramienta." Demostraste gran confianza.' }
+    ]
+  },
+  {
+    id: 'f1_championship_contender',
+    title: 'Peleando el mundial',
+    desc: 'Terminaste en el Top 3 del campeonato. Eres oficialmente un contendiente al título.',
+    choices: [
+      { text: '"El año que viene vamos por todo"', pers: 'aggressiveness', delta: 15, hint: 'Marcás territorio (+Agresividad).', fixedDesc: '"Este año fue de aprendizaje, el próximo no habrá piedad." Marcaste terreno.' },
+      { text: '"Es un premio al equipo"', pers: 'team', delta: 20, hint: 'Agradecimiento total (+Equipo).', fixedDesc: '"Estar acá es mérito de los chicos de la fábrica." Fortaleciste el vínculo con tu escudería.' }
+    ]
+  },
+  {
+    id: 'f1_retirement_talk',
+    title: 'Rumores de retiro',
+    desc: 'Tenés más de 35 años. Los medios empiezan a preguntarte cuánto tiempo más vas a correr.',
+    choices: [
+      { text: '"Hasta que el cuerpo aguante"', pers: 'aggressiveness', delta: 10, hint: 'Dejás claro que hay cuerda para rato (+Agresividad).', fixedDesc: '"Todavía soy más rápido que estos chicos." Les dejaste claro que hay cuerda para rato.' },
+      { text: '"Veremos año a año"', pers: 'media', delta: 10, hint: 'Diplomacia y misterio (+Mediático).', fixedDesc: '"Disfruto el presente, el futuro ya llegará." Respuesta diplomática y misteriosa.' }
+    ]
+  },
+  {
+    id: 'f1_win_record',
+    title: 'Récord histórico',
+    desc: '¡Rompiste el récord absoluto de victorias en la historia de la Fórmula 1!',
+    choices: [
+      { text: '"Es el mejor día de mi vida"', pers: 'media', delta: 20, hint: 'Un discurso emotivo (+Mediático).', fixedDesc: '"Nunca imaginé llegar hasta acá cuando empecé en el karting." Emocionaste a todos.' },
+      { text: '"Los récords están para romperse"', pers: 'aggressiveness', delta: 15, hint: 'Respuesta de una leyenda (+Agresividad).', fixedDesc: '"Fui el más rápido. Era cuestión de tiempo." Tu estatus de leyenda quedó sellado.' }
+    ]
+  },
+  {
+    id: 'f1_team_orders_obey',
+    title: 'Polémica por órdenes de equipo',
+    desc: 'Acábas de dejar pasar a tu compañero por órdenes del equipo. La prensa te pregunta qué pensas sobre eso.',
+    choices: [
+      { text: '"Soy un hombre de la empresa"', pers: 'team', delta: 25, hint: 'Sumás puntos para el equipo (+Equipo).', fixedDesc: '"Me pagan para sumar puntos para el equipo, no para mi ego." El jefe de equipo sonrió.' },
+      { text: '"No me gustó, pero obedecí"', pers: 'aggressiveness', delta: 10, pers2: 'team', delta2: -10, hint: 'Muestras frustración (+Agresividad, -Equipo).', fixedDesc: '"Soy más rápido, pero hoy tocó esto." Dejaste ver tu frustración.' }
+    ]
+  },
+  {
+    id: 'f1_team_orders_ignore',
+    title: 'Rebelión en el equipo',
+    desc: 'Ignoraste las órdenes de dejar pasar a tu compañero. El clima interno está al rojo vivo.',
+    choices: [
+      { text: '"Yo corro para ganar"', pers: 'aggressiveness', delta: 25, pers2: 'team', delta2: -25, hint: 'Guerra total (+Agresividad, -Equipo).', fixedDesc: '"Si es más rápido que me pase en la pista." Te ganaste el odio de una mitad del garaje.' },
+      { text: '"Hubo un problema con la radio"', pers: 'media', delta: 20, pers2: 'team', delta2: -15, hint: 'Mentís a la prensa (+Mediático, -Equipo).', fixedDesc: '"No escuché el mensaje a tiempo, lo lamento." Nadie te creyó, pero la prensa rió.' }
+    ]
+  },
+  {
+    id: 'f1_rookie_question',
+    title: 'La nueva generación',
+    desc: 'Hace poco interactuaste con el piloto novato en pista. Te preguntan por él.',
+    choices: [
+      { text: '"Tiene futuro"', pers: 'media', delta: 15, hint: 'Quedás como un veterano sabio (+Mediático).', fixedDesc: '"Es rápido, le falta experiencia pero va a llegar lejos." Quedaste como un veterano sabio.' },
+      { text: '"Le falta sopa"', pers: 'aggressiveness', delta: 15, hint: 'Respuesta cortante (+Agresividad).', fixedDesc: '"Aún tiene mucho que aprender, la F1 no perdona." Fuerte y claro.' }
+    ]
+  },
+  {
+    id: 'f1_bad_blood',
+    title: 'Guerra fría',
+    desc: 'Tu relación con tu rival es pésima y no se hablan. La prensa lo sabe y tira leña al fuego.',
+    choices: [
+      { text: '"No vengo a hacer amigos"', pers: 'aggressiveness', delta: 20, hint: 'Llenás de titulares los diarios (+Agresividad).', fixedDesc: '"Nos pagan por ganar, no por tomar café juntos." La rivalidad se encendió aún más.' },
+      { text: '"Lo respeto como piloto"', pers: 'media', delta: 15, hint: 'Respuesta madura (+Mediático).', fixedDesc: '"Fuera de la pista es otra historia, adentro somos rivales." Una respuesta madura.' }
+    ]
+  },
+  {
+    id: 'f1_dominant_season',
+    title: 'Temporada aplastante',
+    desc: 'Ganaste el campeonato con una superioridad abrumadora.',
+    choices: [
+      { text: '"El auto fue un misil"', pers: 'team', delta: 20, hint: 'Agradecimiento total (+Equipo).', fixedDesc: '"Tuvimos el mejor paquete todo el año, felicidades a la fábrica." Un agradecimiento total.' },
+      { text: '"Estuve en otra liga"', pers: 'aggressiveness', delta: 20, hint: 'Ego al máximo (+Agresividad).', fixedDesc: '"Nadie pudo alcanzarme, fui perfecto." Mostraste quién manda.' }
+    ]
+  },
+];
+
+function showInterview() {
+  // Select an interview
+  let pool = INTERVIEWS.filter(iv => {
+    if (G.catIndex < 5) return false; // ONLY IN F1
+    if (G.storyFlags['interview_' + iv.id]) return false; // NO REPEATS
+
+    if (iv.id === 'first_win') {
+      if (!G.lastResult || G.lastResult.cat !== 'F1' || G.lastResult.wins === 0) return false;
+      return true; // Must trigger if conditions met
+    }
+    
+    // NEW INTERVIEW LOGIC
+    if (iv.id === 'f1_transfer_rumors') {
+      if (!G.lastResult || G.lastResult.cat !== 'F1') return false;
+      if (G.contract !== 1) return false;
+      const expectedPosition = 12 - (G.team ? G.team.stars * 2 : 2); // Roughly expected champ pos
+      if (G.lastResult.champ > expectedPosition) return false; // Only if overperforming or doing great
+      return true;
+    }
+    
+    if (iv.id === 'f1_underperform') {
+      if (!G.lastResult || G.lastResult.cat !== 'F1') return false;
+      if (!G.team || G.team.stars < 3) return false; // Only top/mid teams
+      const expectedPosition = 12 - (G.team.stars * 2);
+      if (G.lastResult.champ <= expectedPosition + 2) return false; // Must be severely underperforming
+      return true;
+    }
+    
+    if (iv.id === 'f1_return_to_win') {
+      if (!G.lastResult || G.lastResult.cat !== 'F1' || G.lastResult.wins === 0) return false;
+      const f1WinSeasons = G.seasons.filter(s => s.cat === 'F1' && s.wins > 0);
+      if (f1WinSeasons.length < 2) return false;
+      const latestWin = f1WinSeasons[f1WinSeasons.length - 1];
+      const previousWin = f1WinSeasons[f1WinSeasons.length - 2];
+      if (latestWin.year - previousWin.year < 3) return false; // Must be at least 3 years gap
+      return true;
+    }
+    
+    if (iv.id === 'f1_championship_contender') {
+      if (!G.lastResult || G.lastResult.cat !== 'F1') return false;
+      if (G.lastResult.champ > 3) return false;
+      return true;
+    }
+    
+    if (iv.id === 'f1_retirement_talk') {
+      if (G.age < 35) return false;
+      return true;
+    }
+    
+    if (iv.id === 'f1_win_record') {
+      if (G.wins < 105) return false; // 105 is Hamilton's count
+      return true;
+    }
+    
+    if (iv.id === 'f1_team_orders_obey') {
+      if (G.storyFlags['minigame_peer_ordenes'] !== 0) return false; // 0 was 'Acatar'
+      return true;
+    }
+    
+    if (iv.id === 'f1_team_orders_ignore') {
+      if (G.storyFlags['minigame_peer_ordenes'] !== 1) return false; // 1 was 'Ignorar'
+      return true;
+    }
+    
+    if (iv.id === 'f1_rookie_question') {
+      if (G.storyFlags['event_rookie'] === undefined) return false;
+      return true;
+    }
+    
+    if (iv.id === 'f1_bad_blood') {
+      if (!G.peer || G.peer.relationship > -30) return false;
+      return true;
+    }
+    
+    if (iv.id === 'f1_dominant_season') {
+      if (!G.lastResult || G.lastResult.cat !== 'F1') return false;
+      if (G.lastResult.champ !== 1 || G.lastResult.wins < 12) return false;
+      return true;
+    }
+
+    // General interviews
+    if (iv.id === 'bad_streak' && (G.wins > 0 || G.podiums > 0)) return false;
+    return true;
+  });
+  
+  if (pool.length === 0) {
+    processSeasonStep();
+    return;
+  }
+  
+  // Prioritize first_win
+  let ivTemplate = pool.find(i => i.id === 'first_win');
+  if (!ivTemplate) ivTemplate = randFrom(pool);
+  
+  const iv = JSON.parse(JSON.stringify(ivTemplate));
+  
+  
+
+  document.getElementById('int-title').textContent = iv.title;
+  document.getElementById('int-desc').textContent = iv.desc;
+
+  const ch = document.getElementById('int-choices');
+  ch.innerHTML = '';
+  
+  iv.choices.forEach(c => {
+    const b = document.createElement('div');
+    b.className = 'minigame-choice';
+    b.innerHTML = `
+      <h3>${c.text}</h3>
+      ${c.hint ? `<div style="font-size:12px;color:var(--blue);margin-top:4px">${c.hint}</div>` : ''}
+    `;
+    
+    b.onclick = () => {
+      // Apply personality changes
+      G.storyFlags['interview_' + iv.id] = true;
+      if (c.pers) G.personality[c.pers] = clamp(G.personality[c.pers] + c.delta, -100, 100);
+      if (c.pers2) G.personality[c.pers2] = clamp(G.personality[c.pers2] + c.delta2, -100, 100);
+      
+      const logText = `Entrevista: "${c.text}"`;
+      G._seasonEventLogs.push(logText);
+      
+      ch.innerHTML = `
+        <div class="card" style="padding: 24px; border-color: var(--blue)">
+          <div style="font-size:32px;margin-bottom:8px;text-align:center">📸</div>
+          <div class="heading" style="font-size:18px;margin-bottom:12px;text-align:center">Declaraciones publicadas</div>
+          <div style="font-size:14px;line-height:1.6;color:var(--text);background:rgba(255,255,255,0.04);border-radius:10px;padding:14px 16px;margin-bottom:16px;text-align:left;border-left:3px solid var(--blue)">${c.fixedDesc}</div>
+          <button class="btn btn-primary" style="width:100%" onclick="processSeasonStep()">Continuar</button>
+        </div>
+      `;
+    };
+    ch.appendChild(b);
+  });
+  
+  goto('screen-interview');
+}
+
 const UPGRADES = [
   { id: 'trainer', name: 'Preparador físico', icon: '💪', desc: '+3 consistencia permanente', cost: 150000, stats: { tyres: 3 } },
   { id: 'mental', name: 'Entrenador mental', icon: '🧠', desc: '+3 concentración en clasificación', cost: 120000, stats: { quali: 3 } },
@@ -415,7 +685,9 @@ function initState(name, number, nat, talent) {
     _directivaUsed: false,
     peer: null,
     _peerInitialized: false,
-    wetWins: 0
+    wetWins: 0,
+    storyFlags: {},
+    personality: { aggressiveness: 0, media: 0, team: 0 }
   };
   // apply talent
   const t = TALENTS.find(x => x.id === talent);
@@ -851,6 +1123,8 @@ function runSimulation() {
     const hasMini = Math.random() < 0.2;
     if (hasEvent) G._seasonSteps.push('event');
     if (hasMini) G._seasonSteps.push('minigame');
+    const hasInterview = Math.random() < 0.3 || (G.catIndex === 5 && G.wins > 0 && !G.storyFlags.firstWinDone);
+    if (hasInterview) G._seasonSteps.push('interview');
 
     processSeasonStep();
   }, 2100);
@@ -867,6 +1141,7 @@ function processSeasonStep() {
   if (step === 'regulation') showRegulationEvent();
   else if (step === 'event') showRandomEvent();
   else if (step === 'minigame') showMinigame();
+  else if (step === 'interview') showInterview();
   else if (step === 'compute') {
     computeSeasonResult();
     processSeasonStep();
@@ -989,13 +1264,14 @@ function computeSeasonResult() {
   podiums = Math.max(podiums, wins); // Sanity check
 
   // Tyres reduces DNFs
-  const dnfBase = rand(0, 3) + extraDnf;
+  const dnfBase = rand(0, 3) + extraDnf + (G.personality.aggressiveness > 30 ? 1 : 0);
   const tyreFactor = (effStats.tyres - 50) / 100;
   const dnfs = Math.max(0, Math.round(dnfBase - tyreFactor * 2));
 
   // 6. Financials and Reputation
   const salary = [30000, 80000, 150000, 300000, 500000, 2000000][G.catIndex];
-  const earned = salary + wins * 20000;
+  const mediaMult = 1.0 + (G.personality.media / 200); // -50% to +50%
+  const earned = (salary + wins * 20000) * mediaMult;
   // Team focus: 'ganar' boosts rep, 'desarrollo' reduces it
   const focusRepMult = (G.team && G.team.focus === 'ganar') ? 1.4
     : (G.team && G.team.focus === 'desarrollo') ? 0.7
@@ -1281,8 +1557,8 @@ function getSeasonVerdict(r, cat, firstInCat) {
   if (r.champ === 2) {
     return { title: 'Al borde de la gloria', color: '#f97316', icon: '🥈' };
   }
-  if (r.champ <= 3) {
-    return { title: 'Temporada sólida', color: '#4ae87a', icon: '🥉' };
+  if (r.champ === 3 || r.champ === 4) {
+    return { title: 'Cerca de la cima', color: '#4ae87a', icon: '🥉' };
   }
   if (r.dnfs >= 3 && r.champ > 8) {
     return { title: 'Temporada para el olvido', color: '#e84a4a', icon: '💥' };
@@ -1828,7 +2104,7 @@ function showRandomEvent() {
 
   const ch = document.getElementById('ev-choices');
   ch.innerHTML = '';
-  ev.choices.forEach(c => {
+  ev.choices.forEach((c, index) => {
     const b = document.createElement('div');
     b.className = 'minigame-choice';
 
@@ -1908,6 +2184,11 @@ function showMinigame() {
   let pool = MINIGAMES.filter(mg => {
     if (mg.id === 'peer_ordenes') return G.peer && G.team && G.team.name === G.peer.team;
     if (mg.id === 'peer_brake_test') return G.peer && G.peer.relationship < -30;
+
+    const canGiveWin = mg.choices.some(c => !c.noWinOnSuccess && !c.pureLuck || (c.pureLuck && !c.noWinOnSuccess));
+    if (canGiveWin && G.catIndex === 5) {
+      if (!G.team || G.team.stars < 3) return false;
+    }
     return true;
   });
   if (pool.length === 0) pool = MINIGAMES;
@@ -1940,7 +2221,7 @@ function showMinigame() {
 
   const ch = document.getElementById('mg-choices');
   ch.innerHTML = '';
-  mg.choices.forEach(c => {
+  mg.choices.forEach((c, index) => {
     let successChance, pct, pctColor, skillText;
 
     if (c.pureLuck) {
@@ -1966,6 +2247,7 @@ function showMinigame() {
         ${mg.hidePct ? '' : `<span style="color:var(--muted)">Éxito: <strong style="color:${pctColor}">${pct}%</strong></span>`}
       </div>`;
     b.onclick = () => {
+      G.storyFlags['minigame_' + mg.id] = index;
       const success = Math.random() < successChance;
       let logText;
       const logName = c.pureLuck ? "Suerte" : STAT_LABELS[c.skillStat];
@@ -2337,6 +2619,19 @@ function showRetirement() {
   const f1Seasons = G.seasons.filter(s => s.cat === 'F1').length;
   let legacyClass, legacyIcon, legacyTitle, legacyCompare;
   
+  // Apply personality descriptors
+  let persText = '';
+  if (G.personality.aggressiveness > 40) persText += 'Agresivo y temerario. ';
+  else if (G.personality.aggressiveness < -40) persText += 'Limpio y calculador. ';
+  if (G.personality.media > 40) persText += 'Un ídolo de las masas y la TV. ';
+  else if (G.personality.media < -40) persText += 'Alejado de los micrófonos, enfocado en la pista. ';
+  if (G.personality.team > 40) persText += 'Un verdadero jugador de equipo. ';
+  else if (G.personality.team < -40) persText += 'Egoísta y despiadado con sus compañeros. ';
+  
+  if (persText) {
+      document.getElementById('ret-legacy-banner').insertAdjacentHTML('afterend', `<div class="card" style="margin-bottom:16px;background:rgba(74, 144, 232, 0.1);border-color:var(--blue);text-align:center"><div style="font-size:14px;color:var(--blue);margin-bottom:4px;font-weight:bold;letter-spacing:1px">PERFIL DEL PILOTO</div><div style="font-size:15px">${persText}</div></div>`);
+  }
+
   if (totalWins === 0 && f1Seasons === 0) { 
     legacyClass = 'legacy-promise'; legacyIcon = '🌱'; legacyTitle = 'Promesa'; 
     legacyCompare = 'Como muchos talentos que no lograron dar el salto.';

@@ -269,7 +269,8 @@ const RANDOM_EVENTS = [
       { text: 'Aceptar el rol de escudero', stat: 'speed', delta: -1, money: 100000, repDelta: 30, peerRelDelta: +20, hint: 'Resultado fijo: perdés 1 Velocidad, pero ganás Reputación y Relación (+20).', fixedDesc: 'Aceptaste la decisión por el bien del equipo. Tu auto fue más lento este finde, pero todos valoraron tu madurez.' },
       { text: 'Armar un escándalo y exigir la pieza', stat: 'speed', delta: 1, money: -50000, repDelta: -50, peerRelDelta: -30, hint: 'Resultado fijo: te quedás la mejora (+1 Vel) pero destruís la relación y tu reputación.', fixedDesc: 'Te plantaste en la oficina del jefe y amenazaste con irte. Te dieron la mejora, volaste en pista, pero nadie te felicitó al bajar.' }
     ]
-  }
+  },
+
 ];
 
 
@@ -361,7 +362,7 @@ const MINIGAMES = [
   {
     icon: '🎀', title: 'Ruleta de la fiabilidad (Pura Suerte)', desc: 'El motor se comporta raro.', radioMsg: '"Piloto, acá ing. Park. Tenemos alertas raras en el motor desde la vuelta 38. Todavía no sabemos qué es. ¿Querés que bajes modo o seguís apretando y vemos qué pasa?"', choices: [
       { text: 'Ignorar y seguir apretando', pureLuck: true, baseBonus: 0.50, desc: 'Cara o cruz: ganás ritmo o expotás el motor.', successDesc: 'Las alertas eran falsas. El motor aguantó las últimas vueltas y terminaste sin ningún problema. A veces hay que confiar en el auto.', failDesc: 'Vuelta 54. El motor expotó en la recta más larga. Columna de humo blanco. Retiro mécanico desde la primera curva. Las alertas no eran falsas.' },
-      { text: 'Bajar la potencia y rezar', pureLuck: true, baseBonus: 0.90, noWinOnSuccess: true, desc: 'Muy probable que llegues, pero perdés chances de atacar.', successDesc: 'Llegaste. Sin el ritmo para atacar, pero llegaste. El motor extraño nunca fue un problema real. Puntos asegurados.', failDesc: 'Incluso en modo bajo consumo, el motor no aguantó. Se apagó solo en la vuelta 58. El motor iba a romperse sin importar nada.', onFailDnf: true },
+      { text: 'Bajar la potencia y rezar', pureLuck: true, baseBonus: 0.90, noWinOnSuccess: true, desc: 'Muy probable que llegues, pero perdés chances de atacar.', successDesc: 'Llegaste. Sin el ritmo para atacar, pero llegaste. El motor pudo aguantar, puntos asegurados.', failDesc: 'Incluso en modo bajo consumo, el motor no aguantó. Se apagó solo en la vuelta 58. El motor iba a romperse sin importar nada.', onFailDnf: true },
     ]
   },
   {
@@ -522,11 +523,64 @@ const INTERVIEWS = [
       { text: '"Estuve en otra liga"', pers: 'aggressiveness', delta: 20, hint: 'Ego al máximo (+Agresividad).', fixedDesc: '"Nadie pudo alcanzarme, fui perfecto." Mostraste quién manda.' }
     ]
   },
+  {
+    id: 'f1_teammate_destroyed',
+    title: 'El nuevo referente',
+    desc: 'Terminaste la temporada muy por delante de tu compañero. La prensa empieza a preguntarse quién es realmente el piloto número uno del equipo.',
+    choices: [
+      { text: '"Somos un equipo y ganamos juntos"', pers: 'team', delta: 20, hint: 'Evitás generar una guerra interna (+Equipo).', fixedDesc: '"No creo en eso de piloto número uno. Los dos trabajamos para llevar al equipo hacia adelante." En el garaje respiraron tranquilos.' },
+      { text: '"Los resultados hablan solos"', pers: 'aggressiveness', delta: 20, hint: 'Mandás un mensaje directo (+Agresividad).', fixedDesc: '"No necesito decir quién fue más rápido. Está todo en la tabla." Tu compañero no hizo comentarios.' },
+      { text: 'Responder con una sonrisa', pers: 'media', delta: 15, hint: 'Alimentás el debate sin decir demasiado (+Mediático).', fixedDesc: 'Sonreíste, miraste a cámara y seguiste caminando. Al día siguiente, todos los diarios discutían exactamente lo mismo.' }
+    ]
+  },
+  {
+    id: 'f1_peer_departure',
+    title: 'Separación de caminos',
+    desc: 'Después de varias temporadas compartiendo garaje, tu compañero deja el equipo. La prensa te pregunta qué significó para vos.',
+    choices: [
+      { text: '"Fue un gran compañero"', pers: 'team', delta: 15, hint: 'Mostrás respeto (+Equipo).', fixedDesc: '"Competimos duro, pero siempre empujamos al equipo hacia adelante." La despedida fue cordial.' },
+      { text: '"Ahora veremos quién era el problema"', pers: 'aggressiveness', delta: 20, hint: 'No perdés la oportunidad de lanzar una indirecta (+Agresividad).', fixedDesc: '"El próximo año tendremos respuestas." La frase no tardó en llegar a su nuevo equipo.' },
+      { text: '"Que le vaya bien... excepto contra mí"', pers: 'media', delta: 15, hint: 'Convertís la despedida en un titular (+Mediático).', fixedDesc: 'La frase fue tomada como una broma, aunque algunos en el paddock no estaban tan seguros.' }
+    ]
+  },
+  {
+    id: 'f1_first_title',
+    title: 'Campeón del Mundo',
+    desc: 'Después de toda una vida persiguiendo este momento, acabás de ganar tu primer campeonato mundial de Fórmula 1.',
+    choices: [
+      { text: 'Romper en llanto frente a las cámaras', pers: 'media', delta: 25, hint: 'Mostrás el lado más humano de tu carrera (+Mediático).', fixedDesc: 'Intentaste hablar, pero no pudiste. Las lágrimas dijeron todo lo que las palabras no alcanzaban a explicar.' },
+      { text: 'Agradecer a todos los que estuvieron desde el inicio', pers: 'team', delta: 25, hint: 'Compartís el momento con quienes te acompañaron (+Equipo).', fixedDesc: '"Este título empezó mucho antes de llegar a la Fórmula 1. Hay demasiadas personas detrás de esto para nombrarlas a todas."' },
+      { text: '"El primero de muchos"', pers: 'aggressiveness', delta: 25, hint: 'No pensás detenerte acá (+Agresividad).', fixedDesc: '"Disfrutaré este título esta noche. Mañana empezamos a trabajar por el siguiente." La advertencia recorrió todo el paddock.' }
+    ]
+  },
+  {
+    id: 'f1_title_lost',
+    title: 'El mundial se escapó',
+    desc: 'Estuviste cerca del campeonato, pero terminaste segundo. A pocos puntos de cambiar tu carrera para siempre.',
+    choices: [
+      { text: '"Volveremos más fuertes"', pers: 'team', delta: 15, hint: 'Transformás la derrota en motivación (+Equipo).', fixedDesc: '"Duele, claro que duele. Pero esto no termina acá. Vamos a aprender y volver más fuertes." El equipo se unió alrededor tuyo.' },
+      { text: '"No voy a olvidarme de esto"', pers: 'aggressiveness', delta: 25, hint: 'Convertís la derrota en combustible (+Agresividad).', fixedDesc: '"Que disfruten el trofeo. El año que viene voy a buscarlo." Tu rival escuchó cada palabra.' },
+      { text: 'Restarle importancia frente a la prensa', pers: 'media', delta: 15, hint: 'Intentás controlar el relato (+Mediático).', fixedDesc: '"Fue una gran temporada. No voy a destruir un año entero por una posición." Nadie terminó de creerte, pero evitaste mostrar debilidad.' }
+    ]
+  },
+  {
+    id: 'f1_title_record_broken',
+    title: 'El más campeón',
+    desc: 'Acabás de conseguir más campeonatos mundiales que cualquier piloto en la historia de la Fórmula 1.',
+    choices: [
+      { text: '"Los números hablan por sí solos"', pers: 'aggressiveness', delta: 20, hint: 'Aceptás tu lugar en la historia (+Agresividad).', fixedDesc: '"Nunca corrí pensando en récords, pero ahora que estoy acá no voy a fingir que no significa algo." Tu nombre quedó definitivamente en la historia.' },
+      { text: '"Sin el equipo no existiría este récord"', pers: 'team', delta: 25, hint: 'Compartís la gloria (+Equipo).', fixedDesc: '"Un piloto puede cruzar la meta, pero detrás hay miles de personas que hicieron posible cada victoria."' },
+      { text: '"Espero que alguien me supere algún día"', pers: 'media', delta: 20, hint: 'Dejás una frase para la historia (+Mediático).', fixedDesc: '"Eso significaría que este deporte sigue avanzando." Tu respuesta recorrió todos los medios.' }
+    ]
+  },
 ];
 
-function showInterview() {
+function showInterview(postSeasonId = null) {
   // Select an interview
   let pool = INTERVIEWS.filter(iv => {
+    if (postSeasonId) return iv.id === postSeasonId;
+    const psIds = ['f1_epic_champion', 'f1_championship_contender', 'f1_retirement_talk', 'f1_win_record', 'f1_teammate_destroyed', 'f1_peer_departure', 'f1_first_title', 'f1_title_lost', 'f1_title_record_broken'];
+    if (!postSeasonId && psIds.includes(iv.id)) return false; // Hide post-season interviews from mid-season
     if (G.catIndex < 5) return false; // ONLY IN F1
     if (G.storyFlags['interview_' + iv.id]) return false; // NO REPEATS
 
@@ -629,7 +683,11 @@ function showInterview() {
   
 
   document.getElementById('int-title').textContent = iv.title;
-  document.getElementById('int-desc').textContent = iv.desc;
+  let ivDesc = iv.desc;
+  if (iv.id === 'f1_peer_departure' && G.peer && G.peer.team) {
+    ivDesc += ` (Se confirmó que firmó con ${G.peer.team})`;
+  }
+  document.getElementById('int-desc').textContent = ivDesc;
 
   const ch = document.getElementById('int-choices');
   ch.innerHTML = '';
@@ -656,7 +714,7 @@ function showInterview() {
           <div style="font-size:32px;margin-bottom:8px;text-align:center">📸</div>
           <div class="heading" style="font-size:18px;margin-bottom:12px;text-align:center">Declaraciones publicadas</div>
           <div style="font-size:14px;line-height:1.6;color:var(--text);background:rgba(255,255,255,0.04);border-radius:10px;padding:14px 16px;margin-bottom:16px;text-align:left;border-left:3px solid var(--blue)">${c.fixedDesc}</div>
-          <button class="btn btn-primary" style="width:100%" onclick="processSeasonStep()">Continuar</button>
+          <button class="btn btn-primary" style="width:100%" onclick="${postSeasonId ? 'afterSummary()' : 'processSeasonStep()'}">Continuar</button>
         </div>
       `;
     };
@@ -882,7 +940,7 @@ function buildPreseason() {
   renderStatsDisplay();
   buildActivities();
   G.chosenActivity = null;
-  document.getElementById('btn-simulate').disabled = true;
+  
   updateTopBar();
   updatePathBar();
 }
@@ -931,7 +989,7 @@ function buildActivities() {
       el.querySelectorAll('.card').forEach(x => x.classList.remove('selected'));
       c.classList.add('selected');
       G.chosenActivity = act;
-      document.getElementById('btn-simulate').disabled = false;
+      runSimulation();
     };
     el.appendChild(c);
   });
@@ -1285,8 +1343,20 @@ function computeSeasonResult() {
       domPoles = clamp(baseDom + (Math.random() * 0.1 - 0.05), 0, 1);
     }
 
-    wins = clamp(pickRange(races * 0.15, races * (0.40 + 0.45 * domWins), overtakeFactor), 1, races);
-    podiums = clamp(pickRange(races * 0.45, races * (0.55 + 0.40 * domPods), consistencyFactor), wins, races);
+    let minWins = races * 0.15;
+    let maxWins = races * (0.40 + 0.45 * domWins);
+    let minPods = races * 0.45;
+    let maxPods = races * (0.55 + 0.40 * domPods);
+
+    if (cat === 'F1') {
+      minWins *= 0.80; // Reducir victorias base
+      maxWins *= 0.80; // Reducir tope de victorias
+      minPods = races * 0.55; // Aumentar mínimo de podios
+      maxPods = races * (0.65 + 0.35 * domPods); // Podría llegar a casi 100% de podios en dominios altos
+    }
+
+    wins = clamp(pickRange(minWins, maxWins, overtakeFactor), 1, races);
+    podiums = clamp(pickRange(minPods, maxPods, consistencyFactor), wins, races);
     poles = clamp(pickRange(races * 0.10, races * (0.35 + 0.45 * domPoles), qualiFactor), 0, races);
   } else if (champ === 2) {
     wins = clamp(pickRange(races * 0.12, races * 0.35, overtakeFactor), 0, races);
@@ -1387,6 +1457,58 @@ function computeSeasonResult() {
   }
   if (!G.careerBest || wins > G.careerBest.wins) G.careerBest = result;
 
+  G._postSeasonSteps = [];
+  if (cat === 'F1') {
+    if (G.peer) {
+      if (G.team.name === G.peer.team) {
+        G.peer.yearsAsTeammate = (G.peer.yearsAsTeammate || 0) + 1;
+      } else {
+        G.peer.yearsAsTeammate = 0;
+      }
+    }
+
+    if (G.f1Titles > 7 && !G.storyFlags['interview_f1_title_record_broken']) {
+      G._postSeasonSteps.push('f1_title_record_broken');
+    }
+    else if (champ === 1 && G.f1Titles === 1 && !G.storyFlags['interview_f1_first_title']) {
+      G._postSeasonSteps.push('f1_first_title');
+    }
+    else if (champ === 1 && G.team.stars <= 4 && !G.storyFlags['interview_f1_epic_champion']) {
+      G._postSeasonSteps.push('f1_epic_champion');
+    }
+    else if (champ === 2 && wins >= 4 && !G.storyFlags['interview_f1_title_lost']) {
+      G._postSeasonSteps.push('f1_title_lost');
+    }
+    else if ((champ === 2 || champ === 3) && wins < 4 && !G.storyFlags['interview_f1_championship_contender']) {
+      G._postSeasonSteps.push('f1_championship_contender');
+    }
+    
+    if (G.peer && G.team.name === G.peer.team && champ <= 10 && G.peer.h2hWins > G.peer.h2hLosses + 10 && !G.storyFlags['interview_f1_teammate_destroyed']) {
+      G._postSeasonSteps.push('f1_teammate_destroyed');
+    }
+    
+    if (G.peer && G.team.name === G.peer.team && G.f1ContractYearsLeft > 0 && G.peer.yearsAsTeammate >= 3) {
+      if (G.peer.contractYearsLeft <= 1) { 
+        const otherTeams = TEAMS['F1'].filter(t => t.name !== G.team.name);
+        const newTeam = otherTeams[Math.floor(Math.random() * otherTeams.length)].name;
+        G.peer.team = newTeam; 
+        G.peer.contractYearsLeft = 2 + Math.floor(Math.random() * 3); 
+        G._seasonEventLogs.push(`🏎️ ${G.peer.name} firmó contrato con ${newTeam} para la próxima temporada.`);
+        if (!G.storyFlags['interview_f1_peer_departure']) {
+          G._postSeasonSteps.push('f1_peer_departure');
+        }
+      }
+    }
+    
+    if (G.wins >= 105 && !G.storyFlags['interview_f1_win_record']) {
+      G._postSeasonSteps.push('f1_win_record');
+    }
+    
+    if (G.age >= 35 && !G.storyFlags['interview_f1_retirement_talk']) {
+      G._postSeasonSteps.push('f1_retirement_talk');
+    }
+  }
+
   // Regulation change in F1: triggered from G._pendingRegChange (set before season)
   if (cat === 'F1' && G._pendingRegChange) {
     G._pendingRegChange = false;
@@ -1449,6 +1571,9 @@ function showRegulationEvent() {
   const title = document.getElementById('ev-title');
   const desc = document.getElementById('ev-desc');
   const ch = document.getElementById('ev-choices');
+
+  const existingRadio = document.getElementById('ev-radio-block');
+  if (existingRadio) existingRadio.remove();
 
   icon.textContent = '📋';
   title.textContent = '¡Cambio de Reglamento Técnico!';
@@ -1775,6 +1900,12 @@ function buildSummary() {
 
 
 function afterSummary() {
+  if (G._postSeasonSteps && G._postSeasonSteps.length > 0) {
+    const nextId = G._postSeasonSteps.shift();
+    showInterview(nextId);
+    return;
+  }
+
   const catIdx = G.catIndex;
   const r = G.lastResult;
   const careerLen = G.seasons.length;
@@ -2389,7 +2520,7 @@ function showMinigame() {
 
       ch.innerHTML = `
         <div class="card" style="padding: 24px">
-          <div style="font-size:48px;margin-bottom:8px;text-align:center">${success ? '🏆' : isNeutralFail ? '😐' : '💥'}</div>
+          <div style="font-size:48px;margin-bottom:8px;text-align:center">${success ? (c.noWinOnSuccess ? '🏁' : '🏆') : isNeutralFail ? '😐' : '💥'}</div>
           <div class="heading" style="font-size:20px;margin-bottom:4px;text-align:center">${success ? '¡Éxito en pista!' : isNeutralFail ? 'Sin incidentes' : 'Mala suerte'}</div>
           <div style="font-size:13px;color:var(--muted);margin-bottom:12px;text-align:center">${logText}</div>
           ${narrativeHtml}

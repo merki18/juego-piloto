@@ -40,6 +40,7 @@
         <button class="btn btn-primary" onclick="goto('screen-create')">NUEVA CARRERA</button>
         <button class="btn btn-secondary" onclick="showHallOfFame()" style="margin-top:12px;width:100%">SALÓN DE LA
           FAMA</button>
+        <button class="btn btn-secondary" onclick="showAchievements()" style="margin-top:12px;width:100%">LOGROS</button>
       </div>
     </div>
 
@@ -234,6 +235,27 @@
         <button class="btn btn-secondary" style="width:100%" onclick="goto('screen-title')">VOLVER AL MENÚ</button>
       </div>
     </div>
+
+  
+    <!-- ══════════════════════════════════════════════
+       SCREEN: ACHIEVEMENTS
+  ══════════════════════════════════════════════ -->
+    <div class="screen" id="screen-achievements">
+      <div class="stripe"></div>
+      <div class="heading" style="margin-bottom:6px">Tus Logros</div>
+      <div class="sub" style="margin-bottom:24px">Tus marcas históricas como piloto</div>
+
+      <div class="scroll-content" id="achievements-list" style="margin-bottom:24px; padding-bottom:80px">
+        <!-- Progreso + Logros se inyectan acá -->
+      </div>
+      
+      <div class="fixed-bottom">
+        <button class="btn btn-secondary" onclick="goto('screen-title')">VOLVER</button>
+      </div>
+    </div>
+    
+    <div id="toast-container"></div>
+    <div id="ach-modal-overlay" class="ach-modal-overlay" onclick="closeAchievementModal()"></div>
 
   </div><!-- #app -->
 

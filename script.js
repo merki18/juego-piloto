@@ -224,7 +224,7 @@ const RANDOM_EVENTS = [
   },
   {
     id: 'directiva',
-    icon: '⚖️', title: 'Directiva técnica anti-vos', desc: 'Después de dos temporadas dominantes, la FIA publicó una directiva técnica que restringe específicamente el área donde tu equipo tenía la mayor ventaja aerodinámica. El paddock no lo dice, pero saben que está apuntada a vos. El reglamento cambia en tres semanas.', choices: [
+    icon: '⚖️', title: 'Directiva técnica anti-vos', desc: 'Después de tres temporadas dominantes, la FIA publicó una directiva técnica que restringe específicamente el área donde tu equipo tenía la mayor ventaja aerodinámica. El paddock no lo dice, pero saben que está apuntada a vos. El reglamento cambia en tres semanas.', choices: [
       { text: 'Trabajar con los ingenieros para reinventar el concepto', stat: 'overtake', delta: 0, money: 0, skillStat: 'overtake', skillBonus: 5, skillFail: -2, hint: '⚔ Adelantamientos: tu adaptabilidad al caos técnico es lo que importa.', successDesc: 'Tres semanas de insomnio en la fábrica. Probaste cinco configuraciones distintas. La noche antes de la fecha límite, encontraron la solución. No era lo mismo que antes, pero era ingenioso. La FIA aprobó el concepto sin problemas. La respuesta técnica que dieron tu equipo fue estudiada en universidades de ingeniería.', failDesc: 'El tiempo fue demasiado corto. Llegaron a la primera carrera con el fondo plano viejo y un ala delantera que no funcionaba bien con el nuevo reglamento. Perdiste dos décimas por vuelta de golpe. La ventaja que te dio el equipo se evaporó en semanas.' },
       { text: 'Protestar públicamente y presionar a la FIA', stat: 'speed', delta: 1, money: 0, hint: 'Resultado fijo: la directiva sigue igual, pero tu visibilidad y determinación aumentan (+1 Velocidad por foco ganado).', fixedDesc: 'Diste una conferencia de prensa explosiva. Dijiste en voz alta lo que todos pensaban: que la FIA penalizaba al que ganaba. Las redes sociales te hicieron viral. La directiva siguió adelante igual. Pero algo raro pasó: el escándalo te motivó tanto que en la siguiente carrera diste la mejor vuelta rápida de la temporada. A veces la rabia también es combustible.' },
     ]
@@ -683,11 +683,16 @@ function showInterview(postSeasonId = null) {
   
 
   document.getElementById('int-title').textContent = iv.title;
-  let ivDesc = iv.desc;
-  if (iv.id === 'f1_peer_departure' && G.peer && G.peer.team) {
-    ivDesc += ` (Se confirmó que firmó con ${G.peer.team})`;
-  }
-  document.getElementById('int-desc').textContent = ivDesc;
+    let ivDesc = iv.desc;
+    if (iv.id === 'f1_peer_departure' && G.peer && G.peer.team) {
+      const f1Teams = TEAMS['F1'] || [];
+      const newTeamObj = f1Teams.find(t => t.name === G.peer.team);
+      const logoHtml = (newTeamObj && newTeamObj.logo) 
+        ? `<img src="${newTeamObj.logo}" style="height:16px; vertical-align:middle; margin-left:6px; margin-right:2px; border-radius:2px">` 
+        : '';
+      ivDesc += ` <br><span style="color:var(--muted); font-size:13px">(Se confirmó que firmó con${logoHtml} <b>${G.peer.team}</b>)</span>`;
+    }
+    document.getElementById('int-desc').innerHTML = ivDesc;
 
   const ch = document.getElementById('int-choices');
   ch.innerHTML = '';
@@ -773,7 +778,8 @@ function initState(name, number, nat, talent) {
     epicTitles: 0,
     f1ContractYearsLeft: 0,
     regulationBonus: 0,      // rating bonus for THIS season (player focused on current)
-    nextSeasonRegBonus: 0,   // star bonus applied when reg change fires
+    nextSeasonRegBonus: 0,
+      nextSeasonRegPenalty: 0,   // star bonus applied when reg change fires
     _pendingRegChange: false, // true when a reg change is queued this season
     lastRegChangeYear: 0,    // tracks the last year a regulation change occurred
     nickname: null,
@@ -1205,11 +1211,17 @@ function runSimulation() {
 
     G._seasonEventLogs.push(logMsg);
 
-    // In F1, pre-compute if a regulation change is happening this year (min 2 years gap)
-    if (CATEGORIES[G.catIndex] === 'F1' && Math.random() < 0.15 && G.year - (G.lastRegChangeYear || 0) >= 3) {
-      G._pendingRegChange = true;
-      G.lastRegChangeYear = G.year;
-      G._seasonSteps.push('regulation');
+    // In F1, regulation changes happen every 4 to 6 years
+    if (CATEGORIES[G.catIndex] === 'F1') {
+      if (!G.nextRegChangeYear) {
+        G.nextRegChangeYear = G.year + 4 + Math.floor(Math.random() * 3);
+      }
+      if (G.year >= G.nextRegChangeYear) {
+        G._pendingRegChange = true;
+        G.lastRegChangeYear = G.year;
+        G.nextRegChangeYear = G.year + 4 + Math.floor(Math.random() * 3);
+        G._seasonSteps.push('regulation');
+      }
     }
 
     G._seasonSteps.push('compute');
@@ -1304,7 +1316,7 @@ function computeSeasonResult() {
   const rating = clamp(eff + luck, 1, 99);
 
   // Races per category
-  const races = [12, 14, 14, 16, 14, 23][G.catIndex];
+  const races = [12, 14, 14, 16, 14, 24][G.catIndex];
 
   // 5. Calculate results with specific stat impacts
   const champ = calcChampPosition(rating);
@@ -1444,7 +1456,8 @@ function computeSeasonResult() {
 
   const teamName = G.team ? G.team.name : '—';
   const teamLogo = G.team && G.team.logo ? G.team.logo : null;
-  const result = { cat, year: G.year, champ, wins, podiums, poles, dnfs, earned, rep, rating, teamName, teamLogo };
+  const teamStars = G.team ? G.team.stars : null;
+  const result = { cat, year: G.year, champ, wins, podiums, poles, dnfs, earned, rep, rating, teamName, teamLogo, teamStars, age: G.age, races };
   G.seasons.push(result);
   G.lastResult = result;
 
@@ -1566,7 +1579,6 @@ function calcChampPosition(rating) {
 //  REGULATION CHANGE EVENT
 // ═══════════════════════════════════════════════════════════
 function showRegulationEvent() {
-  // Use the event screen for this special event
   const icon = document.getElementById('ev-icon');
   const title = document.getElementById('ev-title');
   const desc = document.getElementById('ev-desc');
@@ -1575,7 +1587,7 @@ function showRegulationEvent() {
   const existingRadio = document.getElementById('ev-radio-block');
   if (existingRadio) existingRadio.remove();
 
-  icon.textContent = '📋';
+  icon.textContent = '📐';
   title.textContent = '¡Cambio de Reglamento Técnico!';
   desc.textContent = `La FIA anunció un nuevo reglamento técnico que entrará en vigor al final de esta temporada. ¿Cómo enfocás los recursos de tu equipo?`;
 
@@ -1583,13 +1595,18 @@ function showRegulationEvent() {
 
   const choices = [
     {
-      text: '🏁 Enfocarse en ESTA temporada',
-      subdesc: 'Maximizás el rendimiento del auto actual con actualizaciones agresivas. El reglamento nuevo te afecta igual que a todos los demás.',
+      text: '🏁 Apostar por esta temporada',
+      subdesc: 'Beneficio: +8 de rendimiento ahora. Consecuencia: Tu equipo podría quedar peor posicionado.',
       effect: 'current',
     },
     {
-      text: '🔭 Enfocarse en la SIGUIENTE temporada',
-      subdesc: 'Congelás las mejoras actuales y volcás los recursos en el nuevo reglamento. Tu equipo llega mejor posicionado al nuevo ciclo.',
+      text: '⚖️ Dividir recursos',
+      subdesc: 'Beneficio: +4 de rendimiento ahora. Mantenés tus opciones sin hipotecar el futuro ni el presente.',
+      effect: 'split',
+    },
+    {
+      text: '🔭 Apostar todo al nuevo reglamento',
+      subdesc: 'Penalidad: -4 de rendimiento ahora. Después tenés una gran posibilidad de un salto en la parrilla.',
       effect: 'next',
     },
   ];
@@ -1604,11 +1621,20 @@ function showRegulationEvent() {
     b.onclick = () => {
       let logText;
       if (c.effect === 'current') {
-        G.regulationBonus = 8; // +8 to effective rating this season
-        logText = `Decisión: Enfocaste los recursos en esta temporada. +8 de rendimiento efectivo.`;
+        G.regulationBonus = 8;
+        G.nextSeasonRegPenalty = 1;
+        G.nextSeasonRegBonus = 0;
+        logText = `Decisión: Apostaste todo al campeonato actual.`;
+      } else if (c.effect === 'split') {
+        G.regulationBonus = 4;
+        G.nextSeasonRegPenalty = 0;
+        G.nextSeasonRegBonus = 0;
+        logText = `Decisión: Dividiste los recursos equitativamente.`;
       } else {
-        G.nextSeasonRegBonus = 1; // +1 star to your team after the reg change
-        logText = `Decisión: Preparaste el equipo para el nuevo reglamento. Cuando cambie el reglamento, tu equipo parte con ventaja.`;
+        G.regulationBonus = -4;
+        G.nextSeasonRegPenalty = 0;
+        G.nextSeasonRegBonus = 1;
+        logText = `Decisión: Apostaste el desarrollo al nuevo reglamento.`;
       }
       G._seasonEventLogs.push(logText);
 
@@ -1667,7 +1693,7 @@ function checkNicknames() {
     newDesc = 'La dominación absoluta tiene un nombre. Siete o más títulos te han elevado a la categoría de mito, a la par de los más grandes de la historia.';
   } else if (legendNick && currentNick !== legendNick && !has(legendNick)) {
     newNick = legendNick;
-    newDesc = `Ganaste tres o más campeonatos mundiales con ${legendTeam}. Tu nombre y el de la escudería quedarán grabados juntos en la historia.`;
+    newDesc = `Ganaste tres campeonatos mundiales con ${legendTeam}. Tu nombre y el de la escudería quedarán grabados juntos en la historia.`;
   } else if (titles >= 1 && (has('El Escudero') || G.wasEscudero) && currentNick !== 'El Heredero' && !has('El Heredero')) {
     newNick = 'El Heredero';
     newDesc = 'Dejaste de vivir a la sombra de tu compañero de equipo. Rompiste tu destino de piloto secundario y finalmente reclamaste la corona mundial.';
@@ -1692,6 +1718,18 @@ function checkNicknames() {
   } else if ((G.wasEscudero || f1Seasons.filter(s => s.champ === 2 || s.champ === 3).length >= 3) && titles === 0 && currentNick !== 'El Escudero' && !has('El Escudero')) {
     newNick = 'El Escudero';
     newDesc = 'Fiel compañero, sacrificaste tus propias chances de gloria para asegurar campeonatos de equipo.';
+  } else if (G.personality && G.personality.aggressiveness >= 50 && currentNick !== 'El Depredador' && !has('El Depredador')) {
+    newNick = 'El Depredador';
+    newDesc = 'No dejás un hueco sin atacar. Tu agresividad en la pista asusta a tus rivales y alienta a los fans.';
+  } else if (G.personality && G.personality.media >= 50 && currentNick !== 'Hollywood' && !has('Hollywood')) {
+    newNick = 'Hollywood';
+    newDesc = 'Naciste para las cámaras. Sos el gran showman de la categoría, siempre en el centro de atención.';
+  } else if (G.personality && G.personality.media <= -50 && currentNick !== 'Iceman' && !has('Iceman')) {
+    newNick = 'Iceman';
+    newDesc = 'Respuestas cortas, mirada fría. La prensa no te saca una sonrisa, pero en la pista sos una máquina impecable.';
+  } else if (G.personality && G.personality.team <= -50 && currentNick !== 'El Rebelde' && !has('El Rebelde')) {
+    newNick = 'El Rebelde';
+    newDesc = 'Las órdenes de equipo son solo sugerencias. Hacés la tuya sin importar lo que digan por la radio.';
   }
   
   if (newNick) {
@@ -1788,6 +1826,7 @@ function launchConfetti() {
 }
 
 function buildSummary() {
+  checkAchievements('season_end');
   const r = G.lastResult;
 
   document.getElementById('sum-season-label').textContent = `Temporada ${r.year} (Edad: ${G.age})`;
@@ -2668,7 +2707,7 @@ function showContracts() {
     if (isOpportunity) badges += '<span class="badge" style="background-color:#fbbf24;color:#000;font-size:10px;margin-left:6px;vertical-align:middle;padding:2px 6px;border-radius:4px;font-weight:bold">OPORTUNIDAD</span>';
     
     const isPeerTeam = (G.peer && team.name === G.peer.team);
-    if (isPeerTeam) badges += `<span class="badge" style="background-color:#6366f1;color:#fff;font-size:10px;margin-left:6px;vertical-align:middle;padding:2px 6px;border-radius:4px;font-weight:bold">Compañero/Rival (${G.peer.name})</span>`;
+    if (isPeerTeam) badges += `<span class="badge" style="background-color:#6366f1;color:#fff;font-size:10px;margin-left:6px;vertical-align:middle;padding:2px 6px;border-radius:4px;font-weight:bold">Compañero (${G.peer.name})</span>`;
 
     const c = document.createElement('div');
 
@@ -2833,6 +2872,7 @@ window.goto = function (id) {
 //  RETIREMENT
 // ═══════════════════════════════════════════════════════════
 function showRetirement() {
+  checkAchievements('retirement');
   document.getElementById('ret-name').textContent = `${G.flag} ${G.name}`;
   const startYear = G.seasons[0]?.year || G.year;
   document.getElementById('ret-years').textContent = `${startYear} — ${G.year}`;
@@ -3177,3 +3217,245 @@ document.addEventListener('touchcancel', e => {
   const card = e.target.closest('.holo-card');
   if (card) card.classList.remove('touch-hover');
 }, {passive: true});
+
+
+// ═══════════════════════════════════════════════════════════
+//  LOGROS (ACHIEVEMENTS)
+// ═══════════════════════════════════════════════════════════
+const TIER_ORDER = ['platinum', 'gold', 'silver', 'bronze'];
+const TIER_LABELS = { platinum: 'Platino', gold: 'Oro', silver: 'Plata', bronze: 'Bronce' };
+
+const ACHIEVEMENTS = [
+  // Platino
+  { id: 'fangio', name: 'Como Fangio!', desc: 'Ganaste el campeonato del mundo con cuatro equipos diferentes.', icon: '🏆', tier: 'platinum', condition: () => new Set(G.seasons.filter(s => s.champ === 1 && s.cat === 'F1').map(s => s.teamName)).size >= 4 },
+  { id: 'goat', name: 'Máxima Gloria', desc: 'El mejor de todos los tiempos. Ganaste 8 campeonatos mundiales.', icon: '🐐', tier: 'platinum', condition: () => G.f1Titles >= 8 },
+  { id: 'most_wins', name: 'El Más Ganador', desc: 'Nadie ganó más carreras que vos. Superaste las 105 victorias en F1.', icon: '🥇', tier: 'platinum', condition: () => G.seasons.filter(s => s.cat === 'F1').reduce((a, b) => a + b.wins, 0) > 105 },
+  { id: 'all_cats', name: '¿Qué es eso? ¿Lo puedo ganar?', desc: 'Saliste campeón en todas las categorías (Karting, F4, FR, F3, F2 y F1).', icon: '👑', tier: 'platinum', condition: () => ['Karting', 'F4', 'Formula Regional', 'F3', 'F2', 'F1'].every(c => G.seasons.some(s => s.cat === c && s.champ === 1)) },
+  { id: 'dynasty', name: 'Dinastía', desc: 'Construiste una era de dominio. Ganaste 5 campeonatos consecutivos.', icon: '🏛️', tier: 'platinum', condition: () => {
+    let maxConsecutive = 0, current = 0;
+    G.seasons.filter(s => s.cat === 'F1').forEach(s => {
+      if (s.champ === 1) { current++; maxConsecutive = Math.max(maxConsecutive, current); }
+      else { current = 0; }
+    });
+    return maxConsecutive >= 5;
+  }},
+  { id: 'from_nothing', name: 'De la Nada a la Gloria', desc: 'Te uniste a un equipo de 2 estrellas o menos y ganaste el campeonato con ellos.', icon: '🚀', tier: 'platinum', condition: () => {
+    // Requires checking if there's a title with a team that we joined when they were <=2 stars.
+    // Simplifying: if we are champion with a team that CURRENTLY has <= 2 stars (or 3, if they grew).
+    // Actually, we can check if we won with a team of <= 2 stars.
+    return G.seasons.some(s => s.cat === 'F1' && s.champ === 1 && (s.teamStars || 5) <= 2);
+  }},
+  { id: 'rich', name: 'Magnate del Motor', desc: 'Acumulaste $50.000.000 en el banco.', icon: '💰', tier: 'platinum', condition: () => G.money >= 50000000 },
+
+  // Oro
+  { id: 'wonderboy', name: 'El Niño Maravilla', desc: 'Llegaste a la cima rápido. Ganaste tu primer campeonato de F1 con 24 años o menos.', icon: '🌟', tier: 'gold', condition: () => G.seasons.some(s => s.cat === 'F1' && s.champ === 1 && s.age <= 24) },
+  { id: 'veteran', name: 'Campeón Veterano', desc: 'Ganaste el campeonato de F1 con 36 años o más.', icon: '🧓', tier: 'gold', condition: () => G.seasons.some(s => s.cat === 'F1' && s.champ === 1 && s.age >= 36) },
+  { id: 'historic', name: 'Campeón Histórico', desc: 'Ganaste al menos el 75% de las carreras de una temporada.', icon: '🦁', tier: 'gold', condition: () => G.seasons.some(s => s.wins / (s.races || 24) >= 0.75) },
+  { id: 'mr_consistency', name: 'Mr. Consistencia', desc: 'No bajaste del podio en toda una temporada de F1.', icon: '🔥', tier: 'gold', condition: () => G.seasons.some(s => s.cat === 'F1' && s.podiums >= (s.races || 24)) },
+  { id: 'mr_saturday', name: '¡Dejá algo para los demás!', desc: 'Conseguiste la pole en más del 70% de las carreras de una temporada.', icon: '⚡', tier: 'gold', condition: () => G.seasons.some(s => s.poles / (s.races || 24) >= 0.70) },
+  { id: 'miracle', name: 'El Milagro', desc: 'Ganaste el mundial de F1 sin tener el mejor auto (equipo de 4 estrellas o menos).', icon: '✨', tier: 'gold', condition: () => G.seasons.some(s => s.cat === 'F1' && s.champ === 1 && (s.teamStars || 5) <= 4) },
+  { id: 'rookie_sensation', name: 'Rookie Sensation', desc: 'Terminaste en el Top 3 del campeonato en tu primera temporada de F1.', icon: '🌠', tier: 'gold', condition: () => {
+    const f1s = G.seasons.filter(s => s.cat === 'F1');
+    return f1s.length > 0 && f1s[0].champ <= 3;
+  }},
+  { id: 'perfect_stats', name: 'Piloto Completo', desc: 'Tenés todas las estadísticas de manejo por encima de 90.', icon: '💎', tier: 'gold', condition: () => G.stats.speed >= 90 && G.stats.quali >= 90 && G.stats.tyres >= 90 && G.stats.rain >= 90 && G.stats.overtake >= 90 },
+  { id: 'one_team', name: 'Un Solo Equipo', desc: 'Completaste tu carrera de F1 en la misma escudería sin cambiar.', icon: '🏠', tier: 'gold', condition: () => {
+    const f1s = G.seasons.filter(s => s.cat === 'F1');
+    return G.isRetired && f1s.length >= 5 && new Set(f1s.map(s => s.teamName)).size === 1;
+  }},
+  { id: 'team_legend', name: 'Leyenda del Equipo', desc: 'Ganaste 3 o más campeonatos de F1 con el mismo equipo.', icon: '🏭', tier: 'gold', condition: () => {
+    const counts = {};
+    G.seasons.filter(s => s.cat === 'F1' && s.champ === 1).forEach(s => counts[s.teamName] = (counts[s.teamName] || 0) + 1);
+    return Math.max(0, ...Object.values(counts)) >= 3;
+  }},
+  { id: 'golden_hands', name: 'Manos de Oro', desc: 'Conseguiste 3 temporadas consecutivas rindiendo por encima de las expectativas de tu equipo.', icon: '🧙', tier: 'gold', condition: () => {
+    let cons = 0, maxCons = 0;
+    G.seasons.filter(s => s.cat === 'F1').forEach(s => {
+      const expected = 12 - (s.teamStars * 2);
+      if (s.champ < expected) { cons++; maxCons = Math.max(maxCons, cons); }
+      else { cons = 0; }
+    });
+    return maxCons >= 3;
+  }},
+  { id: 'never_give_up', name: 'Nunca Te Rindas', desc: 'Ganaste tu primer campeonato después de 10 o más temporadas en F1.', icon: '💪', tier: 'gold', condition: () => {
+    const f1s = G.seasons.filter(s => s.cat === 'F1');
+    const firstTitleIdx = f1s.findIndex(s => s.champ === 1);
+    return firstTitleIdx >= 9; // index 9 is the 10th season
+  }},
+  { id: 'one_last_time', name: 'Una Última Vez', desc: 'Cerraste tu carrera ganando el campeonato en tu última temporada.', icon: '🌅', tier: 'gold', condition: () => G.isRetired && G.seasons.length > 0 && G.seasons[G.seasons.length - 1].champ === 1 },
+  { id: 'so_close', name: 'Al Borde', desc: 'Terminaste 2.º o 3.º en F1 cinco veces sin ganar el título aún.', icon: '😤', tier: 'gold', condition: () => G.f1Titles === 0 && G.seasons.filter(s => s.cat === 'F1' && (s.champ === 2 || s.champ === 3)).length >= 5 },
+  { id: 'god_mode', name: 'Estadística al Máximo', desc: 'Llevaste una de tus habilidades a 99 puntos.', icon: '🔥', tier: 'gold', condition: () => Math.max(G.stats.speed, G.stats.quali, G.stats.tyres, G.stats.overtake, G.stats.rain) >= 99 },
+
+  // Plata
+  { id: 'rookie_win', name: 'El Novato', desc: 'Ganaste una carrera en tu primera temporada de F1.', icon: '🍼', tier: 'silver', condition: () => {
+    const f1s = G.seasons.filter(s => s.cat === 'F1');
+    return f1s.length === 1 && f1s[0].wins > 0;
+  }},
+  { id: 'first_title', name: 'La Primera Corona', desc: 'El sueño se hizo realidad. Ganaste tu primer campeonato de F1.', icon: '👑', tier: 'silver', condition: () => G.f1Titles >= 1 },
+  { id: 'rain_king', name: 'Rey de la Lluvia', desc: 'Conseguiste 5 victorias en carreras bajo lluvia.', icon: '🌧️', tier: 'silver', condition: () => G.wetWins >= 5 },
+  { id: 'traveler', name: 'El Viajero', desc: 'Cambiaste de equipo al menos 5 veces en F1.', icon: '💼', tier: 'silver', condition: () => {
+    const f1s = G.seasons.filter(s => s.cat === 'F1');
+    let changes = 0;
+    for(let i=1; i<f1s.length; i++) { if(f1s[i].teamName !== f1s[i-1].teamName) changes++; }
+    return changes >= 5;
+  }},
+  { id: 'the_return', name: 'El Regreso', desc: 'Volviste a ganar una carrera en F1 después de 3 temporadas sin victorias.', icon: '🔙', tier: 'silver', condition: () => {
+    const f1s = G.seasons.filter(s => s.cat === 'F1');
+    let drought = 0, achieved = false, hasWonBefore = false;
+    f1s.forEach(s => {
+      if (s.wins === 0 && hasWonBefore) drought++;
+      else if (s.wins > 0 && drought >= 3) achieved = true;
+      else if (s.wins > 0) { drought = 0; hasWonBefore = true; }
+    });
+    return achieved;
+  }},
+  { id: 'almost_there', name: 'Al Borde de la Gloria', desc: 'Estuviste muy cerca. Terminaste 2.º en el campeonato de F1.', icon: '🥈', tier: 'silver', condition: () => G.seasons.some(s => s.cat === 'F1' && s.champ === 2) },
+
+  // Bronce
+  { id: 'first_win', name: 'Primer Golpe', desc: 'Tu nombre apareció entre los ganadores. Conseguiste tu primera victoria en F1.', icon: '🥇', tier: 'bronze', condition: () => G.seasons.some(s => s.cat === 'F1' && s.wins > 0) },
+  { id: 'world_podium', name: 'El Podio del Mundo', desc: 'Te instalaste entre los mejores. Terminaste 3.º en el campeonato de F1.', icon: '🥉', tier: 'bronze', condition: () => G.seasons.some(s => s.cat === 'F1' && s.champ === 3) },
+  { id: 'survivor', name: 'El Sobreviviente', desc: 'Terminaste una carrera donde todo parecía perdido (Superar un minijuego con riesgo de DNF).', icon: '🩹', tier: 'bronze', condition: () => G._ach_survivor },
+  { id: 'chaos_specialist', name: 'Especialista en Caos', desc: 'Ganaste 3 minijuegos de puro azar o situaciones extremas.', icon: '🌪️', tier: 'bronze', condition: () => (G._ach_chaosCount || 0) >= 3 },
+  { id: 'lucky_guy', name: 'El Afortunado', desc: 'Ganaste una carrera mediante un evento o minijuego de pura suerte.', icon: '🍀', tier: 'bronze', condition: () => G._ach_luckyWin },
+  { id: 'loyalty', name: 'Fidelidad', desc: 'Firmaste 3 renovaciones de contrato consecutivas con el mismo equipo.', icon: '🤝', tier: 'bronze', condition: () => (G._ach_renewals || 0) >= 3 }
+];
+
+let G_unlockedAchievements = [];
+
+function loadAchievements() {
+  try {
+    const saved = localStorage.getItem('piloto_achievements');
+    if (saved) G_unlockedAchievements = JSON.parse(saved);
+  } catch(e) {
+    console.error('Error loading achievements', e);
+  }
+}
+
+function saveAchievements() {
+  localStorage.setItem('piloto_achievements', JSON.stringify(G_unlockedAchievements));
+}
+
+function checkAchievements(trigger, context = {}) {
+  // Triggers: 'season_end', 'retirement', 'minigame', 'contract'
+  let newlyUnlocked = false;
+
+  for (const ach of ACHIEVEMENTS) {
+    if (!G_unlockedAchievements.includes(ach.id)) {
+      if (ach.condition()) {
+        G_unlockedAchievements.push(ach.id);
+        newlyUnlocked = true;
+        showAchievementToast(ach);
+      }
+    }
+  }
+
+  if (newlyUnlocked) saveAchievements();
+}
+
+function showAchievementToast(ach) {
+  const container = document.getElementById('toast-container');
+  if (!container) return;
+
+  const toast = document.createElement('div');
+  toast.className = 'toast tier-' + ach.tier;
+  
+  toast.innerHTML = `
+    <div class="toast-icon">${ach.icon}</div>
+    <div class="toast-content">
+      <div class="toast-header">Logro Desbloqueado</div>
+      <div class="toast-title">${ach.name}</div>
+    </div>
+  `;
+
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.classList.add('fade-out');
+    setTimeout(() => toast.remove(), 400); // Wait for animation
+  }, 4000);
+}
+
+function showAchievements() {
+  loadAchievements(); // Ensure fresh
+  const list = document.getElementById('achievements-list');
+  list.innerHTML = '';
+
+  const total = ACHIEVEMENTS.length;
+  const unlockedCount = G_unlockedAchievements.length;
+  const pct = total > 0 ? Math.round((unlockedCount / total) * 100) : 0;
+
+  const progressCard = document.createElement('div');
+  progressCard.className = 'ach-progress-card';
+  progressCard.innerHTML = `
+    <div class="ach-progress-top">
+      <span class="ach-progress-label">Progreso total</span>
+      <span class="ach-progress-count">${unlockedCount}/${total}</span>
+    </div>
+    <div class="ach-progress-bar"><div class="ach-progress-fill" style="width:${pct}%"></div></div>
+  `;
+  list.appendChild(progressCard);
+
+  TIER_ORDER.forEach(tier => {
+    const group = ACHIEVEMENTS.filter(a => a.tier === tier);
+    if (group.length === 0) return;
+    const unlockedInTier = group.filter(a => G_unlockedAchievements.includes(a.id)).length;
+
+    const section = document.createElement('div');
+    section.className = 'ach-section';
+
+    const sectionTitle = document.createElement('div');
+    sectionTitle.className = 'ach-section-title tier-text-' + tier;
+    sectionTitle.innerHTML = `${TIER_LABELS[tier]} <span class="ach-section-count">${unlockedInTier}/${group.length}</span>`;
+    section.appendChild(sectionTitle);
+
+    const grid = document.createElement('div');
+    grid.className = 'achievement-grid';
+
+    group.forEach(ach => {
+      const unlocked = G_unlockedAchievements.includes(ach.id);
+      const card = document.createElement('div');
+      card.className = 'ach-card tier-' + ach.tier + (unlocked ? '' : ' locked');
+      card.innerHTML = `
+        <div class="ach-tier tier-${ach.tier}"></div>
+        <div class="ach-icon">${unlocked ? ach.icon : '🔒'}</div>
+        <div class="ach-title">${ach.name}</div>
+      `;
+      card.onclick = () => openAchievementModal(ach, unlocked);
+      grid.appendChild(card);
+    });
+
+    section.appendChild(grid);
+    list.appendChild(section);
+  });
+
+  goto('screen-achievements');
+}
+
+function openAchievementModal(ach, unlocked) {
+  const overlay = document.getElementById('ach-modal-overlay');
+  if (!overlay) return;
+
+  overlay.innerHTML = `
+    <div class="ach-modal tier-${ach.tier}${unlocked ? '' : ' locked'}" onclick="event.stopPropagation()">
+      <div class="ach-modal-tier-badge tier-text-${ach.tier}">${TIER_LABELS[ach.tier]}</div>
+      <div class="ach-modal-icon">${unlocked ? ach.icon : '🔒'}</div>
+      <div class="ach-modal-title">${ach.name}</div>
+      <div class="ach-modal-status ${unlocked ? 'is-unlocked' : 'is-locked'}">${unlocked ? '✅ Desbloqueado' : '🔒 Todavía no lo conseguiste'}</div>
+      <div class="ach-modal-desc">${ach.desc}</div>
+      <button class="btn btn-secondary ach-modal-close" onclick="closeAchievementModal()">CERRAR</button>
+    </div>
+  `;
+  // force reflow so the transition triggers even on repeated opens
+  void overlay.offsetWidth;
+  overlay.classList.add('open');
+}
+
+function closeAchievementModal() {
+  const overlay = document.getElementById('ach-modal-overlay');
+  if (!overlay || !overlay.classList.contains('open')) return;
+  overlay.classList.remove('open');
+  setTimeout(() => { overlay.innerHTML = ''; }, 250);
+}
+
+// Load achievements on boot
+loadAchievements();

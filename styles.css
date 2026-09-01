@@ -458,3 +458,263 @@
     pointer-events: none;
     z-index: 200;
   }
+
+
+/* ═══════════════════════════════════════════════════════════
+   LOGROS (ACHIEVEMENTS)
+═══════════════════════════════════════════════════════════ */
+
+/* ── Progress summary ── */
+.ach-progress-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 14px 16px;
+  margin-bottom: 20px;
+}
+.ach-progress-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+.ach-progress-label {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.ach-progress-count {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 900;
+  font-size: 20px;
+  color: var(--accent);
+}
+.ach-progress-bar {
+  height: 8px;
+  background: var(--surface);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.ach-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent2), var(--accent));
+  border-radius: 4px;
+  transition: width 0.5s ease;
+}
+
+/* ── Tier section groups ── */
+.ach-section { margin-bottom: 22px; }
+.ach-section-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+.ach-section-count { font-size: 12px; color: var(--muted); font-weight: 600; letter-spacing: 0; }
+.tier-text-bronze   { color: #cd7f32; }
+.tier-text-silver   { color: #c0c0c0; }
+.tier-text-gold     { color: #ffd700; }
+.tier-text-platinum { color: #c9efff; text-shadow: 0 0 8px rgba(201, 239, 255, 0.3); }
+
+/* ── Card grid ── */
+.achievement-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+.ach-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 14px 8px;
+  text-align: center;
+  transition: transform 0.12s ease, border-color 0.2s ease;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  cursor: pointer;
+}
+.ach-card:active { transform: scale(0.94); }
+.ach-icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+.ach-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--text);
+  text-transform: uppercase;
+  line-height: 1.15;
+}
+.ach-tier {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid var(--bg);
+}
+
+.ach-card.locked {
+  filter: grayscale(100%);
+  opacity: 0.4;
+  border-color: transparent;
+}
+.ach-card.locked .ach-tier {
+  display: none;
+}
+
+.tier-bronze { background: #cd7f32; box-shadow: 0 0 5px #cd7f32; border-color: #cd7f32 !important; }
+.tier-silver { background: #c0c0c0; box-shadow: 0 0 5px #c0c0c0; border-color: #c0c0c0 !important; }
+.tier-gold   { background: #ffd700; box-shadow: 0 0 8px #ffd700; border-color: #ffd700 !important; }
+.tier-platinum { background: #c9efff; box-shadow: 0 0 12px #4bcfff, inset 0 0 6px #fff; border-color: #c9efff !important; }
+
+/* ── Emphasis modal (shown when tapping an achievement) ── */
+.ach-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(5, 5, 10, 0);
+  backdrop-filter: blur(0px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  z-index: 300;
+  pointer-events: none;
+  transition: background 0.25s ease, backdrop-filter 0.25s ease;
+}
+.ach-modal-overlay.open {
+  background: rgba(5, 5, 10, 0.72);
+  backdrop-filter: blur(4px);
+  pointer-events: auto;
+}
+.ach-modal {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 28px 24px 24px;
+  max-width: 320px;
+  width: 100%;
+  text-align: center;
+  transform: scale(0.85) translateY(10px);
+  opacity: 0;
+  transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.2s ease;
+}
+.ach-modal-overlay.open .ach-modal {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+}
+.ach-modal.tier-bronze   { box-shadow: 0 0 0 1px #cd7f32, 0 12px 40px -8px rgba(205,127,50,0.5); }
+.ach-modal.tier-silver   { box-shadow: 0 0 0 1px #c0c0c0, 0 12px 40px -8px rgba(192,192,192,0.5); }
+.ach-modal.tier-gold     { box-shadow: 0 0 0 1px #ffd700, 0 12px 40px -8px rgba(255,215,0,0.5); }
+.ach-modal.tier-platinum { box-shadow: 0 0 0 1px #c9efff, 0 12px 40px -8px rgba(75, 207, 255, 0.4); }
+.ach-modal.locked { filter: grayscale(60%); }
+.ach-modal-tier-badge {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.ach-modal-icon { font-size: 56px; margin-bottom: 10px; }
+.ach-modal-title {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 800;
+  font-size: 22px;
+  text-transform: uppercase;
+  color: var(--text);
+  margin-bottom: 6px;
+  line-height: 1.1;
+}
+.ach-modal-status {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-bottom: 14px;
+}
+.ach-modal-status.is-unlocked { color: var(--green); }
+.ach-modal-status.is-locked { color: var(--muted); }
+.ach-modal-desc {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.5;
+  margin-bottom: 20px;
+}
+.ach-modal-close { width: 100%; }
+
+/* Toast */
+#toast-container {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 9999;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+  width: 90%;
+  max-width: 400px;
+}
+
+.toast {
+  background: var(--surface);
+  border: 2px solid var(--accent);
+  border-radius: var(--r);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-shadow: 0 8px 16px rgba(0,0,0,0.5);
+  animation: toastSlideIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.toast.fade-out {
+  animation: toastSlideOut 0.4s forwards;
+}
+
+.toast-icon {
+  font-size: 28px;
+}
+
+.toast-content {
+  flex: 1;
+}
+
+.toast-header {
+  font-family: 'Barlow Condensed', sans-serif;
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 13px;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.toast-title {
+  font-weight: 600;
+  color: var(--text);
+  font-size: 15px;
+}
+
+@keyframes toastSlideIn {
+  from { transform: translateY(-100px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes toastSlideOut {
+  from { transform: translateY(0); opacity: 1; }
+  to { transform: translateY(-50px); opacity: 0; }
+}

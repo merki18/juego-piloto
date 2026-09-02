@@ -557,6 +557,12 @@
   text-transform: uppercase;
   line-height: 1.15;
 }
+
+.ach-card.tier-silver .ach-title,
+.ach-card.tier-gold .ach-title,
+.ach-card.tier-platinum .ach-title {
+  color: #000;
+}
 .ach-tier {
   position: absolute;
   top: -6px;

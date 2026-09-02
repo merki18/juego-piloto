@@ -2249,7 +2249,7 @@ function processNextStep() {
 const STAT_LABELS = { speed: 'Velocidad', quali: 'Clasificación', rain: 'Lluvia', tyres: 'Gestión', overtake: 'Adelantamientos' };
 
 // ── TYPEWRITER ──
-function typewriterRadio(elId, text, speed = 18) {
+function typewriterRadio(elId, text, speed = 15) {
   const el = document.getElementById(elId);
   if (!el) return;
   el.textContent = '';
@@ -2357,7 +2357,7 @@ function showRandomEvent() {
         <div id="ev-radio-text" style="line-height:1.5;min-height:1.2em"></div>
       </div>`;
     document.getElementById('ev-choices').insertAdjacentElement('beforebegin', radioBlock);
-    typewriterRadio('ev-radio-text', radioMsg, 18);
+    typewriterRadio('ev-radio-text', radioMsg, 15);
   }
 
   const ch = document.getElementById('ev-choices');
@@ -2473,7 +2473,7 @@ function showMinigame() {
         <div id="mg-radio-text" style="line-height:1.5;min-height:1.2em"></div>
       </div>`;
     document.getElementById('mg-choices').insertAdjacentElement('beforebegin', radioBlock);
-    typewriterRadio('mg-radio-text', radioMsg, 18);
+    typewriterRadio('mg-radio-text', radioMsg, 15);
   }
 
   // Remove any old stat hint
@@ -2944,11 +2944,20 @@ function showRetirement() {
     </div>
   `;
 
-  const cats = [...new Set(G.seasons.map(s => s.cat))];
-  document.getElementById('ret-stats-rows').innerHTML = `
-    <div class="result-row"><div class="r-label">Años activos</div><div class="r-val">${G.seasons.length}</div></div>
-    <div class="result-row"><div class="r-label">Categorías</div><div class="r-val">${cats.join(', ')}</div></div>
-    <div class="result-row"><div class="r-label">Victorias</div><div class="r-val">${G.wins}</div></div>
+  const f1TeamsData = [];
+    G.seasons.filter(s => s.cat === 'F1').forEach(s => {
+      if (!f1TeamsData.some(t => t.name === s.teamName)) {
+        f1TeamsData.push({ name: s.teamName, logo: s.teamLogo });
+      }
+    });
+    const teamsHtml = f1TeamsData.length > 0 
+      ? f1TeamsData.map(t => (t.logo ? `<img src="${t.logo}" title="${t.name}" style="height:20px; width:20px; object-fit:contain; margin-right:4px; border-radius:2px">` : `<span style="font-size:12px; margin-right:4px">${t.name}</span>`)).join('') 
+      : 'Ninguno';
+
+    document.getElementById('ret-stats-rows').innerHTML = `
+      <div class="result-row"><div class="r-label">Años activos</div><div class="r-val">${G.seasons.length}</div></div>
+      <div class="result-row"><div class="r-label">Equipos F1</div><div class="r-val" style="display:flex; align-items:center; flex-wrap:wrap">${teamsHtml}</div></div>
+      <div class="result-row"><div class="r-label">Victorias</div><div class="r-val">${G.wins}</div></div>
     <div class="result-row"><div class="r-label">Podios</div><div class="r-val">${G.podiums}</div></div>
     <div class="result-row"><div class="r-label">Poles</div><div class="r-val">${G.poles}</div></div>
     <div class="result-row"><div class="r-label">Abandonos</div><div class="r-val">${G.dnfs}</div></div>
@@ -3240,19 +3249,29 @@ const ACHIEVEMENTS = [
     return maxConsecutive >= 5;
   }},
   { id: 'from_nothing', name: 'De la Nada a la Gloria', desc: 'Te uniste a un equipo de 2 estrellas o menos y ganaste el campeonato con ellos.', icon: '🚀', tier: 'platinum', condition: () => {
-    // Requires checking if there's a title with a team that we joined when they were <=2 stars.
-    // Simplifying: if we are champion with a team that CURRENTLY has <= 2 stars (or 3, if they grew).
-    // Actually, we can check if we won with a team of <= 2 stars.
-    return G.seasons.some(s => s.cat === 'F1' && s.champ === 1 && (s.teamStars || 5) <= 2);
+    const f1Seasons = G.seasons.filter(s => s.cat === 'F1');
+    const titleSeasons = f1Seasons.filter(s => s.champ === 1);
+    for (const s of titleSeasons) {
+      const firstYear = f1Seasons.find(fs => fs.teamName === s.teamName);
+      if (firstYear && (firstYear.teamStars || 5) <= 2) return true;
+    }
+    return false;
   }},
   { id: 'rich', name: 'Magnate del Motor', desc: 'Acumulaste $50.000.000 en el banco.', icon: '💰', tier: 'platinum', condition: () => G.money >= 50000000 },
+
+    { id: 'full_circle', name: 'El Círculo Completo', desc: 'Ganaste tu último campeonato con el mismo equipo con el que disputaste tu primera temporada de F1.', icon: '🏁', tier: 'platinum', condition: () => {
+    const f1s = G.seasons.filter(s => s.cat === 'F1');
+    const titles = f1s.filter(s => s.champ === 1);
+    if (!G.isRetired || f1s.length === 0 || titles.length === 0) return false;
+    return f1s[0].teamName === titles[titles.length - 1].teamName;
+  }},
 
   // Oro
   { id: 'wonderboy', name: 'El Niño Maravilla', desc: 'Llegaste a la cima rápido. Ganaste tu primer campeonato de F1 con 24 años o menos.', icon: '🌟', tier: 'gold', condition: () => G.seasons.some(s => s.cat === 'F1' && s.champ === 1 && s.age <= 24) },
   { id: 'veteran', name: 'Campeón Veterano', desc: 'Ganaste el campeonato de F1 con 36 años o más.', icon: '🧓', tier: 'gold', condition: () => G.seasons.some(s => s.cat === 'F1' && s.champ === 1 && s.age >= 36) },
-  { id: 'historic', name: 'Campeón Histórico', desc: 'Ganaste al menos el 75% de las carreras de una temporada.', icon: '🦁', tier: 'gold', condition: () => G.seasons.some(s => s.wins / (s.races || 24) >= 0.75) },
+  { id: 'historic', name: 'Campeón Histórico', desc: 'Ganaste al menos el 75% de las carreras de una temporada.', icon: '🦁', tier: 'gold', condition: () => G.seasons.some(s => s.cat === 'F1' && s.wins / (s.races || 24) >= 0.75) },
   { id: 'mr_consistency', name: 'Mr. Consistencia', desc: 'No bajaste del podio en toda una temporada de F1.', icon: '🔥', tier: 'gold', condition: () => G.seasons.some(s => s.cat === 'F1' && s.podiums >= (s.races || 24)) },
-  { id: 'mr_saturday', name: '¡Dejá algo para los demás!', desc: 'Conseguiste la pole en más del 70% de las carreras de una temporada.', icon: '⚡', tier: 'gold', condition: () => G.seasons.some(s => s.poles / (s.races || 24) >= 0.70) },
+  { id: 'mr_saturday', name: '¡Dejá algo para los demás!', desc: 'Conseguiste la pole en más del 70% de las carreras de una temporada.', icon: '⚡', tier: 'gold', condition: () => G.seasons.some(s => s.cat === 'F1' && s.poles / (s.races || 24) >= 0.70) },
   { id: 'miracle', name: 'El Milagro', desc: 'Ganaste el mundial de F1 sin tener el mejor auto (equipo de 4 estrellas o menos).', icon: '✨', tier: 'gold', condition: () => G.seasons.some(s => s.cat === 'F1' && s.champ === 1 && (s.teamStars || 5) <= 4) },
   { id: 'rookie_sensation', name: 'Rookie Sensation', desc: 'Terminaste en el Top 3 del campeonato en tu primera temporada de F1.', icon: '🌠', tier: 'gold', condition: () => {
     const f1s = G.seasons.filter(s => s.cat === 'F1');
@@ -3286,6 +3305,14 @@ const ACHIEVEMENTS = [
   { id: 'so_close', name: 'Al Borde', desc: 'Terminaste 2.º o 3.º en F1 cinco veces sin ganar el título aún.', icon: '😤', tier: 'gold', condition: () => G.f1Titles === 0 && G.seasons.filter(s => s.cat === 'F1' && (s.champ === 2 || s.champ === 3)).length >= 5 },
   { id: 'god_mode', name: 'Estadística al Máximo', desc: 'Llevaste una de tus habilidades a 99 puntos.', icon: '🔥', tier: 'gold', condition: () => Math.max(G.stats.speed, G.stats.quali, G.stats.tyres, G.stats.overtake, G.stats.rain) >= 99 },
 
+    { id: 'same_king', name: 'Nueva Era, Mismo Rey', desc: 'Ganaste el mundial antes del cambio de reglamento y volviste a ganar en la primera temporada de la nueva era.', icon: '🔄', tier: 'gold', condition: () => {
+    if (!G.lastRegChangeYear || G.lastRegChangeYear === 0) return false;
+    const f1s = G.seasons.filter(s => s.cat === 'F1');
+    const wonBefore = f1s.some(s => s.year === G.lastRegChangeYear && s.champ === 1);
+    const wonAfter = f1s.some(s => s.year === G.lastRegChangeYear + 1 && s.champ === 1);
+    return wonBefore && wonAfter;
+  }},
+
   // Plata
   { id: 'rookie_win', name: 'El Novato', desc: 'Ganaste una carrera en tu primera temporada de F1.', icon: '🍼', tier: 'silver', condition: () => {
     const f1s = G.seasons.filter(s => s.cat === 'F1');
@@ -3311,8 +3338,15 @@ const ACHIEVEMENTS = [
   }},
   { id: 'almost_there', name: 'Al Borde de la Gloria', desc: 'Estuviste muy cerca. Terminaste 2.º en el campeonato de F1.', icon: '🥈', tier: 'silver', condition: () => G.seasons.some(s => s.cat === 'F1' && s.champ === 2) },
 
+    { id: 'giant_killer', name: 'Matagigantes', desc: 'Ganaste una carrera con un equipo de 3 estrellas o menos.', icon: '🗡️', tier: 'silver', condition: () => G.seasons.some(s => s.cat === 'F1' && s.wins > 0 && (s.teamStars || 5) <= 3) },
+  { id: 'rain_master', name: 'Que Llueva', desc: 'Ganaste un campeonato teniendo la lluvia como tu estadística más fuerte.', icon: '🌧️', tier: 'silver', condition: () => G.seasons.some(s => s.cat === 'F1' && s.champ === 1 && G.stats.rain >= Math.max(G.stats.speed, G.stats.quali, G.stats.tyres, G.stats.overtake)) },
+
   // Bronce
   { id: 'first_win', name: 'Primer Golpe', desc: 'Tu nombre apareció entre los ganadores. Conseguiste tu primera victoria en F1.', icon: '🥇', tier: 'bronze', condition: () => G.seasons.some(s => s.cat === 'F1' && s.wins > 0) },
+  { id: 'team_player', name: 'El Compañero Ideal', desc: 'Llegá a +80 en Equipo.', icon: '🤝', tier: 'bronze', condition: () => G.personality && G.personality.team >= 80 },
+  { id: 'media_star', name: 'Estrella Mediática', desc: 'Llegá a +80 en Mediático.', icon: '📸', tier: 'bronze', condition: () => G.personality && G.personality.media >= 80 },
+  { id: 'villain', name: 'El Villano', desc: 'Llegá a +80 en Agresividad.', icon: '😈', tier: 'bronze', condition: () => G.personality && G.personality.aggressiveness >= 80 },
+
   { id: 'world_podium', name: 'El Podio del Mundo', desc: 'Te instalaste entre los mejores. Terminaste 3.º en el campeonato de F1.', icon: '🥉', tier: 'bronze', condition: () => G.seasons.some(s => s.cat === 'F1' && s.champ === 3) },
   { id: 'survivor', name: 'El Sobreviviente', desc: 'Terminaste una carrera donde todo parecía perdido (Superar un minijuego con riesgo de DNF).', icon: '🩹', tier: 'bronze', condition: () => G._ach_survivor },
   { id: 'chaos_specialist', name: 'Especialista en Caos', desc: 'Ganaste 3 minijuegos de puro azar o situaciones extremas.', icon: '🌪️', tier: 'bronze', condition: () => (G._ach_chaosCount || 0) >= 3 },

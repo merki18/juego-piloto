@@ -385,6 +385,88 @@ const MINIGAMES = [
 
 
 const INTERVIEWS = [
+    {
+      id: 'ev_jet',
+      title: '✈️ Vuelo Compartido',
+      desc: 'Tu compañero te pide viajar en tu Jet Privado para la próxima carrera europea.',
+      choices: [
+        { text: 'Aceptar', pers: 'team', delta: 20, pers2: 'media', delta2: -10, hint: 'Mejora relación, pero la prensa inventa rumores.', fixedDesc: 'Aceptaste. Mejoró mucho tu relación en el equipo, aunque a la prensa le gusta inventar dramas donde no hay.' },
+        { text: 'Rechazar', pers: 'aggressiveness', delta: 15, pers2: 'team', delta2: -15, hint: 'Viajas solo.', fixedDesc: 'Le dijiste que no tenías asientos libres. Viajaste tranquilo pero la relación quedó tensa.' }
+      ]
+    },
+    {
+      id: 'ev_mansion',
+      title: '🏰 Visita Inesperada',
+      desc: 'Un periodista de élite te pide hacer una nota desde tu mansión en Mónaco sobre "cómo vive una leyenda".',
+      choices: [
+        { text: 'Mostrarte humilde', pers: 'media', delta: -10, repDelta: 15, hint: 'Sube reputación (+15).', fixedDesc: 'Mostraste un perfil bajo y hogareño. La gente te ama por tu humildad (+15 Reputación).' },
+        { text: 'Alardear', pers: 'media', delta: 25, hint: 'Aumenta ser mediático, riesgo de críticas.', fixedDesc: 'Hiciste un tour por tus autos y lujos. Sos una estrella de rock, aunque a algunos puristas no les gustó.' }
+      ]
+    },
+    {
+      id: 'ev_agent',
+      title: '👔 Oferta bajo la mesa',
+      desc: 'Tu Agente Estrella te llama: "Tengo un pre-contrato con un equipo de 5 estrellas para el año que viene. Lo firmás ahora o esperamos a fin de año".',
+      choices: [
+        { text: 'Firmar ya', pers: 'aggressiveness', delta: 15, hint: 'Aseguras asiento en un equipo TOP.', fixedDesc: 'Firmaste en secreto. Pase lo que pase este año, tu futuro en un equipo de punta está asegurado.' },
+        { text: 'Esperar a fin de año', pers: 'team', delta: 15, hint: 'Enfocarte en tu equipo actual.', fixedDesc: 'Decidiste esperar y ser leal a tu temporada actual. El futuro se verá luego.' }
+      ]
+    },
+    {
+      id: 'ev_yacht',
+      title: '🛥️ Fiesta post-carrera',
+      desc: 'Conseguiste un podio y tu Yate de Lujo está amarrado en el puerto. ¿Qué hacemos?',
+      choices: [
+        { text: 'Fiesta pública', pers: 'media', delta: 30, repDelta: 20, hint: 'Mucha prensa, mucho caos (+20 Reputación).', fixedDesc: 'Invitaste a medio paddock. Fue un descontrol y saliste en todas las revistas. Tu reputación subió por las nubes (+20 Reputación).' },
+        { text: 'Fiesta privada', pers: 'team', delta: 25, hint: 'Solo el equipo.', fixedDesc: 'Invitaste solo a los mecánicos e ingenieros. La moral del equipo está por las nubes.' }
+      ]
+    },
+    {
+      id: 'ev_kart',
+      title: '🏎️ La Joven Promesa',
+      desc: 'En tu Escudería de Karting descubriste a un chico con talento puro pero sin recursos para correr en Europa.',
+      choices: [
+        { text: 'Patrocinarlo ($1.000.000)', pers: 'media', delta: 15, hint: 'Cuesta plata pero ganas muchísima reputación.', fixedDesc: 'Pagaste de tu bolsillo su temporada. Te costó plata, pero el mundo aplaude tu gesto (-$1M, +20 Reputación).' },
+        { text: 'Desearle suerte', pers: 'aggressiveness', delta: 10, hint: 'No gastas nada.', fixedDesc: 'Le deseaste suerte. Este es un mundo duro, él tendrá que buscarse sus propios sponsors.' }
+      ]
+    },
+    {
+      id: 'ev_cryo',
+      title: '🧊 Control Antidopaje',
+      desc: 'La FIA llegó a las 4 AM a tu casa por un control sorpresa mientras descansabas en tu cámara hiperbárica.',
+      choices: [
+        { text: 'Colaborar tranquilo', pers: 'team', delta: 15, repDelta: 10, hint: 'Perfil bajo (+10 Reputación).', fixedDesc: 'Hiciste el control sin quejarte. Eres el ejemplo a seguir en la parrilla (+10 Reputación).' },
+        { text: 'Quejarte en redes', pers: 'aggressiveness', delta: 25, pers2: 'media', delta2: 20, hint: 'Un escándalo mediático.', fixedDesc: 'Subiste una historia quejándote de que no te dejan dormir. Tus fans te apoyan, la FIA te mira de reojo.' }
+      ]
+    },
+    {
+      id: 'ev_psych',
+      title: '🧠 El Bloqueo Mental',
+      desc: 'Tras unos duros abandonos, tu Psicólogo te propone una polémica terapia alternativa en el bosque antes de la carrera.',
+      choices: [
+        { text: 'Aceptar terapia', pers: 'media', delta: -15, hint: 'Riesgo / Recompensa alta.', fixedDesc: 'Fuiste al bosque a gritar y meditar. Te sentís purificado y listo para ganar. (+10 Velocidad esta carrera)' },
+        { text: 'Rechazar', pers: 'aggressiveness', delta: 10, hint: 'Seguir con lo tradicional.', fixedDesc: 'Lo mandaste a pasear. Sos un piloto, no un yogui. Correrás como siempre.' }
+      ]
+    },
+    {
+      id: 'ev_mentor',
+      title: '👑 El Consejo del Campeón',
+      desc: 'Antes de la carrera decisiva, tu Mentor Ex-Campeón te frena: "Estás yendo muy al límite, corré con inteligencia hoy".',
+      choices: [
+        { text: 'Correr inteligente', pers: 'team', delta: 20, hint: 'Aseguras sumar puntos, nada de riesgos.', fixedDesc: 'Le hiciste caso, levantaste el pie cuando hizo falta y aseguraste un gran resultado.' },
+        { text: 'Ir al límite', pers: 'aggressiveness', delta: 30, hint: 'Ignorarlo y buscar la gloria.', fixedDesc: 'Lo ignoraste y fuiste a matar o morir. Esta vez funcionó y todos hablan de tu maniobra.' }
+      ]
+    },
+    {
+      id: 'ev_classics',
+      title: '🚗 Festival de la Velocidad',
+      desc: 'En pretemporada, te invitan a manejar uno de tus F1 clásicos en un festival masivo.',
+      choices: [
+        { text: 'Ir al límite', pers: 'aggressiveness', delta: 20, pers2: 'media', delta2: 25, hint: 'Exigir el auto al máximo.', fixedDesc: 'Hiciste trompos y quemaste gomas. El público enloqueció, tu reputación como showman es legendaria.' },
+        { text: 'Pasear para la foto', pers: 'team', delta: 15, repDelta: 10, hint: 'Cuidar la reliquia (+10 Reputación).', fixedDesc: 'Fuiste a baja velocidad saludando al público. Una foto perfecta para cuidar el patrimonio (+10 Reputación).' }
+      ]
+    },
+  
   {
     id: 'first_win',
     title: 'Primera Victoria en F1',
@@ -580,7 +662,7 @@ function showInterview(postSeasonId = null) {
   let pool = INTERVIEWS.filter(iv => {
     if (postSeasonId) return iv.id === postSeasonId;
     const psIds = ['f1_epic_champion', 'f1_championship_contender', 'f1_retirement_talk', 'f1_win_record', 'f1_teammate_destroyed', 'f1_peer_departure', 'f1_first_title', 'f1_title_lost', 'f1_title_record_broken'];
-    if (!postSeasonId && psIds.includes(iv.id)) return false; // Hide post-season interviews from mid-season
+    if (!postSeasonId && (psIds.includes(iv.id) || iv.id.startsWith('ev_'))) return false; // Hide post-season interviews from mid-season
     if (G.catIndex < 5) return false; // ONLY IN F1
     if (G.storyFlags['interview_' + iv.id]) return false; // NO REPEATS
 
@@ -682,7 +764,45 @@ function showInterview(postSeasonId = null) {
   
   
 
+  
+  const isEventMode = iv.id.startsWith('ev_');
+  
+  if (isEventMode && G.storyFlags['interview_' + iv.id]) {
+      // If it was already seen but queued multiple times by a bug, skip it
+      processSeasonStep();
+      return;
+  }
+
   document.getElementById('int-title').textContent = iv.title;
+  const screenInt = document.getElementById('screen-interview');
+  
+  // The first element is the emoji div
+  
+  const labelDiv = screenInt.querySelector('.label');
+  const cardDiv = screenInt.querySelector('.card');
+
+  if (isEventMode) {
+      screenInt.style.background = 'radial-gradient(ellipse at top, rgba(235, 180, 50, 0.1) 0%, transparent 60%)';
+      if (labelDiv) {
+          labelDiv.style.color = 'var(--accent)';
+          labelDiv.innerHTML = '✨ Evento Exclusivo';
+      }
+      if (cardDiv) {
+          cardDiv.style.borderColor = 'var(--accent)';
+      }
+  } else {
+      screenInt.style.background = 'radial-gradient(ellipse at top, rgba(74, 144, 232, 0.1) 0%, transparent 60%)';
+      if (labelDiv) {
+          labelDiv.style.color = 'var(--blue)';
+          labelDiv.innerHTML = '🎙️ Sala de Prensa';
+      }
+      if (cardDiv) {
+          cardDiv.style.borderColor = 'var(--blue)';
+      }
+  }
+
+
+
     let ivDesc = iv.desc;
     if (iv.id === 'f1_peer_departure' && G.peer && G.peer.team) {
       const f1Teams = TEAMS['F1'] || [];
@@ -708,17 +828,34 @@ function showInterview(postSeasonId = null) {
     b.onclick = () => {
       // Apply personality changes
       G.storyFlags['interview_' + iv.id] = true;
-      if (c.pers) G.personality[c.pers] = clamp(G.personality[c.pers] + c.delta, -100, 100);
-      if (c.pers2) G.personality[c.pers2] = clamp(G.personality[c.pers2] + c.delta2, -100, 100);
+      if (c.pers) {
+          let d = c.delta;
+          if (d < 0 && G.upgrades.includes('pr_team')) d = Math.round(d * 0.5);
+          G.personality[c.pers] = clamp(G.personality[c.pers] + d, -100, 100);
+        }
+        if (c.pers2) {
+          let d2 = c.delta2;
+          if (d2 < 0 && G.upgrades.includes('pr_team')) d2 = Math.round(d2 * 0.5);
+          G.personality[c.pers2] = clamp(G.personality[c.pers2] + d2, -100, 100);
+        }
       
-      const logText = `Entrevista: "${c.text}"`;
-      G._seasonEventLogs.push(logText);
+      
+      const isEvent = iv.id.startsWith('ev_');
+        let logText = isEvent ? `Evento: ${c.text}` : `Entrevista: "${c.text}"`;
+        
+        let actualRepDelta = c.repDelta || 0;
+        if (actualRepDelta !== 0) {
+           G.reputation += actualRepDelta;
+           logText += ` (${actualRepDelta > 0 ? '+' : ''}${actualRepDelta} Reputación)`;
+        }
+        
+        G._seasonEventLogs.push(logText);
       
       ch.innerHTML = `
-        <div class="card" style="padding: 24px; border-color: var(--blue)">
-          <div style="font-size:32px;margin-bottom:8px;text-align:center">📸</div>
-          <div class="heading" style="font-size:18px;margin-bottom:12px;text-align:center">Declaraciones publicadas</div>
-          <div style="font-size:14px;line-height:1.6;color:var(--text);background:rgba(255,255,255,0.04);border-radius:10px;padding:14px 16px;margin-bottom:16px;text-align:left;border-left:3px solid var(--blue)">${c.fixedDesc}</div>
+        <div class="card" style="padding: 24px; border-color: ${iv.id.startsWith('ev_') ? 'var(--accent)' : 'var(--blue)'}">
+          <div style="font-size:32px;margin-bottom:8px;text-align:center">${iv.id.startsWith('ev_') ? '✨' : '📸'}</div>
+          <div class="heading" style="font-size:18px;margin-bottom:12px;text-align:center">${iv.id.startsWith('ev_') ? 'Resolución del evento' : 'Declaraciones publicadas'}</div>
+          <div style="font-size:14px;line-height:1.6;color:var(--text);background:rgba(255,255,255,0.04);border-radius:10px;padding:14px 16px;margin-bottom:16px;text-align:left;border-left:3px solid ${iv.id.startsWith('ev_') ? 'var(--accent)' : 'var(--blue)'}">${c.fixedDesc}</div>
           <button class="btn btn-primary" style="width:100%" onclick="${postSeasonId ? 'afterSummary()' : 'processSeasonStep()'}">Continuar</button>
         </div>
       `;
@@ -730,11 +867,30 @@ function showInterview(postSeasonId = null) {
 }
 
 const UPGRADES = [
-  { id: 'trainer', name: 'Preparador físico', icon: '💪', desc: '+3 consistencia permanente', cost: 150000, stats: { tyres: 3 } },
-  { id: 'mental', name: 'Entrenador mental', icon: '🧠', desc: '+3 concentración en clasificación', cost: 120000, stats: { quali: 3 } },
-  { id: 'sim', name: 'Simulador personal', icon: '🖥️', desc: '+2 velocidad, +2 clasificación', cost: 200000, stats: { speed: 2, quali: 2 } },
-  { id: 'nutrition', name: 'Nutricionista', icon: '🥗', desc: '+2 consistencia, +1 velocidad', cost: 90000, stats: { tyres: 2, speed: 1 } },
-  { id: 'engineer', name: 'Ingeniero privado', icon: '⚙️', desc: '+3 velocidad, +2 adelantamientos', cost: 250000, stats: { speed: 3, overtake: 2 } },
+  // Lujo
+  { id: 'jet', name: 'Jet Privado', tier: 'lujo', icon: '✈️', desc: 'Aumenta reputación pasivamente y reduce el cansancio de los viajes.', cost: 15000000, stats: {} },
+  { id: 'mansion', name: 'Mansión en Mónaco', tier: 'lujo', icon: '🏰', desc: 'Aumenta reputación y reduce drásticamente el deterioro de las estadísticas por edad.', cost: 25000000, stats: {} },
+  { id: 'agent', name: 'Agente Estrella', tier: 'lujo', icon: '👔', desc: 'Los equipos de F1 exigen menos reputación y pagan mejores salarios.', cost: 10000000, stats: {} },
+  { id: 'track', name: 'Pista de Kart Personal', tier: 'lujo', icon: '🏁', desc: 'Aumenta la ganancia natural de tus estadísticas.', cost: 5000000, stats: {} },
+  { id: 'charity', name: 'Fundación Benéfica', tier: 'lujo', icon: '🤝', desc: 'Aumenta tu reputación cada temporada y mitiga escándalos mediáticos.', cost: 8000000, stats: {} },
+  { id: 'yacht', name: 'Yate de Lujo', tier: 'lujo', icon: '🛥️', desc: 'Aumento de reputación. Un mal resultado no dañará tanto tu imagen.', cost: 20000000, stats: {} },
+  { id: 'kart_team', name: 'Escudería de Karting Propia', tier: 'lujo', icon: '🏎️', desc: 'Ingresos pasivos anuales y mejora tu ganancia de Velocidad.', cost: 12000000, stats: {} },
+  { id: 'cryo', name: 'Cámara Hiperbárica', tier: 'lujo', icon: '🧊', desc: 'Reduce el deterioro físico de la edad (Velocidad y Constancia).', cost: 7000000, stats: {} },
+
+  // Staff
+  { id: 'photographer', name: 'Fotógrafo Personal', tier: 'staff', icon: '📸', desc: 'Ganas mucha más reputación al conseguir buenos resultados.', cost: 1000000, stats: {} },
+  { id: 'pr_team', name: 'Equipo de PR', tier: 'staff', icon: '🎙️', desc: 'Reduce el impacto de respuestas polémicas a la prensa.', cost: 2500000, stats: {} },
+  { id: 'psychologist', name: 'Psicólogo Deportivo', tier: 'staff', icon: '🧠', desc: 'Mitiga la pérdida de moral y reputación tras un abandono (DNF).', cost: 1500000, stats: {} },
+  { id: 'mentor', name: 'Mentor Ex-Campeón', tier: 'staff', icon: '👑', desc: 'Aumenta pasivamente tus habilidades para clasificar y adelantar en pista.', cost: 3000000, stats: { quali: 2, overtake: 2 } },
+  { id: 'classics', name: 'Colección de Clásicos', tier: 'staff', icon: '🚗', desc: 'Gran impulso a tu reputación histórica.', cost: 5000000, stats: {} },
+
+  // Basicas
+  { id: 'trainer', name: 'Preparador Físico', tier: 'basica', icon: '💪', desc: '+3 Constancia (Gestión de Gomas)', cost: 250000, stats: { tyres: 3 } },
+  { id: 'nutrition', name: 'Nutricionista', tier: 'basica', icon: '🥗', desc: '+2 Gestión, +1 Velocidad', cost: 150000, stats: { tyres: 2, speed: 1 } },
+  { id: 'rain_spec', name: 'Especialista en Lluvia', tier: 'basica', icon: '🌧️', desc: '+3 Lluvia', cost: 200000, stats: { rain: 3 } },
+  { id: 'reflex', name: 'Entrenador de Reflejos', tier: 'basica', icon: '⚡', desc: '+3 Velocidad', cost: 250000, stats: { speed: 3 } },
+  { id: 'telemetry', name: 'Ingeniero Analista', tier: 'basica', icon: '💻', desc: '+2 Clasificación', cost: 180000, stats: { quali: 2 } },
+  { id: 'sparring', name: 'Piloto Sparring', tier: 'basica', icon: '🥊', desc: '+2 Adelantamientos', cost: 150000, stats: { overtake: 2 } }
 ];
 
 // ═══════════════════════════════════════════════════════════
@@ -1177,29 +1333,31 @@ function runSimulation() {
       : (G.team && G.team.focus === 'ganar') ? 0.5
         : 0.75; // equilibrado or F1
 
-    if (age < 18) {
-      logMsg = `🌱 Por tu juventud (Edad ${age}), tus atributos mejoraron notablemente.`;
-      for (const k of Object.keys(G.stats)) G.stats[k] = clamp(G.stats[k] + (3 + Math.random() * 2.5) * focusGrowthMult, 1, G.potential);
+    const tb = G.upgrades.includes('track') ? 0.75 : 0;
+      if (age < 18) {
+        logMsg = `🌱 Por tu juventud (Edad ${age}), tus atributos mejoraron notablemente.`;
+        if (tb) logMsg += ' (Bonus de Pista)';
+      for (const k of Object.keys(G.stats)) G.stats[k] = clamp(G.stats[k] + (3 + Math.random() * 2.5 + (typeof tb !== 'undefined' ? tb : 0)) * focusGrowthMult, 1, G.potential);
     }
     else if (age < 23) {
       logMsg = `🌱 Seguís desarrollándote a gran ritmo (Edad ${age}).`;
-      for (const k of Object.keys(G.stats)) G.stats[k] = clamp(G.stats[k] + (1.5 + Math.random() * 2) * focusGrowthMult, 1, G.potential);
+      for (const k of Object.keys(G.stats)) G.stats[k] = clamp(G.stats[k] + (1.5 + Math.random() * 2 + (typeof tb !== 'undefined' ? tb : 0)) * focusGrowthMult, 1, G.potential);
     }
     else if (age < 28) {
       logMsg = `🌱 Acercándote a tu máximo potencial (Edad ${age}), seguís puliendo detalles.`;
-      for (const k of Object.keys(G.stats)) G.stats[k] = clamp(G.stats[k] + (0.3 + Math.random() * 1.7) * focusGrowthMult, 1, G.potential);
+      for (const k of Object.keys(G.stats)) G.stats[k] = clamp(G.stats[k] + (0.3 + Math.random() * 1.7 + (typeof tb !== 'undefined' ? tb : 0)) * focusGrowthMult, 1, G.potential);
     }
     else if (age < 34) {
       logMsg = `⭐ Estás en tu plenitud física y mental (Edad ${age}). Atributos estables.`;
-      for (const k of Object.keys(G.stats)) G.stats[k] = clamp(G.stats[k] + (Math.random() * 1.5 - 0.9), 1, G.potential);
+      for (const k of Object.keys(G.stats)) G.stats[k] = clamp(G.stats[k] + (Math.random() * 1.5 - 0.9 + (typeof tb !== 'undefined' ? tb : 0)), 1, G.potential);
     }
     else if (age < 38) {
       logMsg = `🍂 Los años empiezan a pesar (Edad ${age}). Tus reflejos y estado físico caen notablemente.`;
-      for (const k of Object.keys(G.stats)) G.stats[k] = clamp(G.stats[k] - 1 - Math.random() * 3, 1, G.potential);
+      const decayMult = G.upgrades.includes('cryo') ? 0.2 : (G.upgrades.includes('mansion') ? 0.5 : 1); if(decayMult<1) logMsg+=' (Mitigado)'; for (const k of Object.keys(G.stats)) G.stats[k] = clamp(G.stats[k] - (1 + Math.random() * 3) * decayMult, 1, G.potential);
     }
     else {
       logMsg = `🍂 Estás en el ocaso de tu carrera (Edad ${age}). Tus atributos se desploman.`;
-      for (const k of Object.keys(G.stats)) G.stats[k] = clamp(G.stats[k] - 3 - Math.random() * 4, 1, G.potential);
+      const decayMult2 = G.upgrades.includes('cryo') ? 0.2 : (G.upgrades.includes('mansion') ? 0.5 : 1); if(decayMult2<1) logMsg+=' (Mitigado)'; for (const k of Object.keys(G.stats)) G.stats[k] = clamp(G.stats[k] - (3 + Math.random() * 4) * decayMult2, 1, G.potential);
     }
 
     // Log team focus effect
@@ -1249,6 +1407,7 @@ function processSeasonStep() {
   else if (step === 'event') showRandomEvent();
   else if (step === 'minigame') showMinigame();
   else if (step === 'interview') showInterview();
+  else if (step.startsWith('event:')) showInterview(step.split(':')[1]);
   else if (step === 'compute') {
     computeSeasonResult();
     processSeasonStep();
@@ -1396,6 +1555,23 @@ function computeSeasonResult() {
 
   // Tyres reduces DNFs
   const dnfBase = rand(0, 3) + extraDnf + (G.personality.aggressiveness > 30 ? 1 : 0);
+  if (cat === 'F1') {
+    let possibleEvents = [];
+    if (!G.storyFlags['interview_ev_jet'] && G.upgrades.includes('jet') && Math.random() < 0.15) possibleEvents.push('ev_jet');
+    if (!G.storyFlags['interview_ev_mansion'] && G.upgrades.includes('mansion') && G.age > 33 && Math.random() < 0.25) possibleEvents.push('ev_mansion');
+    if (!G.storyFlags['interview_ev_yacht'] && G.upgrades.includes('yacht') && podiums > 0 && Math.random() < 0.2) possibleEvents.push('ev_yacht');
+    if (!G.storyFlags['interview_ev_cryo'] && G.upgrades.includes('cryo') && Math.random() < 0.1) possibleEvents.push('ev_cryo');
+    if (!G.storyFlags['interview_ev_psych'] && G.upgrades.includes('psychologist') && Math.random() < 0.1) possibleEvents.push('ev_psych');
+    if (!G.storyFlags['interview_ev_mentor'] && G.upgrades.includes('mentor') && champ <= 3 && Math.random() < 0.2) possibleEvents.push('ev_mentor');
+    if (!G.storyFlags['interview_ev_kart'] && G.upgrades.includes('kart_team') && Math.random() < 0.15) possibleEvents.push('ev_kart');
+    if (!G.storyFlags['interview_ev_classics'] && G.upgrades.includes('classics') && Math.random() < 0.15) possibleEvents.push('ev_classics');
+    if (!G.storyFlags['interview_ev_agent'] && G.upgrades.includes('agent') && G.contract > 1 && Math.random() < 0.1) possibleEvents.push('ev_agent');
+    
+    if (possibleEvents.length > 0) {
+        if (!G._postSeasonSteps) G._postSeasonSteps = [];
+        G._postSeasonSteps.push(possibleEvents[Math.floor(Math.random() * possibleEvents.length)]);
+    }
+  }
   const tyreFactor = (effStats.tyres - 50) / 100;
   const dnfs = Math.max(0, Math.round(dnfBase - tyreFactor * 2));
 
@@ -1407,7 +1583,7 @@ function computeSeasonResult() {
   const focusRepMult = (G.team && G.team.focus === 'ganar') ? 1.4
     : (G.team && G.team.focus === 'desarrollo') ? 0.7
       : 1.0;
-  const rep = Math.round(((100 - champ) * 2 + wins * 5) * focusRepMult);
+  let rep = Math.round(((100 - champ) * 2 + wins * 5) * focusRepMult);
 
   if (cat === 'F1' && G.peer) {
     const peerTeam = TEAMS['F1'].find(t => t.name === G.peer.team);
@@ -1445,8 +1621,21 @@ function computeSeasonResult() {
     }
   }
 
-  G.reputation += rep;
-  G.money += earned;
+  if (G.upgrades.includes('photographer') && podiums > 0) {
+      const pBonus = Math.floor(rep * 0.4);
+      if (pBonus > 0) {
+        rep += pBonus;
+        G._seasonEventLogs.push(`📸 Las fotos de tu podio se hicieron virales (+${pBonus} Reputación extra).`);
+      }
+    }
+    
+    if (G.upgrades.includes('charity')) {
+      rep += 15;
+      G._seasonEventLogs.push(`🤝 Tu Fundación Benéfica mejoró tu imagen pública (+15 Reputación).`);
+    }
+    
+    G.reputation += rep;
+    G.money += earned;
   G.totalMoney += earned;
   G.wins += wins;
   if (wetSeason && cat === 'F1') G.wetWins += wins;
@@ -2589,6 +2778,8 @@ function showFlash(text) {
 function canMeetNextCatReqs(nextCatIdx) {
   const ovr = Math.round(Object.values(G.stats).reduce((a, b) => a + b) / 5);
   const nextCatTeams = TEAMS[CATEGORIES[nextCatIdx]] || [];
+  const agentModOvr = G.upgrades.includes('agent') ? -2 : 0;
+  const agentModRep = G.upgrades.includes('agent') ? 0.9 : 1;
 
   const getReqsForCat = (stars, catIdx) => {
     const baseRep = [0, 100, 250, 400, 700, 1200][catIdx];
@@ -2596,11 +2787,11 @@ function canMeetNextCatReqs(nextCatIdx) {
     const repStep = [40, 80, 100, 150, 200, 200][catIdx];
     const ovrStep = [3, 4, 4, 5, 5, 5][catIdx];
 
-    if (stars === 5) return { rep: baseRep + repStep * 2, ovr: baseOvr + ovrStep * 2 };
-    if (stars === 4) return { rep: baseRep + repStep, ovr: baseOvr + ovrStep };
-    if (stars === 3) return { rep: baseRep, ovr: baseOvr };
-    if (stars === 2) return { rep: Math.max(0, baseRep - repStep), ovr: Math.max(0, baseOvr - ovrStep) };
-    return { rep: Math.max(0, baseRep - repStep * 2), ovr: Math.max(0, baseOvr - ovrStep * 2) };
+    if (stars === 5) return { rep: (baseRep + repStep * 2)*agentModRep, ovr: baseOvr + ovrStep * 2 + agentModOvr };
+    if (stars === 4) return { rep: (baseRep + repStep)*agentModRep, ovr: baseOvr + ovrStep + agentModOvr };
+    if (stars === 3) return { rep: baseRep*agentModRep, ovr: baseOvr + agentModOvr };
+    if (stars === 2) return { rep: Math.max(0, (baseRep - repStep)*agentModRep), ovr: Math.max(0, baseOvr - ovrStep) + agentModOvr };
+    return { rep: Math.max(0, (baseRep - repStep * 2)*agentModRep), ovr: Math.max(0, baseOvr - ovrStep * 2) + agentModOvr };
   };
 
   return nextCatTeams.some(t => {
@@ -2620,7 +2811,11 @@ function showContracts() {
     const baseOvr = [40, 45, 50, 55, 65, 75][G.catIndex];
 
     // Scale requirements based on category
-    const repStep = [40, 80, 100, 150, 200, 200][G.catIndex];
+    
+      const repStep = [40, 80, 100, 150, 200, 200][G.catIndex];
+      const agentModOvr = G.upgrades.includes('agent') ? -2 : 0;
+      const agentModRep = G.upgrades.includes('agent') ? 0.9 : 1;
+    
     const ovrStep = [3, 4, 4, 5, 5, 5][G.catIndex];
 
     if (stars === 5) return { rep: baseRep + repStep * 2, ovr: baseOvr + ovrStep * 2 };
@@ -2684,7 +2879,10 @@ function showContracts() {
 
   offerPool.forEach(team => {
     const salary = [30000, 80000, 150000, 300000, 500000, 2000000][G.catIndex];
-    const salarySpin = Math.round(salary * (0.8 + Math.random() * 0.6) / 10000) * 10000;
+    
+      let salarySpin = Math.round(salary * (0.8 + Math.random() * 0.6) / 10000) * 10000;
+      if (G.upgrades.includes('agent')) salarySpin = Math.round(salarySpin * 1.15); // agent_salary
+    
     const isRegChange = cat === 'F1' && G.lastRegChangeYear === (G.year - 1);
     const probIdx = clamp(team.stars - 1, 0, 4);
     const stars = isRegChange ? '❓❓❓❓❓' : '★'.repeat(team.stars) + '☆'.repeat(5 - team.stars);
@@ -2826,28 +3024,70 @@ function showContracts() {
 // ═══════════════════════════════════════════════════════════
 //  UPGRADES SCREEN
 // ═══════════════════════════════════════════════════════════
+function formatAbbrev(num) {
+  if (num >= 1000000) return 'US$ ' + (num / 1000000).toFixed(1).replace('.0', '') + 'M';
+  if (num >= 1000) return 'US$ ' + (num / 1000).toFixed(0) + 'K';
+  return 'US$ ' + num;
+}
+
 function buildUpgradesScreen() {
   const el = document.getElementById('upgrades-list');
   document.getElementById('upgrade-money').textContent = fmt$(G.money);
   el.innerHTML = '';
 
-  UPGRADES.forEach(u => {
-    const owned = G.upgrades.includes(u.id);
-    const canBuy = !owned && G.money >= u.cost;
-    const item = document.createElement('div');
-    item.className = 'upgrade-item';
-    item.innerHTML = `
-      <div class="upgrade-icon">${u.icon}</div>
-      <div class="upgrade-info">
-        <h4>${u.name}</h4>
-        <p>${u.desc}</p>
-      </div>
-      <div style="text-align:right;flex-shrink:0">
-        <div class="upgrade-price">${owned ? '✓' : fmt$(u.cost)}</div>
-        <button class="upgrade-buy ${owned ? 'owned' : ''}" ${owned || !canBuy ? 'disabled' : ''} onclick="buyUpgrade('${u.id}')">${owned ? 'Activa' : 'Comprar'}</button>
-      </div>
-    `;
-    el.appendChild(item);
+  const tiers = [
+    { id: 'lujo', title: '💎 Estilo de Vida (Lujo)' },
+    { id: 'staff', title: '👔 Personal Exclusivo (Staff)' },
+    { id: 'basica', title: '🔧 Mejoras de Rendimiento (Básicas)' }
+  ];
+
+  tiers.forEach(tier => {
+    const tierUpgrades = UPGRADES.filter(u => u.tier === tier.id);
+    if (tierUpgrades.length === 0) return;
+
+    
+      const titleDiv = document.createElement('div');
+      titleDiv.style.cssText = 'font-size:16px; font-weight:bold; color:var(--text); margin-top:20px; margin-bottom:12px; border-bottom:1px solid var(--border); padding-bottom:4px;';
+      titleDiv.textContent = tier.title;
+      el.appendChild(titleDiv);
+
+
+    const grid = document.createElement('div');
+    grid.style.display = 'grid';
+    grid.style.gridTemplateColumns = tier.id === 'lujo' ? '1fr' : 'repeat(2, 1fr)';
+    grid.style.gap = '10px';
+    grid.style.marginBottom = '20px';
+
+    tierUpgrades.forEach(u => {
+      const owned = G.upgrades.includes(u.id);
+      const canBuy = !owned && G.money >= u.cost;
+      
+      const item = document.createElement('div');
+      item.className = 'upgrade-item tier-' + u.tier + (owned ? ' owned' : '');
+      item.style.margin = '0';
+      item.style.display = 'flex';
+      item.style.flexDirection = 'column';
+      item.style.cursor = owned ? 'default' : (canBuy ? 'pointer' : 'not-allowed');
+      if (!owned && canBuy) {
+          item.onclick = () => buyUpgrade(u.id);
+      }
+      
+      item.innerHTML = `
+        <div style="display:flex; align-items:flex-start; margin-bottom:8px; width:100%;">
+          <div class="upgrade-icon" style="font-size:24px; margin-right:12px; filter: drop-shadow(0 0 4px rgba(255,255,255,0.1));">${u.icon}</div>
+          <div class="upgrade-info" style="flex:1;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
+              <h4 style="margin:0; font-size:14px;">${u.name}</h4>
+              <div style="font-size:12px; font-weight:bold; color:var(--text); opacity: ${owned ? 0.5 : 1}; margin-left:8px;">${owned ? '✔️ Adquirido' : formatAbbrev(u.cost)}</div>
+            </div>
+            <p style="margin:0; font-size:11px; opacity:0.7; line-height:1.4;">${u.desc}</p>
+          </div>
+        </div>
+      `;
+      grid.appendChild(item);
+    });
+    
+    el.appendChild(grid);
   });
 }
 
@@ -2858,8 +3098,9 @@ function buyUpgrade(id) {
   G.upgrades.push(id);
   for (const [k, v] of Object.entries(u.stats)) G.stats[k] = Math.min(99, G.stats[k] + v);
   updateTopBar();
-  buildUpgradesScreen();
-}
+    buildUpgradesScreen();
+    checkAchievements();
+  }
 
 // override goto to build upgrades dynamically
 const _origGoto = goto;
@@ -2872,6 +3113,7 @@ window.goto = function (id) {
 //  RETIREMENT
 // ═══════════════════════════════════════════════════════════
 function showRetirement() {
+  G.isRetired = true;
   checkAchievements('retirement');
   document.getElementById('ret-name').textContent = `${G.flag} ${G.name}`;
   const startYear = G.seasons[0]?.year || G.year;
@@ -3311,9 +3553,16 @@ const ACHIEVEMENTS = [
     const wonBefore = f1s.some(s => s.year === G.lastRegChangeYear && s.champ === 1);
     const wonAfter = f1s.some(s => s.year === G.lastRegChangeYear + 1 && s.champ === 1);
     return wonBefore && wonAfter;
-  }},
+    }},
 
-  // Plata
+    // Compras
+    { id: 'first_spend', name: 'Primer Gasto', desc: 'El dinero está para gastarlo. Compraste tu primera mejora.', icon: '🛍️', tier: 'bronze', condition: () => G.upgrades && G.upgrades.length >= 1 },
+    { id: 'millionaire_club', name: 'El Club de los Millonarios', desc: 'Sos un piloto de F1, vivi como tal. Compraste Jet Privado + Yate de Lujo + Mansion', icon: '🛥️', tier: 'gold', condition: () => G.upgrades && G.upgrades.includes('jet') && G.upgrades.includes('yacht') && G.upgrades.includes('mansion') },
+    { id: 'spent_50m', name: '¿En qué momento se me fue la mano?', desc: 'Gastaste 50 Millones.', icon: '🤑', tier: 'gold', condition: () => G.upgrades && G.upgrades.reduce((sum, id) => sum + (UPGRADES.find(u => u.id === id)?.cost || 0), 0) >= 50000000 },
+    { id: 'first_is_mansion', name: 'Sin Mirar el Precio', desc: 'Tu primera compra en la tienda fue la Mansión en Mónaco.', icon: '🎢', tier: 'silver', condition: () => G.upgrades && G.upgrades.length > 0 && G.upgrades[0] === 'mansion' },
+    { id: 'no_upgrades', name: 'Autosuficiente', desc: 'Te retiraste sin haber comprado ni una sola mejora en toda tu carrera.', icon: '🙅', tier: 'bronze', condition: () => G.isRetired && (!G.upgrades || G.upgrades.length === 0) },
+
+    // Plata
   { id: 'rookie_win', name: 'El Novato', desc: 'Ganaste una carrera en tu primera temporada de F1.', icon: '🍼', tier: 'silver', condition: () => {
     const f1s = G.seasons.filter(s => s.cat === 'F1');
     return f1s.length === 1 && f1s[0].wins > 0;
@@ -3493,3 +3742,4 @@ function closeAchievementModal() {
 
 // Load achievements on boot
 loadAchievements();
+

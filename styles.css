@@ -724,3 +724,35 @@
   from { transform: translateY(0); opacity: 1; }
   to { transform: translateY(-50px); opacity: 0; }
 }
+
+.upgrade-item.tier-lujo {
+  border-left: 3px solid #fbbf24;
+  background: linear-gradient(135deg, rgba(20,20,20,1) 0%, rgba(30,25,10,1) 100%);
+}
+.upgrade-item.tier-staff {
+  border-left: 3px solid #94a3b8;
+  background: linear-gradient(135deg, rgba(20,20,20,1) 0%, rgba(25,28,30,1) 100%);
+}
+.upgrade-item.tier-basica {
+  border-left: 3px solid var(--border);
+  background: var(--bg-alt);
+}
+.upgrade-item.owned {
+  opacity: 0.6;
+  filter: grayscale(0.5);
+}
+.upgrade-item h4 {
+  color: var(--text) !important;
+}
+.upgrade-item.tier-lujo h4 {
+  color: #fbbf24 !important;
+}
+.upgrade-item.tier-staff h4 {
+  color: #94a3b8 !important;
+}
+
+.upgrade-item:not(.owned):hover {
+  transform: translateY(-2px);
+  filter: brightness(1.2);
+  transition: all 0.2s;
+}

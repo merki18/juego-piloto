@@ -27,26 +27,56 @@ const TEAMS = {
     { name: 'KartMaster', stars: 3, logo: null, focus: 'desarrollo' },
     { name: 'TopKart Racing', stars: 4, logo: null, focus: 'equilibrado' },
     { name: 'CRG Factory', stars: 5, logo: null, focus: 'ganar' },
+    { name: 'Tony Kart', stars: 5, logo: null, focus: 'ganar' },
+    { name: 'Kosmic Racing', stars: 4, logo: null, focus: 'equilibrado' },
+    { name: 'Birel ART', stars: 5, logo: null, focus: 'ganar' },
+    { name: 'Ricky Flynn Motorsport', stars: 3, logo: null, focus: 'desarrollo' },
+    { name: 'Parolin', stars: 4, logo: null, focus: 'equilibrado' },
   ],
   'F4': [
     { name: 'Campos', stars: 3, logo: 'assets/images/logo campos.png', focus: 'desarrollo' },
     { name: 'Van Amersfoort', stars: 4, logo: 'assets/images/logo van amersfoort.png', focus: 'equilibrado' },
     { name: 'Prema', stars: 5, logo: 'assets/images/logo prema.png', focus: 'ganar' },
+    { name: 'US Racing', stars: 4, logo: 'assets/images/logo us racing.png', focus: 'equilibrado' },
+    { name: 'PHM Racing', stars: 3, logo: 'assets/images/logo phm racing.png', focus: 'desarrollo' },
+    { name: 'Jenzer Motorsport', stars: 3, logo: 'assets/images/logo jenzer.png', focus: 'desarrollo' },
+    { name: 'AKM Motorsport', stars: 3, logo: 'assets/images/logo akm.png', focus: 'desarrollo' },
+    { name: 'Hitech', stars: 5, logo: 'assets/images/logo hitech.png', focus: 'ganar' },
   ],
   'Formula Regional': [
     { name: 'Trident', stars: 3, logo: 'assets/images/logo trident.png', focus: 'desarrollo' },
     { name: 'ART Grand Prix', stars: 4, logo: 'assets/images/logo art grand prix.png', focus: 'equilibrado' },
     { name: 'Prema', stars: 5, logo: 'assets/images/logo prema.png', focus: 'ganar' },
+    { name: 'R-ace GP', stars: 5, logo: 'assets/images/logo r-ace.png', focus: 'ganar' },
+    { name: 'MP Motorsport', stars: 4, logo: 'assets/images/logo mp motorsports.png', focus: 'equilibrado' },
+    { name: 'Van Amersfoort', stars: 4, logo: 'assets/images/logo van amersfoort.png', focus: 'equilibrado' },
+    { name: 'RPM', stars: 3, logo: 'assets/images/logo rpm.png', focus: 'desarrollo' },
+    { name: 'G4 Racing', stars: 3, logo: 'assets/images/logo g4.png', focus: 'desarrollo' },
   ],
   'F3': [
     { name: 'Hitech', stars: 3, logo: 'assets/images/logo hitech.png', focus: 'desarrollo' },
     { name: 'AIX Racing', stars: 4, logo: 'assets/images/logo aix racing.png', focus: 'equilibrado' },
     { name: 'Prema', stars: 5, logo: 'assets/images/logo prema.png', focus: 'ganar' },
+    { name: 'Trident', stars: 5, logo: 'assets/images/logo trident.png', focus: 'ganar' },
+    { name: 'ART Grand Prix', stars: 4, logo: 'assets/images/logo art grand prix.png', focus: 'equilibrado' },
+    { name: 'MP Motorsport', stars: 4, logo: 'assets/images/logo mp motorsports.png', focus: 'equilibrado' },
+    { name: 'Campos', stars: 3, logo: 'assets/images/logo campos.png', focus: 'desarrollo' },
+    { name: 'Van Amersfoort', stars: 3, logo: 'assets/images/logo van amersfoort.png', focus: 'desarrollo' },
+    { name: 'Rodin Motorsport', stars: 4, logo: 'assets/images/logo rodin.png', focus: 'equilibrado' },
+    { name: 'Jenzer Motorsport', stars: 3, logo: 'assets/images/logo jenzer.png', focus: 'desarrollo' },
   ],
   'F2': [
     { name: 'MP Motorsport', stars: 3, logo: 'assets/images/logo mp motorsports.png', focus: 'desarrollo' },
     { name: 'Prema', stars: 4, logo: 'assets/images/logo prema.png', focus: 'equilibrado' },
     { name: 'Invicta', stars: 5, logo: 'assets/images/logo invicta.png', focus: 'ganar' },
+    { name: 'ART Grand Prix', stars: 4, logo: 'assets/images/logo art grand prix.png', focus: 'equilibrado' },
+    { name: 'Rodin Motorsport', stars: 4, logo: 'assets/images/logo rodin.png', focus: 'equilibrado' },
+    { name: 'Hitech Pulse-Eight', stars: 4, logo: 'assets/images/logo hitech.png', focus: 'equilibrado' },
+    { name: 'DAMS', stars: 4, logo: 'assets/images/logo dams.png', focus: 'equilibrado' },
+    { name: 'Campos', stars: 3, logo: 'assets/images/logo campos.png', focus: 'desarrollo' },
+    { name: 'Trident', stars: 3, logo: 'assets/images/logo trident.png', focus: 'desarrollo' },
+    { name: 'Van Amersfoort', stars: 3, logo: 'assets/images/logo van amersfoort.png', focus: 'desarrollo' },
+    { name: 'AIX Racing', stars: 3, logo: 'assets/images/logo aix racing.png', focus: 'desarrollo' },
   ],
   'F1': [
     { name: 'Cadillac', stars: 1, logo: 'assets/images/logo cadillac.png' },
@@ -868,21 +898,21 @@ function showInterview(postSeasonId = null) {
 
 const UPGRADES = [
   // Lujo
-  { id: 'jet', name: 'Jet Privado', tier: 'lujo', icon: '✈️', desc: 'Aumenta reputación pasivamente y reduce el cansancio de los viajes.', cost: 15000000, stats: {} },
-  { id: 'mansion', name: 'Mansión en Mónaco', tier: 'lujo', icon: '🏰', desc: 'Aumenta reputación y reduce drásticamente el deterioro de las estadísticas por edad.', cost: 25000000, stats: {} },
-  { id: 'agent', name: 'Agente Estrella', tier: 'lujo', icon: '👔', desc: 'Los equipos de F1 exigen menos reputación y pagan mejores salarios.', cost: 10000000, stats: {} },
-  { id: 'track', name: 'Pista de Kart Personal', tier: 'lujo', icon: '🏁', desc: 'Aumenta la ganancia natural de tus estadísticas.', cost: 5000000, stats: {} },
-  { id: 'charity', name: 'Fundación Benéfica', tier: 'lujo', icon: '🤝', desc: 'Aumenta tu reputación cada temporada y mitiga escándalos mediáticos.', cost: 8000000, stats: {} },
-  { id: 'yacht', name: 'Yate de Lujo', tier: 'lujo', icon: '🛥️', desc: 'Aumento de reputación. Un mal resultado no dañará tanto tu imagen.', cost: 20000000, stats: {} },
-  { id: 'kart_team', name: 'Escudería de Karting Propia', tier: 'lujo', icon: '🏎️', desc: 'Ingresos pasivos anuales y mejora tu ganancia de Velocidad.', cost: 12000000, stats: {} },
-  { id: 'cryo', name: 'Cámara Hiperbárica', tier: 'lujo', icon: '🧊', desc: 'Reduce el deterioro físico de la edad (Velocidad y Constancia).', cost: 7000000, stats: {} },
+  { id: 'jet', name: 'Jet Privado', tier: 'lujo', icon: '✈️', desc: 'Aumenta reputación pasivamente y reduce el cansancio de los viajes.', cost: 10000000, stats: {} },
+  { id: 'mansion', name: 'Mansión en Mónaco', tier: 'lujo', icon: '🏰', desc: 'Aumenta reputación y reduce drásticamente el deterioro de las estadísticas por edad.', cost: 20000000, stats: {} },
+  { id: 'agent', name: 'Agente Estrella', tier: 'lujo', icon: '👔', desc: 'Los equipos de F1 exigen menos reputación y pagan mejores salarios.', cost: 8000000, stats: {} },
+  { id: 'track', name: 'Pista de Kart Personal', tier: 'lujo', icon: '🏁', desc: 'Aumenta la ganancia natural de tus estadísticas.', cost: 4000000, stats: {} },
+  { id: 'charity', name: 'Fundación Benéfica', tier: 'lujo', icon: '🤝', desc: 'Aumenta tu reputación cada temporada y mitiga escándalos mediáticos.', cost: 7000000, stats: {} },
+  { id: 'yacht', name: 'Yate de Lujo', tier: 'lujo', icon: '🛥️', desc: 'Aumento de reputación. Un mal resultado no dañará tanto tu imagen.', cost: 15000000, stats: {} },
+  { id: 'kart_team', name: 'Escudería de Karting Propia', tier: 'lujo', icon: '🏎️', desc: 'Ingresos pasivos anuales y mejora tu ganancia de Velocidad.', cost: 10000000, stats: {} },
+  { id: 'cryo', name: 'Cámara Hiperbárica', tier: 'lujo', icon: '🧊', desc: 'Reduce el deterioro físico de la edad (Velocidad y Constancia).', cost: 5000000, stats: {} },
 
   // Staff
   { id: 'photographer', name: 'Fotógrafo Personal', tier: 'staff', icon: '📸', desc: 'Ganas mucha más reputación al conseguir buenos resultados.', cost: 1000000, stats: {} },
-  { id: 'pr_team', name: 'Equipo de PR', tier: 'staff', icon: '🎙️', desc: 'Reduce el impacto de respuestas polémicas a la prensa.', cost: 2500000, stats: {} },
-  { id: 'psychologist', name: 'Psicólogo Deportivo', tier: 'staff', icon: '🧠', desc: 'Mitiga la pérdida de moral y reputación tras un abandono (DNF).', cost: 1500000, stats: {} },
-  { id: 'mentor', name: 'Mentor Ex-Campeón', tier: 'staff', icon: '👑', desc: 'Aumenta pasivamente tus habilidades para clasificar y adelantar en pista.', cost: 3000000, stats: { quali: 2, overtake: 2 } },
-  { id: 'classics', name: 'Colección de Clásicos', tier: 'staff', icon: '🚗', desc: 'Gran impulso a tu reputación histórica.', cost: 5000000, stats: {} },
+  { id: 'pr_team', name: 'Equipo de PR', tier: 'staff', icon: '🎙️', desc: 'Reduce el impacto de respuestas polémicas a la prensa.', cost: 2000000, stats: {} },
+  { id: 'psychologist', name: 'Psicólogo Deportivo', tier: 'staff', icon: '🧠', desc: 'Mitiga la pérdida de moral y reputación tras un abandono (DNF).', cost: 1000000, stats: {} },
+  { id: 'mentor', name: 'Mentor Ex-Campeón', tier: 'staff', icon: '👑', desc: 'Aumenta pasivamente tus habilidades para clasificar y adelantar en pista.', cost: 2500000, stats: { quali: 2, overtake: 2 } },
+  { id: 'classics', name: 'Colección de Clásicos', tier: 'staff', icon: '🚗', desc: 'Gran impulso a tu reputación histórica.', cost: 4000000, stats: {} },
 
   // Basicas
   { id: 'trainer', name: 'Preparador Físico', tier: 'basica', icon: '💪', desc: '+3 Constancia (Gestión de Gomas)', cost: 250000, stats: { tyres: 3 } },
@@ -1109,20 +1139,38 @@ function buildPreseason() {
 
 function renderStatsDisplay() {
   const stats = [
-    { key: 'speed', label: 'Velocidad' },
-    { key: 'quali', label: 'Clasificación' },
-    { key: 'rain', label: 'Lluvia' },
-    { key: 'tyres', label: 'Gestión' },
-    { key: 'overtake', label: 'Adelantamientos' },
+    { key: 'speed', label: 'VEL' },
+    { key: 'quali', label: 'CLA' },
+    { key: 'rain', label: 'LLU' },
+    { key: 'tyres', label: 'GES' },
+    { key: 'overtake', label: 'ADE' },
   ];
   const el = document.getElementById('stats-display');
-  el.innerHTML = stats.map(s => `
-    <div class="skill-row">
-      <div class="skill-name">${s.label}</div>
-      <div class="skill-bar"><div class="skill-fill" style="width:${G.stats[s.key]}%"></div></div>
-      <div class="skill-val">${Math.round(G.stats[s.key])}</div>
-    </div>
-  `).join('');
+
+  const tierColor = (v) => {
+    if (v >= 80) return 'var(--accent)';
+    if (v >= 60) return 'var(--green)';
+    if (v >= 40) return 'var(--blue)';
+    return 'var(--accent2)';
+  };
+
+  const values = stats.map(s => Math.round(G.stats[s.key]));
+  const best = Math.max(...values);
+
+  el.innerHTML = `<div class="mini-stat-row">
+    ${stats.map((s, i) => {
+      const v = values[i];
+      const color = tierColor(v);
+      const isBest = v === best;
+      const fillPct = Math.max(4, Math.min(100, Math.round((v / 99) * 100)));
+      return `
+      <div class="mini-stat-box">
+        <div class="mini-stat-label">${s.label}</div>
+        <div class="mini-stat-val" style="color:${color}">${v}</div>
+        <div class="mini-stat-bar"><div class="mini-stat-fill" style="width:${fillPct}%; background:${color}"></div></div>
+      </div>`;
+    }).join('')}
+  </div>`;
 }
 
 function buildActivities() {
@@ -1565,7 +1613,7 @@ function computeSeasonResult() {
     if (!G.storyFlags['interview_ev_mentor'] && G.upgrades.includes('mentor') && champ <= 3 && Math.random() < 0.2) possibleEvents.push('ev_mentor');
     if (!G.storyFlags['interview_ev_kart'] && G.upgrades.includes('kart_team') && Math.random() < 0.15) possibleEvents.push('ev_kart');
     if (!G.storyFlags['interview_ev_classics'] && G.upgrades.includes('classics') && Math.random() < 0.15) possibleEvents.push('ev_classics');
-    if (!G.storyFlags['interview_ev_agent'] && G.upgrades.includes('agent') && G.contract > 1 && Math.random() < 0.1) possibleEvents.push('ev_agent');
+    if (!G.storyFlags['interview_ev_agent'] && G.upgrades.includes('agent') && G.f1ContractYearsLeft > 0 && Math.random() < 0.1) possibleEvents.push('ev_agent');
     
     if (possibleEvents.length > 0) {
         if (!G._postSeasonSteps) G._postSeasonSteps = [];
@@ -1584,42 +1632,6 @@ function computeSeasonResult() {
     : (G.team && G.team.focus === 'desarrollo') ? 0.7
       : 1.0;
   let rep = Math.round(((100 - champ) * 2 + wins * 5) * focusRepMult);
-
-  if (cat === 'F1' && G.peer) {
-    const peerTeam = TEAMS['F1'].find(t => t.name === G.peer.team);
-    const peerCarStars = peerTeam ? peerTeam.stars : 1;
-    // Compare car levels and championship position
-    const playerAdvantage = G.team.stars - peerCarStars + (champ <= 3 ? 1 : 0);
-    
-    let peerAhead = false;
-    if (champ === 1) peerAhead = false;
-    else if (playerAdvantage < -1) peerAhead = true;
-    else if (playerAdvantage === -1) peerAhead = Math.random() > 0.3;
-    else if (playerAdvantage === 0) peerAhead = Math.random() > 0.5;
-    else if (playerAdvantage === 1) peerAhead = Math.random() > 0.8;
-    
-    if (peerAhead) {
-      G.peer.h2hWins++;
-      if (wins > 0 && Math.random() < 0.6) {
-        const stolen = Math.max(1, Math.floor(wins * 0.4));
-        wins -= stolen;
-        G._seasonEventLogs.push(`🏎️ ${G.peer.name} te superó en el mundial y te peleó ${stolen} victoria(s).`);
-      } else {
-        G._seasonEventLogs.push(`🏎️ ${G.peer.name} terminó por delante tuyo en el mundial esta temporada.`);
-      }
-    } else {
-      G.peer.h2hLosses++;
-      G._seasonEventLogs.push(`🏎️ Terminaste por delante de ${G.peer.name} en el mundial.`);
-    }
-
-    // Lógica del Escudero: Si ambos están en el mismo equipo, el equipo es competitivo, 
-    // el rival queda delante tuyo y vos terminás 2do o 3ro.
-    if (G.team && G.team.name === G.peer.team) {
-      if (peerAhead && peerCarStars >= 4 && (champ === 2 || champ === 3)) {
-        G.wasEscudero = true;
-      }
-    }
-  }
 
   if (G.upgrades.includes('photographer') && podiums > 0) {
       const pBonus = Math.floor(rep * 0.4);
@@ -2032,10 +2044,21 @@ function buildSummary() {
   // ── Idea #3 (hero): championship position front and center ──
   const champClass = r.champ === 1 ? 'good' : r.champ <= 3 ? '' : 'bad';
   const champColor = r.champ === 1 ? 'var(--accent)' : r.champ <= 3 ? 'var(--green)' : 'var(--accent2)';
+
+  const standingsRows = generateStandingsTable(r);
+  _lastStandings = { rows: standingsRows, cat: r.cat, year: r.year };
+  const leaderPoints = standingsRows.find(s => s.rank === 1).points;
+  const myRow = standingsRows.find(s => s.isPlayer);
+  const gapText = r.champ === 1
+    ? '🏆 Líder del campeonato'
+    : `a ${leaderPoints - myRow.points} puntos del líder`;
+
   document.getElementById('sum-hero').innerHTML = `
     <div class="champ-hero" style="background:linear-gradient(160deg, ${champColor}14, transparent); border-color:${champColor}55">
       <div class="label">Posición en el campeonato</div>
       <div class="champ-num ${champClass}" id="sum-champ-num" style="color:${champColor}">0°</div>
+      <div class="sub" style="margin-bottom:8px">${gapText}</div>
+      <div class="standings-link" onclick="openStandingsModal()">Ver tabla completa 📊</div>
     </div>`;
   animateCount(document.getElementById('sum-champ-num'), r.champ, { suffix: '°' });
 
@@ -2818,11 +2841,11 @@ function showContracts() {
     
     const ovrStep = [3, 4, 4, 5, 5, 5][G.catIndex];
 
-    if (stars === 5) return { rep: baseRep + repStep * 2, ovr: baseOvr + ovrStep * 2 };
-    if (stars === 4) return { rep: baseRep + repStep, ovr: baseOvr + ovrStep };
-    if (stars === 3) return { rep: baseRep, ovr: baseOvr };
-    if (stars === 2) return { rep: Math.max(0, baseRep - repStep), ovr: Math.max(0, baseOvr - ovrStep) };
-    return { rep: Math.max(0, baseRep - repStep * 2), ovr: Math.max(0, baseOvr - ovrStep * 2) };
+    if (stars === 5) return { rep: (baseRep + repStep * 2) * agentModRep, ovr: baseOvr + ovrStep * 2 + agentModOvr };
+    if (stars === 4) return { rep: (baseRep + repStep) * agentModRep, ovr: baseOvr + ovrStep + agentModOvr };
+    if (stars === 3) return { rep: baseRep * agentModRep, ovr: baseOvr + agentModOvr };
+    if (stars === 2) return { rep: Math.max(0, baseRep - repStep) * agentModRep, ovr: Math.max(0, baseOvr - ovrStep) + agentModOvr };
+    return { rep: Math.max(0, baseRep - repStep * 2) * agentModRep, ovr: Math.max(0, baseOvr - ovrStep * 2) + agentModOvr };
   };
 
   // Filter out teams that require more rep or ovr than you have
@@ -2868,6 +2891,17 @@ function showContracts() {
     offerPool = finalOffers;
   } else {
     offerPool = shuffle(offerPool);
+    const selectedOffers = [];
+    ['desarrollo', 'equilibrado', 'ganar'].forEach(focusType => {
+      const teamOfFocus = offerPool.find(t => t.focus === focusType);
+      if (teamOfFocus) selectedOffers.push(teamOfFocus);
+    });
+    while (selectedOffers.length < 3 && selectedOffers.length < offerPool.length) {
+      const extraTeam = offerPool.find(t => !selectedOffers.includes(t));
+      if (extraTeam) selectedOffers.push(extraTeam);
+      else break;
+    }
+    offerPool = selectedOffers;
   }
 
   const list = document.getElementById('contracts-list');
@@ -3604,6 +3638,115 @@ const ACHIEVEMENTS = [
 ];
 
 let G_unlockedAchievements = [];
+let _lastStandings = null; // cache de la clasificación generada para el resumen actual
+
+// ═══════════════════════════════════════════════════════════
+//  CLASIFICACIÓN DEL CAMPEONATO (modal opcional en el resumen)
+//  Genera una tabla plausible a partir del resultado ya calculado,
+//  sin simular carrera por carrera. Se cachea una vez por temporada
+//  para que el modal siempre muestre lo mismo que dice el resumen.
+// ═══════════════════════════════════════════════════════════
+function generateStandingsTable(r) {
+  const sizes = { 'Karting': 24, 'F4': 24, 'Formula Regional': 24, 'F3': 30, 'F2': 22, 'F1': 22 };
+  const N = sizes[r.cat] || 20;
+  const BASE = Math.max(140, r.races * 20);
+  const DECAY = 0.85;
+  const catTeams = TEAMS[r.cat] || TEAMS['F1'];
+
+  const rows = [];
+  for (let k = 1; k <= N; k++) {
+    rows.push({ rank: k, points: Math.round(BASE * Math.pow(DECAY, k - 1)) });
+  }
+
+  const myRank = Math.min(Math.max(r.champ, 1), N);
+  const usedNames = new Set();
+
+  const seatsPerTeam = (r.cat === 'F1' || r.cat === 'F2') ? 2 : 3;
+  let seatsPool = [];
+  catTeams.forEach(t => {
+    for (let i = 0; i < seatsPerTeam; i++) seatsPool.push({ ...t });
+  });
+  
+  const playerTeamName = r.teamName || (G.team && G.team.name) || '—';
+  const playerTIdx = seatsPool.findIndex(t => t.name === playerTeamName);
+  if (playerTIdx !== -1) seatsPool.splice(playerTIdx, 1);
+  
+  if (r.cat === 'F1') {
+    seatsPool.forEach(t => {
+      t._power = (t.stars * 10) + (Math.random() * 25);
+    });
+    seatsPool.sort((a, b) => b._power - a._power);
+  } else {
+    seatsPool = shuffle(seatsPool);
+  }
+
+  rows.forEach(row => {
+    if (row.rank === myRank) {
+      row.isPlayer = true;
+      row.name = `${G.flag} ${G.name}`;
+      row.team = playerTeamName;
+      const tObj = catTeams.find(t => t.name === row.team);
+      row.logo = (r.cat !== 'Karting' && tObj) ? tObj.logo : null;
+    } else {
+      let full;
+      do { full = randFrom(FIRST_NAMES) + ' ' + randFrom(LAST_NAMES); } while (usedNames.has(full));
+      usedNames.add(full);
+      row.name = full;
+      
+      const randT = seatsPool.length > 0 ? seatsPool.shift() : randFrom(catTeams);
+      row.team = randT.name;
+      row.logo = r.cat !== 'Karting' ? randT.logo : null;
+    }
+  });
+
+  if (G.peer && r.cat === 'F1') {
+    const peerRow = rows.find(row => !row.isPlayer && row.team === G.peer.team);
+    if (peerRow) {
+      peerRow.name = `⚔️ ${G.peer.name}`;
+      peerRow.isPeer = true;
+      const peerTObj = TEAMS['F1'].find(t => t.name === peerRow.team);
+      peerRow.logo = peerTObj ? peerTObj.logo : null;
+    }
+  }
+
+  return rows;
+}
+
+function openStandingsModal() {
+  if (!_lastStandings) return;
+  const overlay = document.getElementById('standings-modal-overlay');
+  if (!overlay) return;
+
+  const rowsHtml = _lastStandings.rows.map(row => `
+    <div class="standings-row${row.isPlayer ? ' is-player' : ''}">
+      <span class="standings-pos">${row.rank}°</span>
+      <span class="standings-name">${row.name}</span>
+      <span class="standings-team">${row.logo ? `<img src="${row.logo}" title="${row.team}" alt="${row.team}" style="height:14px; vertical-align:middle; max-width:100%; object-fit:contain;">` : row.team}</span>
+      <span class="standings-pts">${row.points}</span>
+    </div>`).join('');
+
+  overlay.innerHTML = `
+    <div class="ach-modal standings-modal" onclick="event.stopPropagation()">
+      <div class="ach-modal-title" style="margin-bottom:4px">Clasificación</div>
+      <div class="sub" style="margin-bottom:10px">${_lastStandings.cat} — Temporada ${_lastStandings.year}</div>
+      <div class="standings-list">${rowsHtml}</div>
+      <button class="btn btn-secondary ach-modal-close" onclick="closeStandingsModal()">CERRAR</button>
+    </div>`;
+
+  void overlay.offsetWidth;
+  overlay.classList.add('open');
+  setTimeout(() => {
+    const playerRow = overlay.querySelector('.standings-row.is-player');
+    if (playerRow && typeof playerRow.scrollIntoView === 'function') playerRow.scrollIntoView({ block: 'center' });
+  }, 60);
+}
+
+function closeStandingsModal() {
+  const overlay = document.getElementById('standings-modal-overlay');
+  if (!overlay || !overlay.classList.contains('open')) return;
+  overlay.classList.remove('open');
+  setTimeout(() => { overlay.innerHTML = ''; }, 250);
+}
 
 function loadAchievements() {
   try {
@@ -3742,4 +3885,5 @@ function closeAchievementModal() {
 
 // Load achievements on boot
 loadAchievements();
+
 

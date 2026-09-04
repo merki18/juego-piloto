@@ -228,7 +228,9 @@
   .stripe { width: 40px; height: 4px; background: var(--accent); border-radius: 2px; margin-bottom: 16px; }
 
   /* ── NATIONALITY GRID ── */
-  .nat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+  .nat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; max-height: 140px; overflow-y: auto; padding-right: 4px; }
+  .nat-grid::-webkit-scrollbar { width: 6px; }
+  .nat-grid::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
   .nat-btn { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 4px; text-align: center; cursor: pointer; font-size: 20px; transition: border-color .15s; }
   .nat-btn.selected { border-color: var(--accent); background: rgba(232,200,74,.08); }
   .nat-btn span { display: block; font-size: 10px; color: var(--muted); margin-top: 2px; }

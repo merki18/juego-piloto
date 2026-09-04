@@ -6,11 +6,19 @@ const CATEGORIES = ['Karting', 'F4', 'Formula Regional', 'F3', 'F2', 'F1'];
 
 const NATIONALITIES = [
   { flag: '🇦🇷', name: 'Argentina' }, { flag: '🇧🇷', name: 'Brasil' },
-  { flag: '🇲🇽', name: 'México' }, { flag: '🇺🇸', name: 'EE.UU.' },
-  { flag: '🇬🇧', name: 'Gran Bretaña' }, { flag: '🇩🇪', name: 'Alemania' },
+  { flag: '🇲🇽', name: 'México' }, { flag: '🇺🇸', name: 'Estados Unidos' }, { flag: '🇬🇧', name: 'Reino Unido' }, { flag: '🇩🇪', name: 'Alemania' },
   { flag: '🇫🇷', name: 'Francia' }, { flag: '🇮🇹', name: 'Italia' },
   { flag: '🇪🇸', name: 'España' }, { flag: '🇳🇱', name: 'Países Bajos' },
   { flag: '🇲🇨', name: 'Mónaco' }, { flag: '🇯🇵', name: 'Japón' },
+  { flag: '🇦🇺', name: 'Australia' }, { flag: '🇳🇿', name: 'Nueva Zelanda' },
+  { flag: '🇫🇮', name: 'Finlandia' }, { flag: '🇨🇦', name: 'Canadá' },
+  { flag: '🇹🇭', name: 'Tailandia' }, { flag: '🇵🇾', name: 'Paraguay' },
+  { flag: '🇧🇬', name: 'Bulgaria' }, { flag: '🇸🇪', name: 'Suecia' },
+  { flag: '🇵🇱', name: 'Polonia' }, { flag: '🇨🇴', name: 'Colombia' },
+  { flag: '🇳🇴', name: 'Noruega' }, { flag: '🇮🇪', name: 'Irlanda' },
+  { flag: '🇮🇳', name: 'India' }, { flag: '🇩🇰', name: 'Dinamarca' },
+  { flag: '🇸🇬', name: 'Singapur' }, { flag: '🇰🇷', name: 'Corea del Sur' },
+  { flag: '🇱🇰', name: 'Sri Lanka' }, { flag: '🇨🇳', name: 'China' }
 ];
 
 const TALENTS = [
@@ -978,6 +986,112 @@ function resetGame() {
   document.getElementById('topbar').style.display = 'none';
   document.getElementById('path-bar').style.display = 'none';
 }
+function generateInitialRoster() {
+  const roster = [];
+  let idCounter = 1;
+  const generateDriver = (name, team, age, nat, cat, skill) => {
+    let flag = '🏁';
+    const foundNat = NATIONALITIES.find(n => n.name === nat);
+    if (foundNat) flag = foundNat.flag;
+    roster.push({ id: 'ai_' + idCounter++, name, team, age, flag, cat, skill });
+  };
+
+  // F1
+  generateDriver('Kimi Antonelli', 'Mercedes', 20, 'Italia', 'F1', 88);
+  generateDriver('George Russell', 'Mercedes', 28, 'Reino Unido', 'F1', 92);
+  generateDriver('Lewis Hamilton', 'Ferrari', 41, 'Reino Unido', 'F1', 95);
+  generateDriver('Charles Leclerc', 'Ferrari', 28, 'Mónaco', 'F1', 94);
+  generateDriver('Lando Norris', 'McLaren', 26, 'Reino Unido', 'F1', 94);
+  generateDriver('Oscar Piastri', 'McLaren', 25, 'Australia', 'F1', 91);
+  generateDriver('Max Verstappen', 'Red Bull', 29, 'Países Bajos', 'F1', 98);
+  generateDriver('Isack Hadjar', 'Red Bull', 22, 'Francia', 'F1', 84);
+  generateDriver('Liam Lawson', 'Racing Bulls', 24, 'Nueva Zelanda', 'F1', 85);
+  generateDriver('Arvid Lindblad', 'Racing Bulls', 19, 'Reino Unido', 'F1', 81);
+  generateDriver('Pierre Gasly', 'Alpine', 30, 'Francia', 'F1', 86);
+  generateDriver('Franco Colapinto', 'Alpine', 23, 'Argentina', 'F1', 87);
+  generateDriver('Oliver Bearman', 'Haas F1', 21, 'Reino Unido', 'F1', 86);
+  generateDriver('Esteban Ocon', 'Haas F1', 30, 'Francia', 'F1', 85);
+  generateDriver('Gabriel Bortoleto', 'Audi', 22, 'Brasil', 'F1', 85);
+  generateDriver('Nico Hülkenberg', 'Audi', 39, 'Alemania', 'F1', 85);
+  generateDriver('Carlos Sainz', 'Williams', 32, 'España', 'F1', 90);
+  generateDriver('Alexander Albon', 'Williams', 30, 'Tailandia', 'F1', 86);
+  generateDriver('Fernando Alonso', 'Aston Martin', 45, 'España', 'F1', 92);
+  generateDriver('Lance Stroll', 'Aston Martin', 28, 'Canadá', 'F1', 81);
+  generateDriver('Valtteri Bottas', 'Cadillac', 37, 'Finlandia', 'F1', 83);
+  generateDriver('Sergio Pérez', 'Cadillac', 36, 'México', 'F1', 84);
+
+  // F2
+  generateDriver('Rafael Câmara', 'Invicta', 21, 'Brasil', 'F2', 78);
+  generateDriver('Joshua Dürksen', 'Invicta', 22, 'Paraguay', 'F2', 76);
+  generateDriver('Ritomo Miyata', 'Hitech Pulse-Eight', 26, 'Japón', 'F2', 75);
+  generateDriver('Colton Herta', 'Hitech Pulse-Eight', 26, 'Estados Unidos', 'F2', 82);
+  generateDriver('Noel León', 'Campos', 21, 'México', 'F2', 73);
+  generateDriver('Nikola Tsolov', 'Campos', 19, 'Bulgaria', 'F2', 74);
+  generateDriver('Dino Beganovic', 'DAMS', 22, 'Suecia', 'F2', 76);
+  generateDriver('Roman Bilinski', 'DAMS', 22, 'Polonia', 'F2', 71);
+  generateDriver('Gabriele Minì', 'MP Motorsport', 21, 'Italia', 'F2', 79);
+  generateDriver('Oliver Goethe', 'MP Motorsport', 21, 'Alemania', 'F2', 75);
+  generateDriver('Sebastián Montoya', 'Prema', 21, 'Colombia', 'F2', 72);
+  generateDriver('Mari Boya', 'Prema', 22, 'España', 'F2', 74);
+  generateDriver('Martinius Stenshorne', 'Rodin Motorsport', 20, 'Noruega', 'F2', 75);
+  generateDriver('Alex Dunne', 'Rodin Motorsport', 20, 'Irlanda', 'F2', 77);
+  generateDriver('Kush Maini', 'ART Grand Prix', 25, 'India', 'F2', 76);
+  generateDriver('Tasanapol Inthraphuvasak', 'ART Grand Prix', 20, 'Tailandia', 'F2', 70);
+  generateDriver('Emerson Fittipaldi Jr.', 'AIX Racing', 19, 'Brasil', 'F2', 69);
+  generateDriver('Cian Shields', 'AIX Racing', 21, 'Reino Unido', 'F2', 68);
+  generateDriver('Nicolás Varrone', 'Van Amersfoort', 25, 'Argentina', 'F2', 73);
+  generateDriver('Rafael Villagómez', 'Van Amersfoort', 24, 'México', 'F2', 71);
+  generateDriver('Laurens van Hoepen', 'Trident', 20, 'Países Bajos', 'F2', 72);
+  generateDriver('John Bennett', 'Trident', 22, 'Reino Unido', 'F2', 70);
+
+  // F3
+  generateDriver('Théophile Naël', 'Campos', 18, 'Francia', 'F3', 68);
+  generateDriver('Ugo Ugochukwu', 'Campos', 19, 'Estados Unidos', 'F3', 70);
+  generateDriver('Ernesto Rivera', 'Campos', 17, 'México', 'F3', 65);
+  generateDriver('Noah Strømsted', 'Trident', 18, 'Dinamarca', 'F3', 66);
+  generateDriver('Freddie Slater', 'Trident', 18, 'Reino Unido', 'F3', 72);
+  generateDriver('Matteo De Palo', 'Trident', 18, 'Italia', 'F3', 67);
+  generateDriver('Mattia Colnaghi', 'MP Motorsport', 18, 'Argentina', 'F3', 68);
+  generateDriver('Tuukka Taponen', 'MP Motorsport', 19, 'Finlandia', 'F3', 71);
+  generateDriver('Alessandro Giusti', 'MP Motorsport', 19, 'Francia', 'F3', 69);
+  generateDriver('Taito Kato', 'ART Grand Prix', 18, 'Japón', 'F3', 65);
+  generateDriver('Maciej Gładysz', 'ART Grand Prix', 18, 'Polonia', 'F3', 67);
+  generateDriver('Kanato Le', 'ART Grand Prix', 19, 'Japón', 'F3', 64);
+  generateDriver('Hiyu Yamakoshi', 'Van Amersfoort', 19, 'Japón', 'F3', 68);
+  generateDriver('Enzo Deligny', 'Van Amersfoort', 18, 'Francia', 'F3', 69);
+  generateDriver('Bruno del Pino', 'Van Amersfoort', 20, 'España', 'F3', 65);
+  generateDriver('Pedro Clerot', 'Rodin Motorsport', 19, 'Brasil', 'F3', 66);
+  generateDriver('Brando Badoer', 'Rodin Motorsport', 19, 'Italia', 'F3', 69);
+  generateDriver('Christian Ho', 'Rodin Motorsport', 19, 'Singapur', 'F3', 67);
+  generateDriver('Louis Sharp', 'Prema', 19, 'Nueva Zelanda', 'F3', 71);
+  generateDriver('James Wharton', 'Prema', 20, 'Australia', 'F3', 70);
+  generateDriver('José Garfias', 'Prema', 21, 'México', 'F3', 63);
+  generateDriver('Michael Shin', 'Hitech', 22, 'Corea del Sur', 'F3', 62);
+  generateDriver('Fionn McLaughlin', 'Hitech', 18, 'Irlanda', 'F3', 65);
+  generateDriver('Jin Nakamura', 'Hitech', 20, 'Japón', 'F3', 64);
+  generateDriver('Rafael Escotto', 'AIX Racing', 18, 'México', 'F3', 61);
+  generateDriver('Yevan David', 'AIX Racing', 19, 'Sri Lanka', 'F3', 62);
+  generateDriver('Fernando Barrichello', 'AIX Racing', 20, 'Brasil', 'F3', 60);
+  generateDriver('Nicola Lacorte', 'Jenzer Motorsport', 18, 'Italia', 'F3', 66);
+  generateDriver('Nandhavud Bhirombhakdi', 'Jenzer Motorsport', 20, 'Tailandia', 'F3', 61);
+  generateDriver('Gerrard Xie', 'Jenzer Motorsport', 19, 'China', 'F3', 63);
+
+  // Auto-generate missing for Formula Regional (3x8=24) and F4 (3x8=24)
+  const catsToGen = [{ cat: 'Formula Regional', baseSkill: 50, age: 17 }, { cat: 'F4', baseSkill: 40, age: 16 }];
+  catsToGen.forEach(ctg => {
+    TEAMS[ctg.cat].forEach(t => {
+      for (let i = 0; i < 3; i++) {
+        const first = ["L.", "M.", "A.", "J.", "T.", "O.", "C.", "S.", "E.", "P."][Math.floor(Math.random()*10)];
+        const last = ["Rossi", "Müller", "Smith", "Dubois", "Silva", "Kim", "Olsen", "López", "Ricci", "Novak"][Math.floor(Math.random()*10)];
+        const skill = ctg.baseSkill + Math.floor(Math.random()*10);
+        const nat = NATIONALITIES[Math.floor(Math.random() * NATIONALITIES.length)];
+        roster.push({ id: 'ai_' + idCounter++, name: first + ' ' + last, team: t.name, age: ctg.age + Math.floor(Math.random()*3), flag: nat.flag, cat: ctg.cat, skill });
+      }
+    });
+  });
+
+  return roster;
+}
 
 function initState(name, number, nat, talent) {
   const potential = 90 + Math.floor(Math.random() * 10); // 90-99
@@ -996,6 +1110,7 @@ function initState(name, number, nat, talent) {
     },
     money: 50000,
     reputation: 0,
+    aiRoster: generateInitialRoster(),
     _seasonEventLogs: [],
     team: TEAMS['Karting'][0],
     seasons: [],
@@ -1489,6 +1604,7 @@ function runSimulation() {
 }
 
 function processSeasonStep() {
+  if (!G.aiRoster) G.aiRoster = generateInitialRoster();
   if (!G._seasonSteps || G._seasonSteps.length === 0) {
     checkNicknames();
     buildSummary();
@@ -2232,6 +2348,31 @@ function afterSummary() {
   // Advance Age & Year
   G.year++;
   G.age++;
+  
+  if (G.aiRoster) {
+    G.aiRoster.forEach(d => {
+      d.age++;
+      if (d.age < 28) d.skill += Math.floor(Math.random() * 3);
+      else if (d.age > 33) d.skill -= Math.floor(Math.random() * 3);
+    });
+    let retiredF1Seats = [];
+    G.aiRoster = G.aiRoster.filter(d => {
+      if (d.cat === 'F1' && (d.age >= 39 || (d.age >= 36 && Math.random() < 0.4))) {
+        retiredF1Seats.push(d.team);
+        return false;
+      }
+      return true;
+    });
+    if (retiredF1Seats.length > 0) {
+      let f2Drivers = G.aiRoster.filter(d => d.cat === 'F2').sort((a,b) => b.skill - a.skill);
+      for (let i = 0; i < retiredF1Seats.length; i++) {
+        if (f2Drivers[i]) {
+          f2Drivers[i].cat = 'F1';
+          f2Drivers[i].team = retiredF1Seats[i];
+        }
+      }
+    }
+  }
 
   // Check retirement
   const maxAge = 35 + Math.floor((r.rating || 50) / 20);
@@ -3480,28 +3621,48 @@ const FIRST_NAMES = ["Oliver", "Jack", "Harry", "Jacob", "Charlie", "Thomas", "G
 const LAST_NAMES = ["Smith", "Jones", "Taylor", "Brown", "Williams", "Wilson", "Johnson", "Davies", "Robinson", "Wright", "Thompson", "Evans", "Walker", "White", "Roberts", "Green", "Hall", "Wood", "Jackson", "Clarke", "García", "Martínez", "López", "González", "Rodríguez", "Fernández", "Pérez", "Gómez", "Sánchez", "Romero", "Sosa", "Torres", "Álvarez", "Ruiz", "Ramírez", "Flores", "Benítez", "Acosta", "Medina", "Herrera", "Suárez", "Dupont", "Dubois", "Lefebvre", "Leroy", "Roux", "Müller", "Schmidt", "Schneider", "Fischer", "Weber", "Meyer", "Wagner", "Becker"];
 
 function generatePeer() {
-  const f1Teams = TEAMS['F1'];
-  // Talent level: Random between 2 and 5 stars
-  const r = Math.random();
-  let stars = 2;
-  if (r < 0.2) stars = 5;       // Generational talent (20%)
-  else if (r < 0.5) stars = 4;  // Very good (30%)
-  else if (r < 0.8) stars = 3;  // Midfield (30%)
-  else stars = 2;               // Backmarker (20%)
+  if (G.peer) return; 
+  if (!G.aiRoster) return;
+  
+  if (G.catIndex === 5) {
+    let f2Drivers = G.aiRoster.filter(d => d.cat === 'F2');
+    f2Drivers.sort((a,b) => b.skill - a.skill);
+    let pickedF2 = f2Drivers[Math.floor(Math.random() * Math.min(3, f2Drivers.length))];
+    if (pickedF2) {
+      pickedF2.cat = 'F1';
+      let f1Drivers = G.aiRoster.filter(d => d.cat === 'F1' && d.id !== pickedF2.id);
+      let displacedF1 = f1Drivers[Math.floor(Math.random() * f1Drivers.length)];
+      pickedF2.team = displacedF1.team;
+      G.aiRoster = G.aiRoster.filter(d => d.id !== displacedF1.id);
+      const tObj = TEAMS['F1'].find(t => t.name === pickedF2.team);
+      G.peer = {
+        id: pickedF2.id,
+        name: pickedF2.name,
+        nat: { name: 'Unknown', flag: pickedF2.flag },
+        talent: tObj ? tObj.stars : 3,
+        team: pickedF2.team,
+        relationship: 0,
+        h2hWins: 0, h2hLosses: 0,
+        contractYearsLeft: Math.random() < 0.5 ? 1 : 2
+      };
+      return;
+    }
+  }
 
-  // Assign to a team corresponding to their star level, or lower.
-  const validTeams = f1Teams.filter(t => t.stars <= stars);
-  const initialTeam = validTeams.length > 0 ? randFrom(validTeams).name : f1Teams[f1Teams.length - 1].name;
-
+  let candidates = G.aiRoster.filter(d => d.cat === 'F1');
+  if (candidates.length === 0) candidates = G.aiRoster.filter(d => d.cat === 'F2');
+  if (candidates.length === 0) return;
+  const picked = randFrom(candidates);
+  const tObj = TEAMS['F1'].find(t => t.name === picked.team);
   G.peer = {
-    name: randFrom(FIRST_NAMES) + ' ' + randFrom(LAST_NAMES),
-    nat: randFrom(NATIONALITIES),
-    talent: stars,
-    team: initialTeam,
-    relationship: 0, // -100 to +100
-    h2hWins: 0,
-    h2hLosses: 0,
-    contractYearsLeft: Math.random() < 0.5 ? 1 : 2 // 2 to 3 years initially
+    id: picked.id,
+    name: picked.name,
+    nat: { name: 'Unknown', flag: picked.flag },
+    talent: tObj ? tObj.stars : 3,
+    team: picked.team,
+    relationship: 0,
+    h2hWins: 0, h2hLosses: 0,
+    contractYearsLeft: Math.random() < 0.5 ? 1 : 2
   };
 }
 
@@ -3514,24 +3675,21 @@ function updatePeerContract() {
   }
 
   const f1Teams = TEAMS['F1'];
-  
-  // Decide if they move. Generational talents are more likely to move UP.
   const r = Math.random();
   let currentTeam = f1Teams.find(t => t.name === G.peer.team);
   if (!currentTeam) currentTeam = f1Teams[0];
 
+  let oldTeam = G.peer.team;
   let newTeam = G.peer.team;
   let action = 'renews';
 
   if (currentTeam.stars < G.peer.talent && r < 0.6) {
-    // Moves up! Try to find a team with more stars up to their talent level
     const betterTeams = f1Teams.filter(t => t.stars > currentTeam.stars && t.stars <= G.peer.talent);
     if (betterTeams.length > 0) {
       newTeam = randFrom(betterTeams).name;
       action = 'moves';
     }
   } else if (r < 0.2) {
-    // Random sideways or slight down move
     const lateralTeams = f1Teams.filter(t => t.stars === currentTeam.stars && t.name !== currentTeam.name);
     if (lateralTeams.length > 0) {
       newTeam = randFrom(lateralTeams).name;
@@ -3541,6 +3699,21 @@ function updatePeerContract() {
 
   G.peer.team = newTeam;
   G.peer.contractYearsLeft = Math.random() < 0.5 ? 1 : 2;
+  
+  if (G.aiRoster) {
+    const rosterPeer = G.aiRoster.find(d => d.id === G.peer.id);
+    if (rosterPeer) {
+      rosterPeer.team = newTeam;
+      if (action === 'moves') {
+        let targetTeamDrivers = G.aiRoster.filter(d => d.cat === 'F1' && d.team === newTeam && d.id !== G.peer.id);
+        if (targetTeamDrivers.length > 0) {
+          let displaced = targetTeamDrivers[Math.floor(Math.random() * targetTeamDrivers.length)];
+          displaced.team = oldTeam;
+        }
+      }
+    }
+  }
+  
   return { action, newTeam };
 }
 // ═══════════════════════════════════════════════════════════
@@ -3714,7 +3887,7 @@ let _lastStandings = null; // cache de la clasificación generada para el resume
 //  sin simular carrera por carrera. Se cachea una vez por temporada
 //  para que el modal siempre muestre lo mismo que dice el resumen.
 // ═══════════════════════════════════════════════════════════
-function generateStandingsTable(r) {
+﻿﻿function generateStandingsTable(r) {
   const sizes = { 'Karting': 24, 'F4': 24, 'Formula Regional': 24, 'F3': 30, 'F2': 22, 'F1': 22 };
   const N = sizes[r.cat] || 20;
   const BASE = Math.max(140, r.races * 20);
@@ -3727,27 +3900,65 @@ function generateStandingsTable(r) {
   }
 
   const myRank = Math.min(Math.max(r.champ, 1), N);
-  const usedNames = new Set();
+  const playerTeamName = r.teamName || (G.team && G.team.name) || '???';
+  let aiPool = r.aiStandings;
 
-  const seatsPerTeam = (r.cat === 'F1' || r.cat === 'F2') ? 2 : 3;
-  let seatsPool = [];
-  catTeams.forEach(t => {
-    for (let i = 0; i < seatsPerTeam; i++) seatsPool.push({ ...t });
-  });
-  
-  const playerTeamName = r.teamName || (G.team && G.team.name) || '—';
-  const playerTIdx = seatsPool.findIndex(t => t.name === playerTeamName);
-  if (playerTIdx !== -1) seatsPool.splice(playerTIdx, 1);
-  
-  if (r.cat === 'F1') {
-    seatsPool.forEach(t => {
-      t._power = (t.stars * 10) + (Math.random() * 25);
+  if (!aiPool) {
+    aiPool = [];
+    if (r.cat === 'Karting' || !G.aiRoster) {
+    const usedNames = new Set();
+    const seatsPerTeam = 3;
+    let seatsPool = [];
+    catTeams.forEach(t => {
+      for (let i = 0; i < seatsPerTeam; i++) seatsPool.push({ ...t });
     });
-    seatsPool.sort((a, b) => b._power - a._power);
-  } else {
+    const playerTIdx = seatsPool.findIndex(t => t.name === playerTeamName);
+    if (playerTIdx !== -1) seatsPool.splice(playerTIdx, 1);
     seatsPool = shuffle(seatsPool);
+    
+    for (let i = 0; i < N - 1; i++) {
+      let full;
+      do { full = randFrom(FIRST_NAMES) + ' ' + randFrom(LAST_NAMES); } while (usedNames.has(full));
+      usedNames.add(full);
+      const randT = seatsPool.length > 0 ? seatsPool.shift() : randFrom(catTeams);
+      aiPool.push({ name: full, team: randT.name, logo: randT.logo, _power: Math.random() });
+    }
+    aiPool.sort((a,b) => b._power - a._power);
+  } else {
+    let catDrivers = G.aiRoster.filter(d => d.cat === r.cat);
+    
+    let teamDrivers = catDrivers.filter(d => d.team === playerTeamName);
+    if (teamDrivers.length > 0) {
+      teamDrivers.sort((a,b) => a.skill - b.skill);
+      const displaced = teamDrivers[0];
+      catDrivers = catDrivers.filter(d => d.id !== displaced.id);
+    } else {
+      catDrivers.sort((a,b) => a.skill - b.skill);
+      catDrivers.shift(); 
+    }
+
+    aiPool = catDrivers.map(d => {
+      const tObj = catTeams.find(t => t.name === d.team);
+      const stars = tObj ? tObj.stars : 3;
+      const power = (stars * 10) + d.skill + (Math.random() * 15);
+      return { 
+        name: d.flag + ' ' + d.name, 
+        team: d.team, 
+        logo: tObj ? tObj.logo : null, 
+        _power: power,
+        isPeer: (G.peer && G.peer.id === d.id)
+      };
+    });
+    
+    aiPool.sort((a, b) => b._power - a._power);
+    
+    while (aiPool.length < N - 1) {
+      aiPool.push({ name: '🏁 ' + randFrom(FIRST_NAMES) + ' ' + randFrom(LAST_NAMES), team: randFrom(catTeams).name, logo: null, _power: 0, isPeer: false });
+    }
+  } // END fallback
   }
 
+  let aiIdx = 0;
   rows.forEach(row => {
     if (row.rank === myRank) {
       row.isPlayer = true;
@@ -3756,29 +3967,20 @@ function generateStandingsTable(r) {
       const tObj = catTeams.find(t => t.name === row.team);
       row.logo = (r.cat !== 'Karting' && tObj) ? tObj.logo : null;
     } else {
-      let full;
-      do { full = randFrom(FIRST_NAMES) + ' ' + randFrom(LAST_NAMES); } while (usedNames.has(full));
-      usedNames.add(full);
-      row.name = full;
-      
-      const randT = seatsPool.length > 0 ? seatsPool.shift() : randFrom(catTeams);
-      row.team = randT.name;
-      row.logo = r.cat !== 'Karting' ? randT.logo : null;
+      const ai = aiPool[aiIdx++];
+      row.name = ai.name;
+      row.team = ai.team;
+      row.logo = ai.logo;
+      row.isPeer = ai.isPeer;
+      if (r.cat === 'F1' && row.isPeer) {
+        row.name = '🤝 ' + row.name.substring(3);
+      }
     }
   });
 
-  if (G.peer && r.cat === 'F1') {
-    const peerRow = rows.find(row => !row.isPlayer && row.team === G.peer.team);
-    if (peerRow) {
-      peerRow.name = `⚔️ ${G.peer.name}`;
-      peerRow.isPeer = true;
-      const peerTObj = TEAMS['F1'].find(t => t.name === peerRow.team);
-      peerRow.logo = peerTObj ? peerTObj.logo : null;
-    }
-  }
-
   return rows;
 }
+
 
 function openStandingsModal(view = 'drivers') {
   if (!_lastStandings) return;

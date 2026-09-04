@@ -416,6 +416,51 @@ const MINIGAMES = [
 
 const INTERVIEWS = [
     {
+      id: 'f1_reg_change_better',
+      title: 'El nuevo reglamento funcionó',
+      desc: '¡El cambio de reglas le sentó perfecto a tu equipo! Han interpretado el reglamento mejor que nadie y ahora tienen un coche más rápido.',
+      choices: [
+        { text: 'Elogiar a los ingenieros', pers: 'team', delta: 25, hint: 'Los ingenieros son los héroes (+Equipo).', fixedDesc: '"El trabajo que hicieron en la fábrica durante el invierno fue fenomenal. El coche es un misil." Te ganaste a todo el equipo.' },
+        { text: '"Yo les dije qué camino tomar"', pers: 'aggressiveness', delta: 15, pers2: 'team', delta2: -15, hint: 'Tomas crédito del desarrollo (+Agresividad, -Equipo).', fixedDesc: '"Mis indicaciones en el simulador fueron clave para el diseño aerodinámico." Cierta tensión con el director técnico.' }
+      ]
+    },
+    {
+      id: 'f1_reg_change_worse',
+      title: 'El reglamento fue un golpe duro',
+      desc: 'El equipo se equivocó en el diseño con las nuevas reglas. El coche ha perdido rendimiento comparado con el resto.',
+      choices: [
+        { text: 'Criticar públicamente el diseño', pers: 'aggressiveness', delta: 20, pers2: 'team', delta2: -25, hint: 'Fuego contra tu propio equipo (+Agresividad, -Equipo).', fixedDesc: '"El coche es inmanejable y perdimos meses de desarrollo." La directiva se enfureció contigo.' },
+        { text: 'Llamar a la calma', pers: 'team', delta: 20, pers2: 'media', delta2: -10, hint: 'Proteges al equipo (+Equipo, -Medios).', fixedDesc: '"Es solo el inicio de una nueva era. Vamos a recuperarnos juntos." Eres el líder que el equipo necesitaba en las malas.' }
+      ]
+    },
+{
+      id: 'f1_constructors_champ',
+      title: '¡Campeones de Constructores!',
+      desc: 'Tu escudería ha asegurado el Mundial de Constructores gracias a los puntos sumados a lo largo del año.',
+      choices: [
+        { text: '"Es el mejor equipo de la parrilla"', pers: 'team', delta: 25, hint: 'Reconoces el trabajo de los ingenieros (+Equipo).', fixedDesc: '"Este título se ganó en la fábrica, no en la pista." El equipo está eufórico.' },
+        { text: '"Yo puse el auto donde debía estar"', pers: 'aggressiveness', delta: 20, pers2: 'team', delta2: -10, hint: 'Tomas el crédito (+Agresividad, -Equipo).', fixedDesc: '"Sin mis resultados clave no hubiéramos ganado esto." A los jefes no les gustó tu arrogancia.' }
+      ]
+    },
+    {
+      id: 'f1_teammate_champ',
+      title: 'A la sombra del campeón',
+      desc: 'Tu compañero de equipo se ha coronado Campeón del Mundo de Pilotos con el mismo coche que tú.',
+      choices: [
+        { text: 'Felicitarlo públicamente', pers: 'media', delta: 15, pers2: 'team', delta2: 10, hint: 'Quedas como un señor (+Medios, +Equipo).', fixedDesc: 'Diste la mano y sonreíste para la foto. La prensa elogia tu madurez, aunque por dentro te hierva la sangre.' },
+        { text: '"El año que viene será diferente"', pers: 'aggressiveness', delta: 20, hint: 'Le declaras la guerra (+Agresividad).', fixedDesc: '"Que disfrute ahora, porque el próximo año el 1 lo voy a llevar yo." Pusiste presión sobre tu propio equipo.' }
+      ]
+    },
+    {
+      id: 'f1_zero_points',
+      title: 'Temporada en blanco',
+      desc: 'Ha sido un año durísimo. Terminaste la temporada de Fórmula 1 sin haber sumado ni un solo punto.',
+      choices: [
+        { text: '"El coche simplemente no daba para más"', pers: 'team', delta: -15, pers2: 'media', delta2: 10, hint: 'Culpas a la máquina (-Equipo, +Medios).', fixedDesc: '"Fuimos el equipo más lento todo el año, milagros no puedo hacer." Te sacaste la responsabilidad, pero los mecánicos te miran mal.' },
+        { text: '"Debo mejorar mi conducción"', pers: 'team', delta: 15, hint: 'Asumes la culpa (+Equipo).', fixedDesc: '"He cometido demasiados errores. Prometo volver más fuerte." Asumiste la responsabilidad como un líder.' }
+      ]
+    },
+{
       id: 'ev_jet',
       title: '✈️ Vuelo Compartido',
       desc: 'Tu compañero te pide viajar en tu Jet Privado para la próxima carrera europea.',
@@ -691,7 +736,7 @@ function showInterview(postSeasonId = null) {
   // Select an interview
   let pool = INTERVIEWS.filter(iv => {
     if (postSeasonId) return iv.id === postSeasonId;
-    const psIds = ['f1_epic_champion', 'f1_championship_contender', 'f1_retirement_talk', 'f1_win_record', 'f1_teammate_destroyed', 'f1_peer_departure', 'f1_first_title', 'f1_title_lost', 'f1_title_record_broken'];
+    const psIds = ['f1_epic_champion', 'f1_championship_contender', 'f1_retirement_talk', 'f1_win_record', 'f1_teammate_destroyed', 'f1_peer_departure', 'f1_first_title', 'f1_title_lost', 'f1_title_record_broken', 'f1_constructors_champ', 'f1_teammate_champ', 'f1_zero_points', 'f1_reg_change_better', 'f1_reg_change_worse'];
     if (!postSeasonId && (psIds.includes(iv.id) || iv.id.startsWith('ev_'))) return false; // Hide post-season interviews from mid-season
     if (G.catIndex < 5) return false; // ONLY IN F1
     if (G.storyFlags['interview_' + iv.id]) return false; // NO REPEATS
@@ -1721,7 +1766,8 @@ function computeSeasonResult() {
     if (G.age >= 35 && !G.storyFlags['interview_f1_retirement_talk']) {
       G._postSeasonSteps.push('f1_retirement_talk');
     }
-  }
+  
+    }
 
   // Regulation change in F1: triggered from G._pendingRegChange (set before season)
   if (cat === 'F1' && G._pendingRegChange) {
@@ -1754,13 +1800,24 @@ function computeSeasonResult() {
       pos = end;
     }
 
-    f1Teams.forEach((t, i) => { t.stars = assignment[i]; });
-
-    // Apply next-season bonus to player's current team if they focused on it
+    
+      const oldStars = G.team.stars;
+      f1Teams.forEach((t, i) => { t.stars = assignment[i]; });
+      
+      // Apply next-season bonus to player's current team if they focused on it
     if (G.nextSeasonRegBonus > 0) {
       G.team.stars = Math.min(5, G.team.stars + G.nextSeasonRegBonus);
       G.nextSeasonRegBonus = 0;
     }
+      
+      const newStars = G.team.stars;
+      if (!G._postSeasonSteps) G._postSeasonSteps = [];
+      if (newStars > oldStars) {
+        G._postSeasonSteps.push('f1_reg_change_better');
+      } else if (newStars < oldStars) {
+        G._postSeasonSteps.push('f1_reg_change_worse');
+      }
+
     G._seasonEventLogs.push(`📝 ¡El nuevo reglamento entró en vigor! El mapa de poder en F1 ha cambiado.`);
   }
 }
@@ -2046,7 +2103,18 @@ function buildSummary() {
   const champColor = r.champ === 1 ? 'var(--accent)' : r.champ <= 3 ? 'var(--green)' : 'var(--accent2)';
 
   const standingsRows = generateStandingsTable(r);
-  _lastStandings = { rows: standingsRows, cat: r.cat, year: r.year };
+
+  const teamMap = {};
+  standingsRows.forEach(row => {
+    if (!teamMap[row.team]) teamMap[row.team] = { team: row.team, logo: row.logo, points: 0, hasPlayer: false };
+    teamMap[row.team].points += row.points;
+    if (row.isPlayer) teamMap[row.team].hasPlayer = true;
+  });
+  const constructorRows = Object.values(teamMap)
+    .sort((a,b) => b.points - a.points)
+    .map((t, i) => ({ ...t, rank: i+1 }));
+
+  _lastStandings = { rows: standingsRows, constructors: constructorRows, cat: r.cat, year: r.year, view: 'drivers' };
   const leaderPoints = standingsRows.find(s => s.rank === 1).points;
   const myRow = standingsRows.find(s => s.isPlayer);
   const gapText = r.champ === 1
@@ -3712,39 +3780,67 @@ function generateStandingsTable(r) {
   return rows;
 }
 
-function openStandingsModal() {
+function openStandingsModal(view = 'drivers') {
   if (!_lastStandings) return;
   const overlay = document.getElementById('standings-modal-overlay');
   if (!overlay) return;
+  
+  _lastStandings.view = view;
+  const isConstructors = view === 'constructors';
+  
+  let rowsHtml = '';
+  if (isConstructors) {
+    rowsHtml = _lastStandings.constructors.map(row => {
+      const img = row.logo ? '<img src="' + row.logo + '" title="' + row.team + '" alt="' + row.team + '" style="height:14px; vertical-align:middle; max-width:100%; object-fit:contain;">' : '';
+      return '<div class="standings-row' + (row.hasPlayer ? ' is-player' : '') + '">' +
+        '<span class="standings-pos">' + row.rank + 'º</span>' +
+        '<span class="standings-name">' + row.team + '</span>' +
+        '<span class="standings-team">' + img + '</span>' +
+        '<span class="standings-pts">' + row.points + '</span>' +
+      '</div>';
+    }).join('');
+  } else {
+    rowsHtml = _lastStandings.rows.map(row => {
+      const img = row.logo ? '<img src="' + row.logo + '" title="' + row.team + '" alt="' + row.team + '" style="height:14px; vertical-align:middle; max-width:100%; object-fit:contain;">' : row.team;
+      return '<div class="standings-row' + (row.isPlayer ? ' is-player' : '') + '">' +
+        '<span class="standings-pos">' + row.rank + 'º</span>' +
+        '<span class="standings-name">' + row.name + '</span>' +
+        '<span class="standings-team">' + img + '</span>' +
+        '<span class="standings-pts">' + row.points + '</span>' +
+      '</div>';
+    }).join('');
+  }
 
-  const rowsHtml = _lastStandings.rows.map(row => `
-    <div class="standings-row${row.isPlayer ? ' is-player' : ''}">
-      <span class="standings-pos">${row.rank}°</span>
-      <span class="standings-name">${row.name}</span>
-      <span class="standings-team">${row.logo ? `<img src="${row.logo}" title="${row.team}" alt="${row.team}" style="height:14px; vertical-align:middle; max-width:100%; object-fit:contain;">` : row.team}</span>
-      <span class="standings-pts">${row.points}</span>
-    </div>`).join('');
+  overlay.innerHTML = '<div class="ach-modal standings-modal" onclick="event.stopPropagation()">' +
+      '<div class="ach-modal-title" style="margin-bottom:4px">Clasificación</div>' +
+      '<div class="sub" style="margin-bottom:10px">' + _lastStandings.cat + ' – Temporada ' + _lastStandings.year + '</div>' +
+      
+      '<div style="display:flex; gap:8px; margin-bottom:12px">' +
+        '<button class="btn btn-sm ' + (!isConstructors ? 'btn-primary' : 'btn-secondary') + '" onclick="openStandingsModal(\'drivers\')" style="flex:1">Pilotos</button>' +
+        '<button class="btn btn-sm ' + (isConstructors ? 'btn-primary' : 'btn-secondary') + '" onclick="openStandingsModal(\'constructors\')" style="flex:1">Constructores</button>' +
+      '</div>' +
 
-  overlay.innerHTML = `
-    <div class="ach-modal standings-modal" onclick="event.stopPropagation()">
-      <div class="ach-modal-title" style="margin-bottom:4px">Clasificación</div>
-      <div class="sub" style="margin-bottom:10px">${_lastStandings.cat} — Temporada ${_lastStandings.year}</div>
-      <div class="standings-list">${rowsHtml}</div>
-      <button class="btn btn-secondary ach-modal-close" onclick="closeStandingsModal()">CERRAR</button>
-    </div>`;
+      '<div class="standings-list">' + rowsHtml + '</div>' +
+      '<button class="btn btn-secondary ach-modal-close" onclick="closeStandingsModal()" style="margin-top:12px">CERRAR</button>' +
+    '</div>';
 
   void overlay.offsetWidth;
   overlay.classList.add('open');
-  setTimeout(() => {
-    const playerRow = overlay.querySelector('.standings-row.is-player');
-    if (playerRow && typeof playerRow.scrollIntoView === 'function') playerRow.scrollIntoView({ block: 'center' });
-  }, 60);
+  
+  if (!overlay.dataset.scrolled) {
+    setTimeout(() => {
+      const playerRow = overlay.querySelector('.standings-row.is-player');
+      if (playerRow && typeof playerRow.scrollIntoView === 'function') playerRow.scrollIntoView({ block: 'center' });
+    }, 60);
+    overlay.dataset.scrolled = 'true';
+  }
 }
 
 function closeStandingsModal() {
   const overlay = document.getElementById('standings-modal-overlay');
   if (!overlay || !overlay.classList.contains('open')) return;
   overlay.classList.remove('open');
+  delete overlay.dataset.scrolled;
   setTimeout(() => { overlay.innerHTML = ''; }, 250);
 }
 
@@ -3885,5 +3981,6 @@ function closeAchievementModal() {
 
 // Load achievements on boot
 loadAchievements();
+
 
 

@@ -218,19 +218,19 @@ const RANDOM_EVENTS = [
   {
     icon: '🏋️', title: 'Preparación de pretemporada', desc: 'Tenés un mes libre. ¿Cómo lo usás?', choices: [
       { text: 'Entrenamiento físico', stat: 'tyres', delta: 0, money: 0, skillStat: 'tyres', skillBonus: 5, skillFail: 0, hint: '🛞 Gestión: cuerpo fuerte, poco riesgo de fallar.', successDesc: 'Ciclismo en los Alpes, nado en el océano, trabajo de cuello y core. Llegaste al primer test de pretemporada sin una gota de grasa de más. La vuelta 60 se sintió igual que la 1.', failDesc: 'Entrenaste fuerte pero te exigiste demasiado. Una contractura a fines de enero te obligó a parar dos semanas. Llegaste al primer test con la espalda entumecida.' },
-      { text: 'Simulador y análisis de datos', stat: 'quali', delta: 0, money: 0, skillStat: 'quali', skillBonus: 5, skillFail: 2, hint: '🏎 Clasificación: el simulador amplifica tu técnica', successDesc: 'Horas y horas en el simólador pagaron. Llegaste al primer test sabiendo de memoria los puntos de frenada de los 23 circuitos del calendario. Tu ingeniero no podía creer el nivel de detalle de tu feedback desde el primer día.', failDesc: 'Demasiado tiempo en el simulador y poco en la pista real. Cuando llegaste a Bahréin para el primer test, el asfalto real se sintió extraño. Tardaste dos días en adaptarte.' },
+      { text: 'Simulador y análisis de datos', stat: 'quali', delta: 0, money: 0, skillStat: 'quali', skillBonus: 5, skillFail: 0, hint: '🏎 Clasificación: el simulador amplifica tu técnica', successDesc: 'Horas y horas en el simólador pagaron. Llegaste al primer test sabiendo de memoria los puntos de frenada de los 23 circuitos del calendario. Tu ingeniero no podía creer el nivel de detalle de tu feedback desde el primer día.', failDesc: 'Demasiado tiempo en el simulador y poco en la pista real. Cuando llegaste a Bahréin para el primer test, el asfalto real se sintió extraño. Tardaste dos días en adaptarte.' },
     ]
   },
   {
     icon: '🌍', title: 'Carrera fuera de Europa', desc: 'Esta temporada hay fecha en un circuito callejero de Asia. Calor extremo y mucho tráfico.', choices: [
       { text: 'Atacar desde el principio', stat: 'overtake', delta: 0, money: 0, skillStat: 'overtake', skillBonus: 4, skillFail: -1, hint: '⚔ Adelantamientos: en calles, el duelo lo define esa habilidad', successDesc: 'Vuelta 1, curva 3, adelantaste a tres pilotos de golpe por el interior. Las calles de Yakarta estaban de tu lado. La multitud enloqueció. Los ingenieros de radio gritaron solos.', failDesc: 'Ataque demasiado ambicioso en la primera vuelta. Tocás un guardías metálico y el alerón delantero al suelo. Parada de emergencia y carrera arruinada antes de llegar a la primera chicana.' },
-      { text: 'Priorizar la gestión de temperatura', stat: 'tyres', delta: 0, money: 0, skillStat: 'tyres', skillBonus: 4, skillFail: 1, hint: '🛞 Gestión: el calor destruye gomas, manejá eso', successDesc: 'A 40°C de asfalto, las gomas de todos se degradaban rápido. Vos las cuidaste como si fueran de cristal. En la última vuelta, los que atacaron al principio rodaban como ladrillo. Vos pasabas uno por uno.', failDesc: 'El calor fue más de lo esperado. A pesar de tu ritmo conservador, las gomas cedieron igual y terminaste con un underperformance frustrante. Asia se cobró su precio.' },
+      { text: 'Priorizar la gestión de temperatura', stat: 'tyres', delta: 0, money: 0, skillStat: 'tyres', skillBonus: 4, skillFail: -1, hint: '🛞 Gestión: el calor destruye gomas, manejá eso', successDesc: 'A 40°C de asfalto, las gomas de todos se degradaban rápido. Vos las cuidaste como si fueran de cristal. En la última vuelta, los que atacaron al principio rodaban como ladrillo. Vos pasabas uno por uno.', failDesc: 'El calor fue más de lo esperado. A pesar de tu ritmo conservador, las gomas cedieron igual y terminaste con un underperformance frustrante. Asia se cobró su precio.' },
     ]
   },
   {
     icon: '🏆', title: 'Invitación a test de fábrica', desc: 'Un fabricante de motores te invita a sus instalaciones para un test privado de desarrollo.', choices: [
-      { text: 'Dar feedback técnico detallado', stat: 'quali', delta: 0, money: 0, skillStat: 'quali', skillBonus: 6, skillFail: 2, hint: '🏎 Clasificación: tu análisis técnico vale si lo entendés', successDesc: 'Pasás dos días entero en la fábrica, pizarras, ingenieros y datos. Tu análisis del comportamiento del motor en frenada fue tan preciso que el director de desarrollo pidió que lo incluyeran en el informe oficial.', failDesc: 'Tu feedback fue vago y los ingenieros no pudías trabajar con él. La sesión fue un desastre logístico y te fuiste con la sensación de haber desperdiciado dos días.' },
-      { text: 'Apretar fuerte y demostrar velocidad', stat: 'speed', delta: 0, money: 0, skillStat: 'speed', skillBonus: 6, skillFail: 2, hint: '🚀 Velocidad: más rápido sos, más los impresionás', successDesc: 'Chronos imposibles. Batiste el récord del banco de pruebas en tres configuraciones distintas. El CEO de la empresa estaba en el box y te llamó personalmente al día siguiente para felicitarte.', failDesc: 'El motor estaba programado para test, no para atacar. Forzaste demasiado, tuviste una rotura de transmisión en la vuelta 14 y el test terminó antes. Nadie estaba contento.' },
+      { text: 'Dar feedback técnico detallado', stat: 'quali', delta: 0, money: 0, skillStat: 'quali', skillBonus: 6, skillFail: -1, hint: '🏎 Clasificación: tu análisis técnico vale si lo entendés', successDesc: 'Pasás dos días entero en la fábrica, pizarras, ingenieros y datos. Tu análisis del comportamiento del motor en frenada fue tan preciso que el director de desarrollo pidió que lo incluyeran en el informe oficial.', failDesc: 'Tu feedback fue vago y los ingenieros no pudías trabajar con él. La sesión fue un desastre logístico y te fuiste con la sensación de haber desperdiciado dos días.' },
+      { text: 'Apretar fuerte y demostrar velocidad', stat: 'speed', delta: 0, money: 0, skillStat: 'speed', skillBonus: 6, skillFail: -1, hint: '🚀 Velocidad: más rápido sos, más los impresionás', successDesc: 'Chronos imposibles. Batiste el récord del banco de pruebas en tres configuraciones distintas. El CEO de la empresa estaba en el box y te llamó personalmente al día siguiente para felicitarte.', failDesc: 'El motor estaba programado para test, no para atacar. Forzaste demasiado, tuviste una rotura de transmisión en la vuelta 14 y el test terminó antes. Nadie estaba contento.' },
     ]
   },
   {
@@ -249,14 +249,14 @@ const RANDOM_EVENTS = [
   {
     id: 'monaco',
     icon: '🏙️', title: 'Gran Premio de Mónaco', desc: 'El GP más especial del año. Las calles del Principado perdonan cero. Clasificación lo es todo: en Mónaco, adelantar en carrera es casi imposible. La vuelta de clasificación de tu vida puede definir el fin de semana entero.', choices: [
-      { text: 'Ir al límite absoluto en la Q3', stat: 'quali', delta: 0, money: 0, skillStat: 'quali', skillBonus: 7, skillFail: -3, hint: '🏎 Clasificación: en Mónaco, la pole vale más que en cualquier otro lugar. Todo depende de ella.', successDesc: 'Piscine, Rascasse, Antenne. Cada sector fue perfecto. Cuando cruzaste la línea y el cronómetro marcó P1, el equipo de radio enloqueció. Ganaste en Mónaco. Una victoria que nadie puede comprarte ni quitarte. La canción del pit lane duró hasta la madrugada.', failDesc: 'La chicane de la piscina. Doscientos milímetros de guardarrail más adentro y el alerón estaba roto. Entraste a boxes, el auto quedó en el garaje. En Mónaco no hay segunda oportunidad.' },
-      { text: 'Ser cauteloso y asegurar una buena vuelta', stat: 'tyres', delta: 0, money: 0, skillStat: 'tyres', skillBonus: 5, skillFail: 1, hint: '🛞 Gestión: una vuelta limpia en Mónaco siempre vale más que una arriesgada que termina en el muro.', successDesc: 'No fuiste el más rápido, pero completaste la vuelta perfectamente. Largaste quinto. En carrera, la estrategia de neumáticos hizo el resto: tres pilotos delante tuyo fallaron en la frenada del Casino. Subiste al podio sin tocar un guardarrail.', failDesc: 'Tu cautela fue excesiva y saliste décimo. En Mónaco, desde esa posición, las posibilidades de adelantar son prácticamente nulas. Completaste las vueltas de forma anodina. Una oportunidad perdida en el circuito más icónico del mundo.' },
+      { text: 'Ir al límite absoluto en la Q3', stat: 'quali', delta: 0, money: 0, skillStat: 'quali', skillBonus: 7, skillFail: -3, hint: '🏎 Clasificación: en Mónaco, largar adelante vale más que en cualquier otro lugar. Todo depende de ello.', successDesc: 'Piscine, Rascasse, Antenne. Cada sector fue al límite. Rozaste los guardarraíles toda la vuelta y encontraste tiempo donde parecía no haberlo. Cuando cruzaste la línea, habías conseguido una posición de salida mucho mejor de la esperada.', failDesc: 'La chicane de la piscina. Doscientos milímetros de guardarrail más adentro y el alerón estaba roto. Entraste a boxes, el auto quedó en el garaje. En Mónaco no hay segunda oportunidad.' },
+      { text: 'Ser cauteloso y asegurar una buena vuelta', stat: 'tyres', delta: 0, money: 0, skillStat: 'tyres', skillBonus: 5, skillFail: 0, hint: '🛞 Gestión: una vuelta limpia en Mónaco siempre vale más que una arriesgada que termina en el muro.', successDesc: 'No buscaste el milagro en cada curva. Fuiste preciso, constante y mantuviste el auto lejos de los muros. La vuelta no fue espectacular, pero sí extremadamente sólida, y te permitió conseguir una buena posición para afrontar la carrera.', failDesc: 'Tu cautela fue excesiva y saliste décimo. En Mónaco, desde esa posición, las posibilidades de adelantar son prácticamente nulas. Completaste las vueltas de forma anodina. Una oportunidad perdida en el circuito más icónico del mundo.' },
     ]
   },
   {
     id: 'rookie',
-    icon: '👶', title: 'El Rookie que lo cambia todo', desc: 'Tu equipo sube a un joven de 19 años directo de F2. Es la promesa más grande en años y los medios no hablan de otra cosa. En la primera semana ya está dentro de 3 décimas tuyas en el simulador. La escudería quiere que "lo guíes". Vos sabés que es una amenaza directa.', choices: [
-      { text: 'Compartir todo: reglajes, frenadas, telemetría', stat: 'quali', delta: 0, money: 0, skillStat: 'quali', skillBonus: 5, skillFail: 1, hint: '🏎 Clasificación: tu dominio técnico determina quién aprende de quién realmente.', successDesc: 'Le abriste los archivos de telemetría sin filtros. El pibe aprendió rápido, sí. Pero en ese proceso, vos también te miraste en el espejo y encontraste dos o tres décimas que ni sabías que tenías. El equipo terminó con el mejor resultado de constructores en años. Y todos saben quién era el líder.', failDesc: 'Le diste todo lo que sabías. Y él lo absorbió más rápido de lo que esperabas. Para la décima fecha ya te había ganado en clasificación dos veces. Los medios empezaron a hablar de "relevo generacional". Fue una decisión demasiado generosa.' },
+    icon: '👶', title: 'El Rookie que lo cambia todo', desc: 'Tu equipo sube a un joven directo de F2. Es la promesa más grande en años y los medios no hablan de otra cosa. En la primera semana ya está dentro de 3 décimas tuyas en el simulador. La escudería quiere que "lo guíes". Vos sabés que es una amenaza directa.', choices: [
+      { text: 'Compartir todo: reglajes, frenadas, telemetría', stat: 'quali', delta: 0, money: 0, skillStat: 'quali', skillBonus: 5, skillFail: 0, hint: '🏎 Clasificación: tu dominio técnico determina quién aprende de quién realmente.', successDesc: 'Le abriste los archivos de telemetría sin filtros. El pibe aprendió rápido, sí. Pero en ese proceso, vos también te miraste en el espejo y encontraste dos o tres décimas que ni sabías que tenías. El equipo terminó con el mejor resultado de constructores en años. Y todos saben quién era el líder.', failDesc: 'Le diste todo lo que sabías. Y él lo absorbió más rápido de lo que esperabas. Para la décima fecha ya te había ganado en clasificación dos veces. Los medios empezaron a hablar de "relevo generacional". Fue una decisión demasiado generosa.' },
       { text: 'Mantener distancia y proteger tus ventajas', stat: 'speed', delta: 3, money: 0, hint: 'Resultado fijo: sin complejidad. Tu ritmo personal mejora por la motivación de la competencia interna (+3 Velocidad).', fixedDesc: 'No le explicaste nada. Le dejaste encontrar sus propios límites. Y mientras él tropezaba con los muros de aprendizaje, vos te afilabas solo. La presión de tener a alguien así cerca te sacó lo mejor. Terminaste la temporada con las mejores estadísticas de tu carrera reciente.' },
     ]
   },
@@ -269,7 +269,7 @@ const RANDOM_EVENTS = [
   },
   {
     icon: '🧠', title: 'El bloqueo del Sector 3', desc: 'Después de un susto enorme a alta velocidad en la última curva de un circuito, algo cambió. Tu cabeza sabe que no pasó nada, pero tu pie derecho levanta el acelerador antes de tiempo cada vez que llegás a esa curva. Los ingenieros te preguntan por qué perdés tres décimas ahí. No tienen respuesta técnica.', choices: [
-      { text: 'Trabajar con un psicólogo deportivo (-$40,000)', stat: 'speed', delta: 0, money: -40000, skillStat: 'speed', skillBonus: 5, skillFail: 1, hint: '🚀 Velocidad: tu mente puede liberarte o seguir frenándote. El trabajo mental es tan real como el técnico.', successDesc: 'Cuatro semanas de sesiones. Visualización, respiración, exposición gradual. El día que volviste a esa curva a fondo sin pensarlo, el ingeniero no dijo nada. Pero por radio se escuchó: "Vuelta récord del sector, P1." El bloqueo se había ido.', failDesc: 'El psicólogo trabajó, pero los resultados no llegaron a tiempo. Seguiste perdiendo esas décimas durante toda la temporada. El equipo movió el balance para compensar, pero nunca fue lo mismo. Algunas cicatrices llevan su tiempo.' },
+      { text: 'Trabajar con un psicólogo deportivo (-$40,000)', stat: 'speed', delta: 0, money: -40000, skillStat: 'speed', skillBonus: 5, skillFail: -1, hint: '🚀 Velocidad: tu mente puede liberarte o seguir frenándote. El trabajo mental es tan real como el técnico.', successDesc: 'Cuatro semanas de sesiones. Visualización, respiración, exposición gradual. El día que volviste a esa curva a fondo sin pensarlo, el ingeniero no dijo nada. Pero por radio se escuchó: "Vuelta récord del sector, P1." El bloqueo se había ido.', failDesc: 'El psicólogo trabajó, pero los resultados no llegaron a tiempo. Seguiste perdiendo esas décimas durante toda la temporada. El equipo movió el balance para compensar, pero nunca fue lo mismo. Algunas cicatrices llevan su tiempo.' },
       { text: 'Ignorarlo y forzar el límite en entrenamiento', stat: 'speed', delta: 0, money: 0, pureLuck: true, baseBonus: 0.5, skillBonus: 5, skillFail: -4, desc: 'Cara o cruz: o lo superás solo o lo empeorás.', successDesc: 'Frenaste más tarde cada sesión, día tras día. Vuelta 47 del tercer entrenamiento libre. El auto cruzó la curva a tope y algo se desbloqueó en tu cabeza. Era solo velocidad. Solo asfalto. El bloqueo desapareció como si nunca hubiera existido.', failDesc: 'Forzar fue un error. En el cuarto intento, el auto sobregiró y tocaste el muro con el ala trasera. El susto empeoró el bloqueo y lo extendiste a dos curvas rápidas más. Entraste en un círculo vicioso del que te costó meses salir.' },
     ]
   },
@@ -487,15 +487,6 @@ const INTERVIEWS = [
       ]
     },
     {
-      id: 'ev_agent',
-      title: '👔 Oferta bajo la mesa',
-      desc: 'Tu Agente Estrella te llama: "Tengo un pre-contrato con un equipo de 5 estrellas para el año que viene. Lo firmás ahora o esperamos a fin de año".',
-      choices: [
-        { text: 'Firmar ya', pers: 'aggressiveness', delta: 15, hint: 'Aseguras asiento en un equipo TOP.', fixedDesc: 'Firmaste en secreto. Pase lo que pase este año, tu futuro en un equipo de punta está asegurado.' },
-        { text: 'Esperar a fin de año', pers: 'team', delta: 15, hint: 'Enfocarte en tu equipo actual.', fixedDesc: 'Decidiste esperar y ser leal a tu temporada actual. El futuro se verá luego.' }
-      ]
-    },
-    {
       id: 'ev_yacht',
       title: '🛥️ Fiesta post-carrera',
       desc: 'Conseguiste un podio y tu Yate de Lujo está amarrado en el puerto. ¿Qué hacemos?',
@@ -509,7 +500,7 @@ const INTERVIEWS = [
       title: '🏎️ La Joven Promesa',
       desc: 'En tu Escudería de Karting descubriste a un chico con talento puro pero sin recursos para correr en Europa.',
       choices: [
-        { text: 'Patrocinarlo ($1.000.000)', pers: 'media', delta: 15, hint: 'Cuesta plata pero ganas muchísima reputación.', fixedDesc: 'Pagaste de tu bolsillo su temporada. Te costó plata, pero el mundo aplaude tu gesto (-$1M, +20 Reputación).' },
+        { text: 'Patrocinarlo ($1.000.000)', pers: 'media', delta: 15, money: -1000000, repDelta: 20, hint: 'Cuesta plata pero ganas muchísima reputación.', fixedDesc: 'Pagaste de tu bolsillo su temporada. Te costó plata, pero el mundo aplaude tu gesto (-$1M, +20 Reputación).' },
         { text: 'Desearle suerte', pers: 'aggressiveness', delta: 10, hint: 'No gastas nada.', fixedDesc: 'Le deseaste suerte. Este es un mundo duro, él tendrá que buscarse sus propios sponsors.' }
       ]
     },
@@ -525,10 +516,10 @@ const INTERVIEWS = [
     {
       id: 'ev_psych',
       title: '🧠 El Bloqueo Mental',
-      desc: 'Tras unos duros abandonos, tu Psicólogo te propone una polémica terapia alternativa en el bosque antes de la carrera.',
+      desc: 'Después de varios fines de semana complicados, empezás a notar que la frustración te acompaña cada vez que subís al auto. Tu psicólogo deportivo cree que necesitás trabajar el aspecto mental antes de que afecte tu rendimiento.',
       choices: [
-        { text: 'Aceptar terapia', pers: 'media', delta: -15, hint: 'Riesgo / Recompensa alta.', fixedDesc: 'Fuiste al bosque a gritar y meditar. Te sentís purificado y listo para ganar. (+10 Velocidad esta carrera)' },
-        { text: 'Rechazar', pers: 'aggressiveness', delta: 10, hint: 'Seguir con lo tradicional.', fixedDesc: 'Lo mandaste a pasear. Sos un piloto, no un yogui. Correrás como siempre.' }
+        { text: 'Trabajar el problema', pers: 'media', delta: -15, hint: 'Aceptar que también necesitás preparación mental.', fixedDesc: 'Dedicás tiempo a analizar la frustración acumulada y a recuperar la confianza. No cambia nada de un día para otro, pero llegás al próximo fin de semana con la cabeza mucho más despejada.' },
+        { text: 'Dejar atrás lo ocurrido y seguir adelante', pers: 'aggressiveness', delta: 10, hint: 'Confiar en tu fortaleza mental.', fixedDesc: 'Preferís no darle más vueltas al asunto. Para vos, los findes pasados ya son historia y la mejor forma de responder es volver a salir a pista. Tu entorno espera que esa confianza sea suficiente para dejar atrás la mala racha.' }
       ]
     },
     {
@@ -744,7 +735,7 @@ function showInterview(postSeasonId = null) {
   // Select an interview
   let pool = INTERVIEWS.filter(iv => {
     if (postSeasonId) return iv.id === postSeasonId;
-    const psIds = ['f1_epic_champion', 'f1_championship_contender', 'f1_retirement_talk', 'f1_win_record', 'f1_teammate_destroyed', 'f1_peer_departure', 'f1_first_title', 'f1_title_lost', 'f1_title_record_broken', 'f1_constructors_champ', 'f1_teammate_champ', 'f1_zero_points', 'f1_reg_change_better', 'f1_reg_change_worse'];
+    const psIds = ['f1_epic_champion', 'f1_championship_contender', 'f1_retirement_talk', 'f1_win_record', 'f1_teammate_destroyed', 'f1_peer_departure', 'f1_first_title', 'f1_title_lost', 'f1_title_record_broken', 'f1_constructors_champ', 'f1_teammate_champ', 'f1_zero_points', 'f1_reg_change_better', 'f1_reg_change_worse', 'f1_underperform'];
     if (!postSeasonId && (psIds.includes(iv.id) || iv.id.startsWith('ev_'))) return false; // Hide post-season interviews from mid-season
     if (G.catIndex < 5) return false; // ONLY IN F1
     if (G.storyFlags['interview_' + iv.id]) return false; // NO REPEATS
@@ -763,13 +754,7 @@ function showInterview(postSeasonId = null) {
       return true;
     }
     
-    if (iv.id === 'f1_underperform') {
-      if (!G.lastResult || G.lastResult.cat !== 'F1') return false;
-      if (!G.team || G.team.stars < 3) return false; // Only top/mid teams
-      const expectedPosition = 12 - (G.team.stars * 2);
-      if (G.lastResult.champ <= expectedPosition + 2) return false; // Must be severely underperforming
-      return true;
-    }
+    
     
     if (iv.id === 'f1_return_to_win') {
       if (!G.lastResult || G.lastResult.cat !== 'F1' || G.lastResult.wins === 0) return false;
@@ -830,6 +815,7 @@ function showInterview(postSeasonId = null) {
     }
 
     // General interviews
+    if (iv.id === 'rival_crash' && G.seasons.filter(s => s.cat === 'F1').length < 2) return false;
     if (iv.id === 'bad_streak' && (G.wins > 0 || G.podiums > 0)) return false;
     return true;
   });
@@ -939,7 +925,7 @@ function showInterview(postSeasonId = null) {
           <div style="font-size:32px;margin-bottom:8px;text-align:center">${iv.id.startsWith('ev_') ? '✨' : '📸'}</div>
           <div class="heading" style="font-size:18px;margin-bottom:12px;text-align:center">${iv.id.startsWith('ev_') ? 'Resolución del evento' : 'Declaraciones publicadas'}</div>
           <div style="font-size:14px;line-height:1.6;color:var(--text);background:rgba(255,255,255,0.04);border-radius:10px;padding:14px 16px;margin-bottom:16px;text-align:left;border-left:3px solid ${iv.id.startsWith('ev_') ? 'var(--accent)' : 'var(--blue)'}">${c.fixedDesc}</div>
-          <button class="btn btn-primary" style="width:100%" onclick="${postSeasonId ? 'afterSummary()' : 'processSeasonStep()'}">Continuar</button>
+          <button class="btn btn-primary" style="width:100%" onclick="processSeasonStep()">Continuar</button>
         </div>
       `;
     };
@@ -1774,11 +1760,9 @@ function computeSeasonResult() {
     if (!G.storyFlags['interview_ev_mentor'] && G.upgrades.includes('mentor') && champ <= 3 && Math.random() < 0.2) possibleEvents.push('ev_mentor');
     if (!G.storyFlags['interview_ev_kart'] && G.upgrades.includes('kart_team') && Math.random() < 0.15) possibleEvents.push('ev_kart');
     if (!G.storyFlags['interview_ev_classics'] && G.upgrades.includes('classics') && Math.random() < 0.15) possibleEvents.push('ev_classics');
-    if (!G.storyFlags['interview_ev_agent'] && G.upgrades.includes('agent') && G.f1ContractYearsLeft > 0 && Math.random() < 0.1) possibleEvents.push('ev_agent');
     
     if (possibleEvents.length > 0) {
-        if (!G._postSeasonSteps) G._postSeasonSteps = [];
-        G._postSeasonSteps.push(possibleEvents[Math.floor(Math.random() * possibleEvents.length)]);
+        G._seasonSteps.push('event:' + possibleEvents[Math.floor(Math.random() * possibleEvents.length)]);
     }
   }
   const tyreFactor = (effStats.tyres - 50) / 100;
@@ -1832,58 +1816,91 @@ function computeSeasonResult() {
   }
   if (!G.careerBest || wins > G.careerBest.wins) G.careerBest = result;
 
-  G._postSeasonSteps = [];
   if (cat === 'F1') {
+    // 1. Calculate Standings
+    const standingsRows = generateStandingsTable(result);
+    const teamMap = {};
+    standingsRows.forEach(row => {
+      if (!teamMap[row.team]) teamMap[row.team] = { team: row.team, logo: row.logo, points: 0, hasPlayer: false };
+      teamMap[row.team].points += row.points;
+      if (row.isPlayer) teamMap[row.team].hasPlayer = true;
+    });
+    const constructorRows = Object.values(teamMap).sort((a, b) => b.points - a.points).map((t, i) => ({ ...t, rank: i + 1 }));
+    _lastStandings = { rows: standingsRows, constructors: constructorRows, cat: result.cat, year: result.year, view: 'drivers' };
+
+    // 2. Peer Logic and H2H
     if (G.peer) {
       if (G.team.name === G.peer.team) {
         G.peer.yearsAsTeammate = (G.peer.yearsAsTeammate || 0) + 1;
       } else {
         G.peer.yearsAsTeammate = 0;
       }
-    }
-
-    if (G.f1Titles > 7 && !G.storyFlags['interview_f1_title_record_broken']) {
-      G._postSeasonSteps.push('f1_title_record_broken');
-    }
-    else if (champ === 1 && G.f1Titles === 1 && !G.storyFlags['interview_f1_first_title']) {
-      G._postSeasonSteps.push('f1_first_title');
-    }
-    else if (champ === 1 && G.team.stars <= 4 && !G.storyFlags['interview_f1_epic_champion']) {
-      G._postSeasonSteps.push('f1_epic_champion');
-    }
-    else if (champ === 2 && wins >= 4 && !G.storyFlags['interview_f1_title_lost']) {
-      G._postSeasonSteps.push('f1_title_lost');
-    }
-    else if ((champ === 2 || champ === 3) && wins < 4 && !G.storyFlags['interview_f1_championship_contender']) {
-      G._postSeasonSteps.push('f1_championship_contender');
-    }
-    
-    if (G.peer && G.team.name === G.peer.team && champ <= 10 && G.peer.h2hWins > G.peer.h2hLosses + 10 && !G.storyFlags['interview_f1_teammate_destroyed']) {
-      G._postSeasonSteps.push('f1_teammate_destroyed');
-    }
-    
-    if (G.peer && G.team.name === G.peer.team && G.f1ContractYearsLeft > 0 && G.peer.yearsAsTeammate >= 3) {
-      if (G.peer.contractYearsLeft <= 1) { 
-        const otherTeams = TEAMS['F1'].filter(t => t.name !== G.team.name);
-        const newTeam = otherTeams[Math.floor(Math.random() * otherTeams.length)].name;
-        G.peer.team = newTeam; 
-        G.peer.contractYearsLeft = 2 + Math.floor(Math.random() * 3); 
-        G._seasonEventLogs.push(`🏎️ ${G.peer.name} firmó contrato con ${newTeam} para la próxima temporada.`);
-        if (!G.storyFlags['interview_f1_peer_departure']) {
-          G._postSeasonSteps.push('f1_peer_departure');
-        }
+      const myStRow = standingsRows.find(s => s.isPlayer);
+      const peerStRow = standingsRows.find(s => s.isPeer);
+      if (myStRow && peerStRow) {
+        if (myStRow.rank < peerStRow.rank) G.peer.h2hLosses = (G.peer.h2hLosses || 0) + 1;
+        else if (peerStRow.rank < myStRow.rank) G.peer.h2hWins = (G.peer.h2hWins || 0) + 1;
       }
     }
     
+    // 3. Standings-dependent interviews
+    const champ = result.champ;
+    const myStRow = standingsRows.find(s => s.isPlayer);
+    const tmRow = standingsRows.find(s => !s.isPlayer && s.team === result.teamName);
+    const myTeamRow = constructorRows.find(c => c.team === result.teamName);
+
+    if (champ <= 10 && myStRow && tmRow && tmRow.rank >= myStRow.rank + 4 && !G.storyFlags['interview_f1_teammate_destroyed']) {
+      G._seasonSteps.push('event:f1_teammate_destroyed');
+    }
+    if (myStRow && tmRow && myStRow.rank >= tmRow.rank + 4 && !G.storyFlags['interview_f1_underperform']) {
+      G._seasonSteps.push('event:f1_underperform');
+    }
+    if (myTeamRow && myTeamRow.rank === 1 && !G.storyFlags['interview_f1_constructors_champ']) {
+      G._seasonSteps.push('event:f1_constructors_champ');
+    }
+    if (tmRow && tmRow.rank === 1 && !G.storyFlags['interview_f1_teammate_champ']) {
+      G._seasonSteps.push('event:f1_teammate_champ');
+    }
+
+
+    if (G.f1Titles > 7 && !G.storyFlags['interview_f1_title_record_broken']) {
+      G._seasonSteps.push('event:f1_title_record_broken');
+    }
+    else if (champ === 1 && G.f1Titles === 1 && !G.storyFlags['interview_f1_first_title']) {
+      G._seasonSteps.push('event:f1_first_title');
+    }
+    else if (champ === 1 && G.team.stars <= 4 && !G.storyFlags['interview_f1_epic_champion']) {
+      G._seasonSteps.push('event:f1_epic_champion');
+    }
+    else if (champ === 2 && wins >= 4 && !G.storyFlags['interview_f1_title_lost']) {
+      G._seasonSteps.push('event:f1_title_lost');
+    }
+    else if ((champ === 2 || champ === 3) && wins < 4 && !G.storyFlags['interview_f1_championship_contender']) {
+      G._seasonSteps.push('event:f1_championship_contender');
+    }
+    
     if (G.wins >= 105 && !G.storyFlags['interview_f1_win_record']) {
-      G._postSeasonSteps.push('f1_win_record');
+      G._seasonSteps.push('event:f1_win_record');
     }
     
     if (G.age >= 35 && !G.storyFlags['interview_f1_retirement_talk']) {
-      G._postSeasonSteps.push('f1_retirement_talk');
+      G._seasonSteps.push('event:f1_retirement_talk');
     }
-  
+    
+    if (G.points === 0 && !G.storyFlags['interview_f1_zero_points']) {
+      G._seasonSteps.push('event:f1_zero_points');
     }
+
+    if (G._evaluatingRegChange) {
+      G._evaluatingRegChange = false;
+      if (G.team.name === G._regChangeTeam) {
+        if (G.team.stars > G._regChangeOldStars) G._seasonSteps.push('event:f1_reg_change_better');
+        else if (G.team.stars < G._regChangeOldStars) G._seasonSteps.push('event:f1_reg_change_worse');
+      }
+    }
+    // NOTE: standings-dependent interviews (teammate_destroyed, underperform, constructors_champ,
+    // teammate_champ) are pushed in buildSummary() where _lastStandings is available.
+  }
 
   // Regulation change in F1: triggered from G._pendingRegChange (set before season)
   if (cat === 'F1' && G._pendingRegChange) {
@@ -1921,18 +1938,15 @@ function computeSeasonResult() {
       f1Teams.forEach((t, i) => { t.stars = assignment[i]; });
       
       // Apply next-season bonus to player's current team if they focused on it
-    if (G.nextSeasonRegBonus > 0) {
-      G.team.stars = Math.min(5, G.team.stars + G.nextSeasonRegBonus);
+    if (G.nextSeasonRegBonus !== 0) {
+      G.team.stars = Math.max(1, Math.min(5, G.team.stars + G.nextSeasonRegBonus));
       G.nextSeasonRegBonus = 0;
     }
       
-      const newStars = G.team.stars;
-      if (!G._postSeasonSteps) G._postSeasonSteps = [];
-      if (newStars > oldStars) {
-        G._postSeasonSteps.push('f1_reg_change_better');
-      } else if (newStars < oldStars) {
-        G._postSeasonSteps.push('f1_reg_change_worse');
-      }
+    // Remember star count NOW (before next season) to compare later
+    G._evaluatingRegChange = true;
+    G._regChangeTeam = G.team.name;
+    G._regChangeOldStars = G.team.stars;
 
     G._seasonEventLogs.push(`📝 ¡El nuevo reglamento entró en vigor! El mapa de poder en F1 ha cambiado.`);
   }
@@ -1996,8 +2010,8 @@ function showRegulationEvent() {
       let logText;
       if (c.effect === 'current') {
         G.regulationBonus = 8;
-        G.nextSeasonRegPenalty = 1;
-        G.nextSeasonRegBonus = 0;
+        G.nextSeasonRegPenalty = 0;
+        G.nextSeasonRegBonus = -1;
         logText = `Decisión: Apostaste todo al campeonato actual.`;
       } else if (c.effect === 'split') {
         G.regulationBonus = 4;
@@ -2231,6 +2245,9 @@ function buildSummary() {
     .map((t, i) => ({ ...t, rank: i+1 }));
 
   _lastStandings = { rows: standingsRows, constructors: constructorRows, cat: r.cat, year: r.year, view: 'drivers' };
+
+
+
   const leaderPoints = standingsRows.find(s => s.rank === 1).points;
   const myRow = standingsRows.find(s => s.isPlayer);
   const gapText = r.champ === 1
@@ -2311,7 +2328,7 @@ function buildSummary() {
     const relColor = rel > 30 ? '#4ade80' : rel < -30 ? '#f87171' : '#facc15';
     highlightsHtml += `
       <div style="margin-top:10px; padding:14px; border-radius:8px; background:rgba(255,255,255,0.04); border:1px solid var(--border)">
-        <div style="font-size:12px; color:var(--muted); margin-bottom:6px; text-transform:uppercase; letter-spacing:1px">Contemporáneo de Generación</div>
+        <div style="font-size:12px; color:var(--muted); margin-bottom:6px; text-transform:uppercase; letter-spacing:1px">Compañero de Garaje</div>
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px">
           <div style="font-weight:bold">${relIcon} ${G.peer.name} <span style="font-size:12px; color:var(--muted); font-weight:normal">(${G.peer.nat.flag} ${G.peer.team})</span></div>
           <div style="font-size:12px; color:${relColor}; font-weight:bold">${relLabel}</div>
@@ -2335,11 +2352,6 @@ function buildSummary() {
 
 
 function afterSummary() {
-  if (G._postSeasonSteps && G._postSeasonSteps.length > 0) {
-    const nextId = G._postSeasonSteps.shift();
-    showInterview(nextId);
-    return;
-  }
 
   const catIdx = G.catIndex;
   const r = G.lastResult;
@@ -2364,12 +2376,47 @@ function afterSummary() {
       return true;
     });
     if (retiredF1Seats.length > 0) {
-      let f2Drivers = G.aiRoster.filter(d => d.cat === 'F2').sort((a,b) => b.skill - a.skill);
+      // Randomize which seat the promoted drivers get
+      retiredF1Seats.sort(() => Math.random() - 0.5);
+      
+      let f2Drivers = G.aiRoster.filter(d => d.cat === 'F2').sort((a,b) => (b.skill + (Math.random() * 5)) - (a.skill + (Math.random() * 5)));
       for (let i = 0; i < retiredF1Seats.length; i++) {
         if (f2Drivers[i]) {
           f2Drivers[i].cat = 'F1';
           f2Drivers[i].team = retiredF1Seats[i];
         }
+      }
+      
+      // Cascade promotions for lower categories
+      const cats = ['F2', 'F3', 'Formula Regional', 'F4', 'Karting'];
+      const numToPromote = retiredF1Seats.length;
+      for (let c = 1; c < cats.length; c++) {
+        let fromCat = cats[c];
+        let toCat = cats[c-1];
+        let drivers = G.aiRoster.filter(d => d.cat === fromCat).sort((a,b) => (b.skill + (Math.random() * 5)) - (a.skill + (Math.random() * 5)));
+        for(let i=0; i < numToPromote; i++) {
+          if (drivers[i]) {
+            drivers[i].cat = toCat;
+            const catTeams = TEAMS[toCat];
+            if (catTeams && catTeams.length > 0) drivers[i].team = catTeams[Math.floor(Math.random() * catTeams.length)].name;
+          }
+        }
+      }
+      
+      // Replenish Karting with new generated drivers
+      for(let i=0; i < numToPromote; i++) {
+        const kartTeams = TEAMS['Karting'];
+        const newTeam = kartTeams && kartTeams.length > 0 ? kartTeams[Math.floor(Math.random() * kartTeams.length)].name : 'Privado';
+        const newNat = NATIONALITIES[Math.floor(Math.random() * NATIONALITIES.length)];
+        G.aiRoster.push({
+          id: 'ai_gen_' + Math.floor(Math.random()*1000000),
+          name: FIRST_NAMES[Math.floor(Math.random()*FIRST_NAMES.length)] + ' ' + LAST_NAMES[Math.floor(Math.random()*LAST_NAMES.length)],
+          team: newTeam,
+          age: 15 + Math.floor(Math.random()*3),
+          flag: newNat ? newNat.flag : '??',
+          cat: 'Karting',
+          skill: 30 + Math.floor(Math.random() * 20)
+        });
       }
     }
   }
@@ -2443,6 +2490,7 @@ function showGoldenBoyEvent(pendingSteps = []) {
   b1.onclick = () => {
     G.team = offerTeam;
     G.f1ContractYearsLeft = Math.random() < 0.5 ? 1 : 2;
+    if (G.catIndex === 5) refreshTeammate();
     const salary = 2000000;
     G.money += salary; G.totalMoney += salary;
 
@@ -2523,20 +2571,9 @@ function goToContracts(oldCatIdx, repeatCat = false, skipContracts = false) {
 
   const steps = [];
 
-  // Initialize or update peer when entering F1
+  // Refresh teammate every F1 season from aiRoster
   if (G.catIndex === 5) {
-    if (!G._peerInitialized) {
-      G._peerInitialized = true;
-      generatePeer();
-      steps.push({ type: 'message', title: '💥 Nueva Cara en la F1', desc: `${G.peer.name} (${G.peer.nat.flag}) debuta en la misma temporada que vos con ${G.peer.team}. ¡Tu carrera estará atada a la de él!` });
-    } else {
-      const peerMove = updatePeerContract();
-      if (peerMove && peerMove.action === 'moves') {
-        const peerNewTeamData = TEAMS['F1'].find(t => t.name === peerMove.newTeam);
-        const peerLogoHtml = peerNewTeamData ? `<img src="${peerNewTeamData.logo}" style="height:14px;vertical-align:middle;margin-left:4px">` : '';
-        steps.push({ type: 'message', title: '🔄 Mercado de Pilotos', desc: `${G.peer.name} firmó con ${peerMove.newTeam}${peerLogoHtml}.` });
-      }
-    }
+    refreshTeammate();
   }
 
   // Golden Boy: check when entering F1 from F2
@@ -2696,8 +2733,12 @@ function showRandomEvent() {
       if (playerStars < 5) return false;
     }
     if (ev.id === 'rookie') {
-      if (G.age < 30) return false;
       if (G.catIndex < 5) return false; // Only in F1
+      if (G.age < 30) return false; // Player must be veteran
+      if (!G.peer || (G.peer.yearsAsTeammate || 0) > 0) return false; // Teammate's first year with you
+      
+      const peerDriver = G.aiRoster ? G.aiRoster.find(d => d.id === G.peer.id) : null;
+      if (!peerDriver || peerDriver.age > 22) return false; // Teammate must be young (rookie age)
     }
     if (ev.id === 'monaco' || ev.id === 'casino') {
       if (G.catIndex < 5) return false; // F1 only
@@ -3147,8 +3188,19 @@ function showContracts() {
     if (isRenewal) badges += '<span class="badge badge-green" style="font-size:10px;margin-left:6px;vertical-align:middle">Renovación</span>';
     if (isOpportunity) badges += '<span class="badge" style="background-color:#fbbf24;color:#000;font-size:10px;margin-left:6px;vertical-align:middle;padding:2px 6px;border-radius:4px;font-weight:bold">OPORTUNIDAD</span>';
     
-    const isPeerTeam = (G.peer && team.name === G.peer.team);
-    if (isPeerTeam) badges += `<span class="badge" style="background-color:#6366f1;color:#fff;font-size:10px;margin-left:6px;vertical-align:middle;padding:2px 6px;border-radius:4px;font-weight:bold">Compañero (${G.peer.name})</span>`;
+    let prospectiveTeammate = null;
+    if (isF1 && G.aiRoster) {
+      const teamDrivers = G.aiRoster.filter(d => d.cat === 'F1' && d.team === team.name);
+      if (teamDrivers.length > 0) {
+        // Sort highest skill first
+        teamDrivers.sort((a,b) => b.skill - a.skill);
+        prospectiveTeammate = teamDrivers[0].name;
+      }
+    }
+
+    if (prospectiveTeammate) {
+      badges += `<span class="badge" style="background-color:#6366f1;color:#fff;font-size:10px;margin-left:6px;vertical-align:middle;padding:2px 6px;border-radius:4px;font-weight:bold">Compañero: ${prospectiveTeammate}</span>`;
+    }
 
     const c = document.createElement('div');
 
@@ -3243,6 +3295,7 @@ function showContracts() {
       G.money += Math.round(salarySpin * 0.1);
       G.totalMoney += Math.round(salarySpin * 0.1);
       if (isF1) G.f1ContractYearsLeft = contractYears - 1;
+      if (isF1) refreshTeammate();
       updateTopBar();
       processNextStep();
     };
@@ -3476,7 +3529,7 @@ function showRetirement() {
     const relColor = rel > 30 ? '#4ade80' : rel < -30 ? '#f87171' : '#facc15';
     const h2hClass = G.peer.h2hWins > G.peer.h2hLosses ? 'bad' : G.peer.h2hWins < G.peer.h2hLosses ? 'good' : '';
     const peerHtml = `
-      <div class="section-title">Rivalidad Generacional</div>
+      <div class="section-title">Compañero de Equipo</div>
       <div class="card" style="margin-bottom:24px">
         <div class="result-row"><div class="r-label">Nombre</div><div class="r-val" style="font-weight:bold">${G.peer.name} <span style="font-size:12px;color:var(--muted)">(${G.peer.nat.flag})</span></div></div>
         <div class="result-row"><div class="r-label">H2H (Tú vs Él)</div><div class="r-val ${h2hClass}" style="font-weight:bold">${G.peer.h2hLosses} a ${G.peer.h2hWins}</div></div>
@@ -3604,7 +3657,7 @@ function showHallOfFame() {
           <div>🍾 Podios: <strong>${p.podiums}</strong></div>
           <div>⏱️ Poles: <strong>${p.poles}</strong></div>
         </div>
-        ${p.peerName ? `<div style="font-size:12px; color:var(--muted); padding-top:8px; margin-top:8px; border-top:1px solid rgba(255,255,255,0.05)">⚔️ Rival histórico: <strong>${p.peerName}</strong> (H2H: ${p.peerWins} a ${p.peerLosses})</div>` : ''}
+        ${p.peerName ? `<div style="font-size:12px; color:var(--muted); padding-top:8px; margin-top:8px; border-top:1px solid rgba(255,255,255,0.05)">⚔️ Último compañero: <strong>${p.peerName}</strong> (H2H: ${p.peerWins} a ${p.peerLosses})</div>` : ''}
     `;
     list.appendChild(card);
   });
@@ -3620,102 +3673,37 @@ function showHallOfFame() {
 const FIRST_NAMES = ["Oliver", "Jack", "Harry", "Jacob", "Charlie", "Thomas", "George", "Oscar", "James", "William", "Noah", "Leo", "Lucas", "Mateo", "Alex", "David", "Juan", "Pedro", "Pablo", "Diego", "Carlos", "Luis", "Fernando", "Jorge", "Javier", "Arthur", "Louis", "Jules", "Hugo", "Enzo", "Max", "Lando", "Charles", "Pierre", "Esteban", "Yuki", "Kevin", "Nico", "Lance", "Logan", "Valtteri", "Guanyu"];
 const LAST_NAMES = ["Smith", "Jones", "Taylor", "Brown", "Williams", "Wilson", "Johnson", "Davies", "Robinson", "Wright", "Thompson", "Evans", "Walker", "White", "Roberts", "Green", "Hall", "Wood", "Jackson", "Clarke", "García", "Martínez", "López", "González", "Rodríguez", "Fernández", "Pérez", "Gómez", "Sánchez", "Romero", "Sosa", "Torres", "Álvarez", "Ruiz", "Ramírez", "Flores", "Benítez", "Acosta", "Medina", "Herrera", "Suárez", "Dupont", "Dubois", "Lefebvre", "Leroy", "Roux", "Müller", "Schmidt", "Schneider", "Fischer", "Weber", "Meyer", "Wagner", "Becker"];
 
-function generatePeer() {
-  if (G.peer) return; 
-  if (!G.aiRoster) return;
-  
-  if (G.catIndex === 5) {
-    let f2Drivers = G.aiRoster.filter(d => d.cat === 'F2');
-    f2Drivers.sort((a,b) => b.skill - a.skill);
-    let pickedF2 = f2Drivers[Math.floor(Math.random() * Math.min(3, f2Drivers.length))];
-    if (pickedF2) {
-      pickedF2.cat = 'F1';
-      let f1Drivers = G.aiRoster.filter(d => d.cat === 'F1' && d.id !== pickedF2.id);
-      let displacedF1 = f1Drivers[Math.floor(Math.random() * f1Drivers.length)];
-      pickedF2.team = displacedF1.team;
-      G.aiRoster = G.aiRoster.filter(d => d.id !== displacedF1.id);
-      const tObj = TEAMS['F1'].find(t => t.name === pickedF2.team);
-      G.peer = {
-        id: pickedF2.id,
-        name: pickedF2.name,
-        nat: { name: 'Unknown', flag: pickedF2.flag },
-        talent: tObj ? tObj.stars : 3,
-        team: pickedF2.team,
-        relationship: 0,
-        h2hWins: 0, h2hLosses: 0,
-        contractYearsLeft: Math.random() < 0.5 ? 1 : 2
-      };
-      return;
-    }
+function refreshTeammate() {
+  if (!G.aiRoster || !G.team) return;
+  const catDrivers = G.aiRoster.filter(d => d.cat === 'F1' && d.team === G.team.name);
+  if (catDrivers.length === 0) { G.peer = null; return; }
+
+  // Pick highest-skill teammate
+  catDrivers.sort((a, b) => b.skill - a.skill);
+  const newTm = catDrivers[0];
+
+  // Same person as current peer? Just keep in sync, don't reset
+  if (G.peer && G.peer.id === newTm.id) {
+    G.peer.team = G.team.name;
+    return;
   }
 
-  let candidates = G.aiRoster.filter(d => d.cat === 'F1');
-  if (candidates.length === 0) candidates = G.aiRoster.filter(d => d.cat === 'F2');
-  if (candidates.length === 0) return;
-  const picked = randFrom(candidates);
-  const tObj = TEAMS['F1'].find(t => t.name === picked.team);
+  // New teammate: fresh slate
+  const prevName = G.peer ? G.peer.name : null;
   G.peer = {
-    id: picked.id,
-    name: picked.name,
-    nat: { name: 'Unknown', flag: picked.flag },
-    talent: tObj ? tObj.stars : 3,
-    team: picked.team,
+    id: newTm.id,
+    name: newTm.name,
+    nat: { name: 'Unknown', flag: newTm.flag || '🏁' },
+    team: G.team.name,
     relationship: 0,
-    h2hWins: 0, h2hLosses: 0,
-    contractYearsLeft: Math.random() < 0.5 ? 1 : 2
+    h2hWins: 0,
+    h2hLosses: 0,
+    yearsAsTeammate: 0,
+    skill: newTm.skill || 50,
   };
+  G._lastTeammateLeft = prevName;
 }
 
-function updatePeerContract() {
-  if (!G.peer) return null;
-  
-  if (G.peer.contractYearsLeft > 0) {
-    G.peer.contractYearsLeft--;
-    return { action: 'stays', newTeam: G.peer.team };
-  }
-
-  const f1Teams = TEAMS['F1'];
-  const r = Math.random();
-  let currentTeam = f1Teams.find(t => t.name === G.peer.team);
-  if (!currentTeam) currentTeam = f1Teams[0];
-
-  let oldTeam = G.peer.team;
-  let newTeam = G.peer.team;
-  let action = 'renews';
-
-  if (currentTeam.stars < G.peer.talent && r < 0.6) {
-    const betterTeams = f1Teams.filter(t => t.stars > currentTeam.stars && t.stars <= G.peer.talent);
-    if (betterTeams.length > 0) {
-      newTeam = randFrom(betterTeams).name;
-      action = 'moves';
-    }
-  } else if (r < 0.2) {
-    const lateralTeams = f1Teams.filter(t => t.stars === currentTeam.stars && t.name !== currentTeam.name);
-    if (lateralTeams.length > 0) {
-      newTeam = randFrom(lateralTeams).name;
-      action = 'moves';
-    }
-  }
-
-  G.peer.team = newTeam;
-  G.peer.contractYearsLeft = Math.random() < 0.5 ? 1 : 2;
-  
-  if (G.aiRoster) {
-    const rosterPeer = G.aiRoster.find(d => d.id === G.peer.id);
-    if (rosterPeer) {
-      rosterPeer.team = newTeam;
-      if (action === 'moves') {
-        let targetTeamDrivers = G.aiRoster.filter(d => d.cat === 'F1' && d.team === newTeam && d.id !== G.peer.id);
-        if (targetTeamDrivers.length > 0) {
-          let displaced = targetTeamDrivers[Math.floor(Math.random() * targetTeamDrivers.length)];
-          displaced.team = oldTeam;
-        }
-      }
-    }
-  }
-  
-  return { action, newTeam };
-}
 // ═══════════════════════════════════════════════════════════
 //  HOLO-CARD EFFECTS
 // ═══════════════════════════════════════════════════════════
@@ -3921,7 +3909,7 @@ let _lastStandings = null; // cache de la clasificación generada para el resume
       do { full = randFrom(FIRST_NAMES) + ' ' + randFrom(LAST_NAMES); } while (usedNames.has(full));
       usedNames.add(full);
       const randT = seatsPool.length > 0 ? seatsPool.shift() : randFrom(catTeams);
-      aiPool.push({ name: full, team: randT.name, logo: randT.logo, _power: Math.random() });
+      aiPool.push({ name: (NATIONALITIES[Math.floor(Math.random()*NATIONALITIES.length)]?.flag || '🏁') + ' ' + full, team: randT.name, logo: randT.logo, _power: Math.random() });
     }
     aiPool.sort((a,b) => b._power - a._power);
   } else {
@@ -3929,9 +3917,21 @@ let _lastStandings = null; // cache de la clasificación generada para el resume
     
     let teamDrivers = catDrivers.filter(d => d.team === playerTeamName);
     if (teamDrivers.length > 0) {
-      teamDrivers.sort((a,b) => a.skill - b.skill);
-      const displaced = teamDrivers[0];
-      catDrivers = catDrivers.filter(d => d.id !== displaced.id);
+      // Never displace the peer — they must appear in standings for H2H tracking
+      const nonPeerTeammates = teamDrivers.filter(d => !(G.peer && G.peer.id === d.id));
+      if (nonPeerTeammates.length > 0) {
+        // Remove a non-peer teammate (e.g. if team had 2 AI drivers)
+        nonPeerTeammates.sort((a,b) => a.skill - b.skill);
+        const displaced = nonPeerTeammates[0];
+        catDrivers = catDrivers.filter(d => d.id !== displaced.id);
+      } else {
+        // Peer is the only one from this team — remove lowest-skill from another team instead
+        const othersSkill = catDrivers.filter(d => d.team !== playerTeamName);
+        if (othersSkill.length > 0) {
+          othersSkill.sort((a,b) => a.skill - b.skill);
+          catDrivers = catDrivers.filter(d => d.id !== othersSkill[0].id);
+        }
+      }
     } else {
       catDrivers.sort((a,b) => a.skill - b.skill);
       catDrivers.shift(); 
@@ -3953,7 +3953,7 @@ let _lastStandings = null; // cache de la clasificación generada para el resume
     aiPool.sort((a, b) => b._power - a._power);
     
     while (aiPool.length < N - 1) {
-      aiPool.push({ name: '🏁 ' + randFrom(FIRST_NAMES) + ' ' + randFrom(LAST_NAMES), team: randFrom(catTeams).name, logo: null, _power: 0, isPeer: false });
+      aiPool.push({ name: (NATIONALITIES[Math.floor(Math.random()*NATIONALITIES.length)]?.flag || '🏁') + ' ' + randFrom(FIRST_NAMES) + ' ' + randFrom(LAST_NAMES), team: randFrom(catTeams).name, logo: null, _power: 0, isPeer: false });
     }
   } // END fallback
   }
@@ -3973,7 +3973,7 @@ let _lastStandings = null; // cache de la clasificación generada para el resume
       row.logo = ai.logo;
       row.isPeer = ai.isPeer;
       if (r.cat === 'F1' && row.isPeer) {
-        row.name = '🤝 ' + row.name.substring(3);
+        row.name = '🤝 ' + row.name;
       }
     }
   });

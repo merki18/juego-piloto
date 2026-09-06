@@ -1582,7 +1582,8 @@ function runSimulation() {
         // ── EXCLUSIVE EVENT: "Una Oferta en las Sombras" ──
         // Only fires in the season right before a reg change, if the player has
         // 1+ years left on their current contract with a top (4-5 star) team.
-        if (G.f1ContractYearsLeft >= 1 && G.team && G.team.stars >= 4) {
+        if (G.f1ContractYearsLeft >= 1 && G.team && G.team.stars >= 4 && !G.storyFlags['shadow_offer_seen'] && Math.random() < 0.25) {
+          G.storyFlags['shadow_offer_seen'] = true;
           G._seasonSteps.push('shadow_offer');
         }
 
@@ -1861,7 +1862,7 @@ function computeSeasonResult() {
     // 3. Standings-dependent interviews
     const champ = result.champ;
     const myStRow = standingsRows.find(s => s.isPlayer);
-    const tmRow = standingsRows.find(s => !s.isPlayer && s.team === result.teamName);
+    const tmRow = standingsRows.find(s => s.isPeer);
     const myTeamRow = constructorRows.find(c => c.team === result.teamName);
 
     if (champ <= 10 && myStRow && tmRow && tmRow.rank >= myStRow.rank + 4 && !G.storyFlags['interview_f1_teammate_destroyed']) {
@@ -3876,16 +3877,21 @@ function refreshTeammate() {
 
   // Pick highest-skill teammate
   catDrivers.sort((a, b) => b.skill - a.skill);
-  const newTm = catDrivers[0];
+  let newTm = catDrivers[0];
 
-  // Same person as current peer? Just keep in sync, don't reset
-  if (G.peer && G.peer.id === newTm.id) {
+  // If current peer is still in the team, keep them to avoid flip-flopping!
+  const currentPeerStillInTeam = G.peer ? catDrivers.find(d => d.id === G.peer.id) : null;
+  if (currentPeerStillInTeam) {
+    newTm = currentPeerStillInTeam;
+    G.peer.skill = currentPeerStillInTeam.skill;
     G.peer.team = G.team.name;
     return;
   }
 
   // Teammate changed!
-  if (G.peer && G.seasons.filter(s => s.cat === 'F1').length > 0) {
+  // Only show the message if the PLAYER stayed in the same team. 
+  // If G.peer.team !== G.team.name, it means the player moved, so it's not the teammate leaving.
+  if (G.peer && G.seasons.filter(s => s.cat === 'F1').length > 0 && G.peer.team === G.team.name) {
      const oldPeerInRoster = G.aiRoster.find(d => d.id === G.peer.id);
      let destination = 'se retiró del automovilismo';
      if (oldPeerInRoster) {
@@ -3896,8 +3902,8 @@ function refreshTeammate() {
      G._pendingTeammateChangeMsg = {
          oldName: G.peer.name,
          destination: destination,
-         h2hWins: G.peer.h2hWins,
-         h2hLosses: G.peer.h2hLosses,
+         h2hWins: G.peer.h2hLosses, // Inverted: player's wins are peer's losses
+         h2hLosses: G.peer.h2hWins, // Inverted: player's losses are peer's wins
          newName: (newTm.flag || '🏁') + ' ' + newTm.name
      };
   }

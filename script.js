@@ -2365,19 +2365,22 @@ function buildSummary() {
   const champClass = r.champ === 1 ? 'good' : r.champ <= 3 ? '' : 'bad';
   const champColor = r.champ === 1 ? 'var(--accent)' : r.champ <= 3 ? 'var(--green)' : 'var(--accent2)';
 
-  const standingsRows = generateStandingsTable(r);
-
-  const teamMap = {};
-  standingsRows.forEach(row => {
-    if (!teamMap[row.team]) teamMap[row.team] = { team: row.team, logo: row.logo, points: 0, hasPlayer: false };
-    teamMap[row.team].points += row.points;
-    if (row.isPlayer) teamMap[row.team].hasPlayer = true;
-  });
-  const constructorRows = Object.values(teamMap)
-    .sort((a,b) => b.points - a.points)
-    .map((t, i) => ({ ...t, rank: i+1 }));
-
-  _lastStandings = { rows: standingsRows, constructors: constructorRows, cat: r.cat, year: r.year, view: 'drivers' };
+  let standingsRows;
+  if (_lastStandings && _lastStandings.year === r.year && _lastStandings.cat === r.cat) {
+    standingsRows = _lastStandings.rows;
+  } else {
+    standingsRows = generateStandingsTable(r);
+    const teamMap = {};
+    standingsRows.forEach(row => {
+      if (!teamMap[row.team]) teamMap[row.team] = { team: row.team, logo: row.logo, points: 0, hasPlayer: false };
+      teamMap[row.team].points += row.points;
+      if (row.isPlayer) teamMap[row.team].hasPlayer = true;
+    });
+    const constructorRows = Object.values(teamMap)
+      .sort((a,b) => b.points - a.points)
+      .map((t, i) => ({ ...t, rank: i+1 }));
+    _lastStandings = { rows: standingsRows, constructors: constructorRows, cat: r.cat, year: r.year, view: 'drivers' };
+  }
 
 
 

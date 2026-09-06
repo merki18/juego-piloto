@@ -170,12 +170,12 @@ const RANDOM_EVENTS = [
   {
     icon: '💥', title: 'Choque con tu compañero', desc: 'Ambos terminaron afuera. La prensa y el equipo buscan culpables.', choices: [
       { text: 'Asumir la culpa y proteger la armonía', stat: 'tyres', delta: 2, money: 0, hint: 'El equipo valora tu madurez, mejorando la moral y el ritmo.', fixedDesc: 'Tu gesto desarma la tensión. El ingeniero jefe te agradece en privado. En las semanas siguientes, el equipo trabajó más unido que nunca y el auto mejoró notablemente.' },
-      { text: 'Atacarlo frente a los micrófonos', stat: 'quali', delta: 0, money: 0, skillStat: 'quali', skillBonus: 4, skillFail: -2, hint: '🏎 Clasificación: si sos más rápido que él, salís favorecido. Si no, quedás mal.', successDesc: 'La telemetría te dio la razón. Los datos mostraban claramente que él se cerró. La prensa y el equipo coincidieron: fue culpa de él. Tu crídito dentro del garaje subió.', failDesc: 'Los datos te jugaron en contra. El equipo vio los videos y el ingeniero te llamó al despacho. Semanas tensas, sin apoyo del box. El ambiente nunca volvió a ser el mismo.' },
+      { text: 'Atacarlo frente a los micrófonos', stat: 'quali', delta: 0, money: 0, skillStat: 'quali', skillBonus: 4, skillFail: -2, hint: '🏎 Clasificación: si sos más rápido que él, salís favorecido. Si no, quedás mal.', successDesc: 'La telemetría te dio la razón. Los datos mostraban claramente que él se cerró. La prensa y el equipo coincidieron: fue culpa de él. Tu credito dentro del garaje subió.', failDesc: 'Los datos te jugaron en contra. El equipo vio los videos y el ingeniero te llamó al despacho. Semanas tensas, sin apoyo del box. El ambiente nunca volvió a ser el mismo.' },
     ]
   },
   {
     icon: '🎬', title: 'Evento de exhibición extremo', desc: 'Te invitan a correr en rally el fin de semana libre por muchísima plata.', choices: [
-      { text: 'Rechazar para enfocarte en el campeonato', stat: 'speed', delta: 1, money: 0, hint: 'Menos distracciones, te enfocás en tu velocidad (+1 Velocidad).', fixedDesc: 'Mientras todos descansaban, vos pasaste el fin de semana en el simólador. Encontraste medio segundo por vuelta en el sector 2 de Montecarlo. Ese fin de semana libre fue lo mejor que te pudo pasar.' },
+      { text: 'Rechazar para enfocarte en el campeonato', stat: 'speed', delta: 1, money: 0, hint: 'Menos distracciones, te enfocás en tu velocidad (+1 Velocidad).', fixedDesc: 'Mientras todos descansaban, vos pasaste el fin de semana en el simulador. Encontraste medio segundo por vuelta en el sector 2 de Montecarlo. Ese fin de semana libre fue lo mejor que te pudo pasar.' },
       { text: 'Aceptar el riesgo ($250,000)', stat: 'rain', delta: 0, money: 250000, skillStat: 'rain', skillBonus: 3, skillFail: -2, hint: '⛈ Lluvia: dominar el rally mejora tu control, fallar te deja adolorido.', successDesc: 'Las pistas de tierra y el barro te enseñaron a sentir el auto de otra manera. Llegaste al primer GP postpausa con los reflejos afiladísimos y el control en condiciones límite disparado.', failDesc: 'Rodaste en la segunda especial. Golpe en el hombro, tres días de médicos y el equipo furioso. Llegaste al siguiente GP sin entrenarte y se notó en la pista.' },
     ]
   },
@@ -187,7 +187,7 @@ const RANDOM_EVENTS = [
   },
   {
     icon: '🤝', title: 'Compañero de equipo muy fuerte', desc: 'Tu compañero está en un momento increíble de su carrera.', choices: [
-      { text: 'Aprender de él observando su estilo', stat: 'overtake', delta: 0, money: 0, skillStat: 'overtake', skillBonus: 5, skillFail: -1, hint: '⚔ Adelantamientos: mejor tu técnica, más aprendés.', successDesc: 'Estudiaste sus telemetrías hasta el hartazgo. Un jueves en Baháin notaste cómo frenaba tarde en la curva 4 y se salía más rápido. Copiaste la técnica y te cambió la temporada entera.', failDesc: 'Intentar imitar su estilo te confundió más que ayudarte. Saliste de los boxes tratando de frenar como él y terminaste perdiendo tu propio ritmo natural. Mala idea.' },
+      { text: 'Aprender de él observando su estilo', stat: 'overtake', delta: 0, money: 0, skillStat: 'overtake', skillBonus: 5, skillFail: -1, hint: '⚔ Adelantamientos: mejor tu técnica, más aprendés.', successDesc: 'Estudiaste sus telemetrías hasta el hartazgo. Un jueves en Baréin notaste cómo frenaba tarde en la curva 4 y se salía más rápido. Copiaste la técnica y te cambió la temporada entera.', failDesc: 'Intentar imitar su estilo te confundió más que ayudarte. Saliste de los boxes tratando de frenar como él y terminaste perdiendo tu propio ritmo natural. Mala idea.' },
       { text: 'Concentrarte en tu propio ritmo', stat: 'tyres', delta: 3, money: 0, hint: 'Gestión fija sin variación.', fixedDesc: 'Mientras él brillaba en clasificación, vos eras una máquina de sumar puntos. Llevar el auto al límite justo, ni más ni menos, te dio una consistencia que al final del año se vió en la tabla.' },
     ]
   },
@@ -199,8 +199,8 @@ const RANDOM_EVENTS = [
   },
   {
     icon: '😤', title: 'Conflicto con el jefe de equipo', desc: 'El director del equipo cuestiona tus decisiones en pista.', choices: [
-      { text: 'Ceder y adaptar tu estilo', stat: 'tyres', delta: 2, money: 0, hint: 'Resultado fijo, mejora la gestión.', fixedDesc: 'Tragaste orgullo y seguiste las instrucciones del muro. Para tu sorpresa, los nuevos mapas de motor y la estrategia conservadora que te impusieron resultaron en las gomas más largas de tu carrera.' },
-      { text: 'Defenderte con resultados', stat: 'speed', delta: 0, money: 0, skillStat: 'speed', skillBonus: 4, skillFail: -2, hint: '🚀 Velocidad: te avala si tu ritmo es real.', successDesc: 'El cronometro fue tu abogado. Dos poles seguidas cerraron la boca de todo el mundo. En la reunión del lunes, el director te estabaó la mano. No hubo más preguntas.', failDesc: 'Los resultados no te acompañaron en el momento menos oportuno. El director convocó una reunión de urgencia, y el resto del año sentiste la presión de saber que estaban mirando cada metro que corrías.' },
+      { text: 'Ceder y adaptar tu estilo', stat: 'tyres', delta: 2, money: 0, hint: 'Resultado fijo, mejora la gestión.', fixedDesc: 'Tragaste orgullo y seguiste las instrucciones del muro. Para tu sorpresa, los nuevos mapas de motor y la estrategia conservadora que te impusieron resultaron en la gestión de gomas más largas de tu carrera.' },
+      { text: 'Defenderte con resultados', stat: 'speed', delta: 0, money: 0, skillStat: 'speed', skillBonus: 4, skillFail: -2, hint: '🚀 Velocidad: te avala si tu ritmo es real.', successDesc: 'El cronometro fue tu abogado. Dos qualys muy buenass seguidas cerraron la boca de todo el mundo. En la reunión del lunes, el director te estrecho la mano. No hubo más preguntas.', failDesc: 'Los resultados no te acompañaron en el momento menos oportuno. El director convocó una reunión de urgencia, y el resto del año sentiste la presión de saber que estaban mirando cada metro que corrías.' },
     ]
   },
   {
@@ -218,18 +218,18 @@ const RANDOM_EVENTS = [
   {
     icon: '🏋️', title: 'Preparación de pretemporada', desc: 'Tenés un mes libre. ¿Cómo lo usás?', choices: [
       { text: 'Entrenamiento físico', stat: 'tyres', delta: 0, money: 0, skillStat: 'tyres', skillBonus: 5, skillFail: 0, hint: '🛞 Gestión: cuerpo fuerte, poco riesgo de fallar.', successDesc: 'Ciclismo en los Alpes, nado en el océano, trabajo de cuello y core. Llegaste al primer test de pretemporada sin una gota de grasa de más. La vuelta 60 se sintió igual que la 1.', failDesc: 'Entrenaste fuerte pero te exigiste demasiado. Una contractura a fines de enero te obligó a parar dos semanas. Llegaste al primer test con la espalda entumecida.' },
-      { text: 'Simulador y análisis de datos', stat: 'quali', delta: 0, money: 0, skillStat: 'quali', skillBonus: 5, skillFail: 0, hint: '🏎 Clasificación: el simulador amplifica tu técnica', successDesc: 'Horas y horas en el simólador pagaron. Llegaste al primer test sabiendo de memoria los puntos de frenada de los 23 circuitos del calendario. Tu ingeniero no podía creer el nivel de detalle de tu feedback desde el primer día.', failDesc: 'Demasiado tiempo en el simulador y poco en la pista real. Cuando llegaste a Bahréin para el primer test, el asfalto real se sintió extraño. Tardaste dos días en adaptarte.' },
+      { text: 'Simulador y análisis de datos', stat: 'quali', delta: 0, money: 0, skillStat: 'quali', skillBonus: 5, skillFail: 0, hint: '🏎 Clasificación: el simulador amplifica tu técnica', successDesc: 'Horas y horas en el simulador pagaron. Llegaste al primer test sabiendo de memoria los puntos de frenada de los 23 circuitos del calendario. Tu ingeniero no podía creer el nivel de detalle de tu feedback desde el primer día.', failDesc: 'Demasiado tiempo en el simulador y poco en la pista real. Cuando llegaste a Bahréin para el primer test, el asfalto real se sintió extraño. Tardaste dos días en adaptarte.' },
     ]
   },
   {
     icon: '🌍', title: 'Carrera fuera de Europa', desc: 'Esta temporada hay fecha en un circuito callejero de Asia. Calor extremo y mucho tráfico.', choices: [
-      { text: 'Atacar desde el principio', stat: 'overtake', delta: 0, money: 0, skillStat: 'overtake', skillBonus: 4, skillFail: -1, hint: '⚔ Adelantamientos: en calles, el duelo lo define esa habilidad', successDesc: 'Vuelta 1, curva 3, adelantaste a tres pilotos de golpe por el interior. Las calles de Yakarta estaban de tu lado. La multitud enloqueció. Los ingenieros de radio gritaron solos.', failDesc: 'Ataque demasiado ambicioso en la primera vuelta. Tocás un guardías metálico y el alerón delantero al suelo. Parada de emergencia y carrera arruinada antes de llegar a la primera chicana.' },
+      { text: 'Atacar desde el principio', stat: 'overtake', delta: 0, money: 0, skillStat: 'overtake', skillBonus: 4, skillFail: -1, hint: '⚔ Adelantamientos: en calles, el duelo lo define esa habilidad', successDesc: 'Vuelta 1, curva 3, adelantaste a tres pilotos de golpe por el interior. Las calles de Yakarta estaban de tu lado. La multitud enloqueció. Los ingenieros de radio gritaron solos.', failDesc: 'Ataque demasiado ambicioso en la primera vuelta. Tocás un guardarrail metálico y el alerón delantero al suelo. Parada de emergencia y carrera arruinada antes de llegar a la primera chicana.' },
       { text: 'Priorizar la gestión de temperatura', stat: 'tyres', delta: 0, money: 0, skillStat: 'tyres', skillBonus: 4, skillFail: -1, hint: '🛞 Gestión: el calor destruye gomas, manejá eso', successDesc: 'A 40°C de asfalto, las gomas de todos se degradaban rápido. Vos las cuidaste como si fueran de cristal. En la última vuelta, los que atacaron al principio rodaban como ladrillo. Vos pasabas uno por uno.', failDesc: 'El calor fue más de lo esperado. A pesar de tu ritmo conservador, las gomas cedieron igual y terminaste con un underperformance frustrante. Asia se cobró su precio.' },
     ]
   },
   {
     icon: '🏆', title: 'Invitación a test de fábrica', desc: 'Un fabricante de motores te invita a sus instalaciones para un test privado de desarrollo.', choices: [
-      { text: 'Dar feedback técnico detallado', stat: 'quali', delta: 0, money: 0, skillStat: 'quali', skillBonus: 6, skillFail: -1, hint: '🏎 Clasificación: tu análisis técnico vale si lo entendés', successDesc: 'Pasás dos días entero en la fábrica, pizarras, ingenieros y datos. Tu análisis del comportamiento del motor en frenada fue tan preciso que el director de desarrollo pidió que lo incluyeran en el informe oficial.', failDesc: 'Tu feedback fue vago y los ingenieros no pudías trabajar con él. La sesión fue un desastre logístico y te fuiste con la sensación de haber desperdiciado dos días.' },
+      { text: 'Dar feedback técnico detallado', stat: 'quali', delta: 0, money: 0, skillStat: 'quali', skillBonus: 6, skillFail: -1, hint: '🏎 Clasificación: tu análisis técnico vale si lo entendés', successDesc: 'Pasás dos días entero en la fábrica, pizarras, ingenieros y datos. Tu análisis del comportamiento del motor en frenada fue tan preciso que el director de desarrollo pidió que lo incluyeran en el informe oficial.', failDesc: 'Tu feedback fue vago y los ingenieros no pudieron trabajar con él. La sesión fue un desastre logístico y te fuiste con la sensación de haber desperdiciado dos días.' },
       { text: 'Apretar fuerte y demostrar velocidad', stat: 'speed', delta: 0, money: 0, skillStat: 'speed', skillBonus: 6, skillFail: -1, hint: '🚀 Velocidad: más rápido sos, más los impresionás', successDesc: 'Chronos imposibles. Batiste el récord del banco de pruebas en tres configuraciones distintas. El CEO de la empresa estaba en el box y te llamó personalmente al día siguiente para felicitarte.', failDesc: 'El motor estaba programado para test, no para atacar. Forzaste demasiado, tuviste una rotura de transmisión en la vuelta 14 y el test terminó antes. Nadie estaba contento.' },
     ]
   },
@@ -412,7 +412,7 @@ const MINIGAMES = [
   {
     id: 'peer_ordenes',
     icon: '📻', title: '"Multi 21" - Órdenes de equipo', desc: 'Tu compañero de equipo viene muy pegado atrás con mejor ritmo.', radioMsg: '"Piloto, muro. Necesito que dejes pasar al {{PEER_NAME}}. Tiene mejor estrategia de gomas desde acá. Es decisión de equipo. Confirmá recepción."', choices: [
-      { text: 'Acatar la orden y dejarlo pasar', pureLuck: true, baseBonus: 1.0, noWinOnSuccess: true, peerRelDelta: +15, repDelta: +20, successDesc: 'Levantaste el pie en la recta. El equipo te agradeció y sumaste puntos vitales para los constructores. Eres un jugador de equipo.', failDesc: 'Levantaste el pie.' },
+      { text: 'Acatar la orden y dejarlo pasar', pureLuck: true, baseBonus: 1.0, noWinOnSuccess: true, peerRelDelta: +15, repDelta: +20, wasEscudero: true, successDesc: 'Levantaste el pie en la recta. El equipo te agradeció y sumaste puntos vitales para los constructores. Eres un jugador de equipo.', failDesc: 'Levantaste el pie.' },
       { text: 'Ignorar la radio y apretar el ritmo', skillStat: 'overtake', statBonus: 0.8, baseBonus: 0.2, noWinOnSuccess: true, onFailDnf: 0.5, peerRelDelta: -30, repDelta: -40, failDesc: 'Lo ignoraste, pero él se tiró igual por adentro. ¡Toque entre compañeros! Los dos afuera. El jefe de equipo está furioso.', failSurviveDesc: 'Lo ignoraste, él intentó pasar pero aflojó a último momento. Conservaste la posición, pero el clima en boxes es cortante (-10 Relación, -10 Reputación).', successDesc: 'Fingiste que no escuchabas, bajaste los tiempos y te escapaste. El equipo no pudo decir nada al verte cruzar la meta primero.' }
     ]
   },
@@ -655,9 +655,9 @@ const INTERVIEWS = [
   {
     id: 'f1_team_orders_obey',
     title: 'Polémica por órdenes de equipo',
-    desc: 'Acábas de dejar pasar a tu compañero por órdenes del equipo. La prensa te pregunta qué pensas sobre eso.',
+    desc: 'Acabas de dejar pasar a tu compañero por órdenes del equipo. La prensa te pregunta qué pensas sobre eso.',
     choices: [
-      { text: '"Soy un hombre del equipo"', pers: 'team', delta: 25, hint: 'Sumás puntos para la escuderia (+Equipo).', fixedDesc: '"Me pagan para sumar puntos para el equipo, no para mi ego." El jefe de equipo sonrió.' },
+      { text: '"Soy un hombre del equipo"', pers: 'team', delta: 25, wasEscudero: true, hint: 'Sumás puntos para la escuderia (+Equipo).', fixedDesc: '"Me pagan para sumar puntos para el equipo, no para mi ego." El jefe de equipo sonrió.' },
       { text: '"No me gustó, pero obedecí"', pers: 'aggressiveness', delta: 10, pers2: 'team', delta2: -10, hint: 'Muestras frustración (+Agresividad, -Equipo).', fixedDesc: '"Soy más rápido, pero hoy tocó esto." Dejaste ver tu frustración.' }
     ]
   },
@@ -756,7 +756,7 @@ function showInterview(postSeasonId = null) {
     // NEW INTERVIEW LOGIC
     if (iv.id === 'f1_transfer_rumors') {
       if (!G.lastResult || G.lastResult.cat !== 'F1') return false;
-      if (G.contract !== 1) return false;
+      if (G.f1ContractYearsLeft !== 1) return false;
       const expectedPosition = 12 - (G.team ? G.team.stars * 2 : 2); // Roughly expected champ pos
       if (G.lastResult.champ > expectedPosition) return false; // Only if overperforming or doing great
       return true;
@@ -897,6 +897,7 @@ function showInterview(postSeasonId = null) {
     b.onclick = () => {
       // Apply personality changes
       G.storyFlags['interview_' + iv.id] = true;
+      if (c.wasEscudero) G.wasEscudero = true;
       if (c.pers) {
           let d = c.delta;
           if (d < 0 && G.upgrades.includes('pr_team')) d = Math.round(d * 0.5);
@@ -2998,8 +2999,19 @@ function showMinigame() {
         G.wins++;
         G.lastResult.podiums = Math.max(G.lastResult.podiums, G.lastResult.wins);
         G.podiums++;
+        if (c.onFailDnf) G._ach_survivor = true;
+        if (c.pureLuck) {
+          G._ach_luckyWin = true;
+          G._ach_chaosCount = (G._ach_chaosCount || 0) + 1;
+        }
+        if (c.wasEscudero) G.wasEscudero = true;
         logText = `En pista: "${c.text}" [${logName}${logStat}${mg.hidePct ? '' : ' → ' + pct + '%'}] — ¡Éxito! +1 Victoria`;
       } else if (success && c.noWinOnSuccess) {
+        if (c.onFailDnf) G._ach_survivor = true;
+        if (c.pureLuck) {
+          G._ach_chaosCount = (G._ach_chaosCount || 0) + 1;
+        }
+        if (c.wasEscudero) G.wasEscudero = true;
         logText = `En pista: "${c.text}" [${logName}${logStat}${mg.hidePct ? '' : ' → ' + pct + '%'}] — ¡Llegaste! Sin DNF.`;
       } else if (isNeutralFail) {
         logText = `En pista: "${c.text}" [${logName}${logStat}${mg.hidePct ? '' : ' → ' + pct + '%'}] — Posición mantenida (Sin sobresaltos)`;
@@ -3891,7 +3903,7 @@ const ACHIEVEMENTS = [
   { id: 'survivor', name: 'El Sobreviviente', desc: 'Terminaste una carrera donde todo parecía perdido (Superar un minijuego con riesgo de DNF).', icon: '🩹', tier: 'bronze', condition: () => G._ach_survivor },
   { id: 'chaos_specialist', name: 'Especialista en Caos', desc: 'Ganaste 3 minijuegos de puro azar o situaciones extremas.', icon: '🌪️', tier: 'bronze', condition: () => (G._ach_chaosCount || 0) >= 3 },
   { id: 'lucky_guy', name: 'El Afortunado', desc: 'Ganaste una carrera mediante un evento o minijuego de pura suerte.', icon: '🍀', tier: 'bronze', condition: () => G._ach_luckyWin },
-  { id: 'loyalty', name: 'Fidelidad', desc: 'Firmaste 3 renovaciones de contrato consecutivas con el mismo equipo.', icon: '🤝', tier: 'bronze', condition: () => (G._ach_renewals || 0) >= 3 }
+  { id: 'loyalty', name: 'Fidelidad', desc: 'Firmaste 3 renovaciones de contrato consecutivas con el mismo equipo.', icon: '🤝', tier: 'bronze', condition: () => (G.renewalsCount || 0) >= 3 }
 ];
 
 let G_unlockedAchievements = [];

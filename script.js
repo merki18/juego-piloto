@@ -297,7 +297,7 @@ const RANDOM_EVENTS = [
   {
     id: 'peer_amigo',
     icon: '🤝', title: 'Alianza Estratégica con {{PEER_NAME}}', desc: 'En la Q3, en un circuito rapidísimo, vos y {{PEER_NAME}} salen juntos a la pista. Él te ofrece darse rebufo mutuamente para bajar los tiempos y arruinarle la pole a los favoritos.', choices: [
-      { text: 'Aceptar el trato y coordinar en pista', stat: 'quali', delta: 0, money: 0, peerRelDelta: +15, peerRelFailDelta: -25, skillStat: 'quali', skillBonus: 4, skillFail: -2, hint: '🏎 Clasificación: depende de tu capacidad técnica clavar los tiempos con el rebufo.', successDesc: 'Coordinación perfecta. Ambos bajaron tres décimas y clasificaron en primera fila. Al bajarse de los autos, chocaron los puños. Esto es respeto puro.', failDesc: 'Trataste de aprovechar el rebufo, pero frenaste tarde y bloqueaste los neumáticos. Le arruinaste la vuelta a él y perdiste la tuya. La tensión en boxes se corta con un cuchillo.' },
+      { text: 'Aceptar el trato y coordinar en pista', stat: 'quali', delta: 0, money: 0, peerRelDelta: +15, peerRelFailDelta: -15, skillStat: 'quali', skillBonus: 4, skillFail: -2, hint: '🏎 Clasificación: depende de tu capacidad técnica clavar los tiempos con el rebufo.', successDesc: 'Coordinación perfecta. Ambos bajaron tres décimas y clasificaron en primera fila. Al bajarse de los autos, chocaron los puños. Esto es respeto puro.', failDesc: 'Trataste de aprovechar el rebufo, pero frenaste tarde y bloqueaste los neumáticos. Le arruinaste la vuelta a él y perdiste la tuya. La tensión en boxes se corta con un cuchillo.' },
       { text: 'Declinar y enfocarte en tu propia vuelta', stat: 'speed', delta: 1, money: 0, peerRelDelta: -5, hint: 'Resultado fijo: preferís no arriesgar y competir solo (+1 Velocidad).', fixedDesc: 'Le respondiste que preferías aire limpio. La vuelta fue buena pero sin el extra del rebufo. Él se quedó un poco decepcionado.' },
     ]
   },
@@ -308,7 +308,13 @@ const RANDOM_EVENTS = [
       { text: 'Armar un escándalo y exigir la pieza', stat: 'speed', delta: 1, money: -50000, repDelta: -50, peerRelDelta: -30, hint: 'Resultado fijo: te quedás la mejora (+1 Vel) pero destruís la relación y tu reputación.', fixedDesc: 'Te plantaste en la oficina del jefe y amenazaste con irte. Te dieron la mejora, volaste en pista, pero nadie te felicitó al bajar.' }
     ]
   },
-
+  {
+    id: 'peer_wall',
+    icon: '🧱', title: 'El Muro en el Box', desc: 'La relación llegó a un punto tan bajo que el equipo levantó un panel en el medio del garaje para separarlos. Para colmo, sus mecánicos encontraron un setup mágico que se niegan a compartirte.', choices: [
+      { text: 'Denunciar favoritismo a la prensa', stat: 'speed', delta: 1, money: 0, repDelta: -20, peerRelDelta: -30, hint: 'Resultado fijo: presionás y conseguís el setup (+1 Vel), pero quedás como un llorón y la relación no tiene retorno.', fixedDesc: 'Hiciste un escándalo. La presión mediática obligó al jefe de equipo a pasarte la telemetría. Volaste en pista, pero el ambiente en el garaje es súper tóxico.' },
+      { text: 'Descifrarlo con tus propios ingenieros', stat: 'quali', delta: 0, money: 0, peerRelDelta: +5, skillStat: 'quali', skillBonus: 2, skillFail: -2, hint: '🏎 Clasificación: depende de tu capacidad analítica. Si fallás, perdés rendimiento.', successDesc: 'Te encerraste con tus mecánicos y lograron replicar el setup sin ayuda. Clasificaste por delante de él y bajaste del auto pidiéndole silencio a la cámara. Magia pura.', failDesc: 'Trabajar a ciegas fue un error. El auto quedó inmanejable y clasificaste lejísimos. Tu lado del garaje quedó en ridículo.' }
+    ]
+  }
 ];
 
 
@@ -399,7 +405,7 @@ const MINIGAMES = [
   },
   {
     icon: '🎀', title: 'Ruleta de la fiabilidad (Pura Suerte)', desc: 'El motor se comporta raro.', radioMsg: '"Piloto, acá ing. Park. Tenemos alertas raras en el motor desde la vuelta 38. Todavía no sabemos qué es. ¿Querés que bajes modo o seguís apretando y vemos qué pasa?"', choices: [
-      { text: 'Ignorar y seguir apretando', pureLuck: true, baseBonus: 0.50, desc: 'Cara o cruz: ganás ritmo o expotás el motor.', successDesc: 'Las alertas eran falsas. El motor aguantó las últimas vueltas y terminaste sin ningún problema. A veces hay que confiar en el auto.', failDesc: 'Vuelta 54. El motor expotó en la recta más larga. Columna de humo blanco. Retiro mécanico desde la primera curva. Las alertas no eran falsas.' },
+      { text: 'Ignorar y seguir apretando', pureLuck: true, baseBonus: 0.50, desc: 'Cara o cruz: ganás ritmo o expotás el motor.', successDesc: 'Las alertas eran falsas. El motor aguantó las últimas vueltas y terminaste sin ningún problema. A veces hay que confiar en el auto.', failDesc: 'Vuelta 54. El motor expotó en la recta más larga. Columna de humo blanco. Retiro mécanico desde la primera curva. Las alertas no eran falsas.', onFailDnf: true },
       { text: 'Bajar la potencia y rezar', pureLuck: true, baseBonus: 0.90, noWinOnSuccess: true, desc: 'Muy probable que llegues, pero perdés chances de atacar.', successDesc: 'Llegaste. Sin el ritmo para atacar, pero llegaste. El motor pudo aguantar, puntos asegurados.', failDesc: 'Incluso en modo bajo consumo, el motor no aguantó. Se apagó solo en la vuelta 58. El motor iba a romperse sin importar nada.', onFailDnf: true },
     ]
   },
@@ -415,6 +421,27 @@ const MINIGAMES = [
     icon: '🛑', title: 'Brake Test Bajo Safety Car', desc: 'La tensión es máxima. Están detrás del Auto de Seguridad.', radioMsg: '"¡PILOTO, CUIDADO! {{PEER_NAME}} FRENÓ FUERTE AHORA MISMO DELANTE TUYO. ¡REACCIONÁ!"', choices: [
       { text: 'Volantazo ciego', pureLuck: true, baseBonus: 0.5, noWinOnSuccess: true, onFailDnf: true, repDelta: +10, failDesc: 'Pegaste el volantazo pero enganchaste su rueda trasera y terminaste contra el muro. Abandono absurdo.', successDesc: 'Tus reflejos salvaron el auto por milímetros. Pasaste por al lado y le hiciste un gesto a la cámara. ¡Reflejos de gato!' },
       { text: 'Frenar a fondo en línea recta', pureLuck: true, baseBonus: 0.5, noWinOnSuccess: true, onFailDnf: true, repDelta: +10, failDesc: 'No llegaste a frenar. Le destruiste el alerón trasero y rompiste tu suspensión. Los dos afuera.', successDesc: 'Clavaste los frenos y te detuviste a un milímetro de su caja de cambios. Hubo humo, pero no contacto.' }
+    ]
+  },
+  {
+    id: 'peer_double_stack',
+    icon: '🌧️', title: 'Caos en los Boxes', desc: 'Empieza a llover fuerte a mitad de carrera. El equipo llama a {{PEER_NAME}} a boxes primero para poner intermedias.', radioMsg: '"Piloto, boxea {{PEER_NAME}} en esta vuelta, vos quedate en pista una vuelta mas. No podemos atender a los dos a la vez, repito, no entres a boxes."', choices: [
+      { text: 'Acatar y sobrevivir con gomas de seco', skillStat: 'rain', statBonus: 0.8, baseBonus: 0.1, noWinOnSuccess: true, onFailDnf: true, repDelta: +10, peerRelDelta: +10, successDesc: 'Patinaste toda la vuelta pero lograste sobrevivir gracias a tu tacto bajo el agua. Perdiste mucho tiempo y la chance de ganar, pero el equipo apreció tu disciplina.', failDesc: 'Imposible. Tocaste la línea blanca, hiciste un trompo y terminaste en el muro. Carrera arruinada.' },
+      { text: 'Tirarte a boxes forzando el Double Stack', pureLuck: true, baseBonus: 0.8, noWinOnSuccess: true, repDelta: -15, peerRelDelta: -10, successDesc: 'Te mandaste a boxes. Los mecánicos tuvieron que atenderte mientras tu compañero esperaba atrás perdiendo valiosos segundos. Le arruinaste la carrera a él, pero vos volaste. El garaje arde.', failDesc: 'Te metiste a la fuerza pero no tenían tus gomas listas. Perdiste 15 segundos y arruinaste la carrera de ambos. Papelón total.' }
+    ]
+  },
+  {
+    id: 'peer_turn_1',
+    icon: '🚦', title: 'Primera vuelta, primera curva', desc: 'Clasificaron en la misma fila. Las luces se apagan y vos y {{PEER_NAME}} llegan emparejados a la Curva 1. Él tiene la cuerda por adentro.', radioMsg: '"Piloto, buena largada. Recuerden: corremos para el equipo, nada de estupideces en la curva 1."', choices: [
+      { text: 'Aflojar y no arriesgar de mas', pureLuck: true, baseBonus: 0.95, noWinOnSuccess: true, repDelta: +15, peerRelDelta: +10, successDesc: 'Aflojaste lo justo para acomodarte detrás de él. El muro respiró aliviado. Sobrevivieron ambos a una largada caotica.', failDesc: 'Levantaste de más, patinaste en lo sucio y te pasaron dos autos por afuera. Al menos los autos volvieron sanos.' },
+      { text: 'Estirar la frenada por fuera', skillStat: 'overtake', statBonus: 0.7, baseBonus: 0.1, noWinOnSuccess: true, onFailDnf: true, repDelta: -10, peerRelDelta: -10, successDesc: '¡Agresividad pura! Estiraste la frenada al límite por fuera, rozaste su neumático pero te quedaste con la posicion. Un adelantamiento de campeón que silenció al garaje. Quedaste mejor posicionado para el resto de la carrera.', failDesc: 'Cero margen. Sus ruedas se engancharon y saliste despedido hacia la leca, llevándotelo puesto. Los dos autos destruidos en la primera curva. Papelón histórico.' }
+    ]
+  },
+  {
+    id: 'peer_defense',
+    icon: '🛡️', title: 'El Ministro de Defensa', desc: 'Tu compañero esta por delante tuyo. Vos venís segundo y detrás tenés un auto más rápido pisándote los talones.', radioMsg: '"Piloto, necesitamos que retengas al grupo de atrás. Repito, hacete ancho. {{PEER_NAME}} necesita 3 segundos de ventaja para asegurar los puntos."', choices: [
+      { text: 'Defender como un león', skillStat: 'tyres', statBonus: 0.8, baseBonus: 0.1, noWinOnSuccess: true, repDelta: +20, peerRelDelta: +30, onFailDnf: 0.3, successDesc: 'Te convertiste en una muralla. Aguantaste los ataques arruinando tus propias gomas. Tu compañero termino mas adelante de lo esperado y te lo agradeció por radio. Héroe del equipo.', failDesc: 'Intentaste defender pero te quedaste sin gomas. Te pasaron a vos y terminaron cazando a tu compañero también. Un desastre para el equipo.' },
+      { text: 'Ignorar y atacar a tu compañero', skillStat: 'overtake', statBonus: 0.8, baseBonus: 0.1, noWinOnSuccess: true, repDelta: -15, peerRelDelta: -30, successDesc: 'Respondiste "No soy el guardaespaldas de nadie". Pasaste a tu compañero y terminaste por delante de él. {{PEER_NAME}} termino siendo rebazado por los demas y la escuderia sumó menos puntos de los que deberia.', failDesc: 'Intentaste atacar a tu compañero pero perdiste tracción. Te pasaron los de atrás y perdiste varias posiciones. El equipo te soltó la mano.' }
     ]
   }
 ];
@@ -460,15 +487,6 @@ const INTERVIEWS = [
       ]
     },
     {
-      id: 'f1_zero_points',
-      title: 'Temporada en blanco',
-      desc: 'Ha sido un año durísimo. Terminaste la temporada de Fórmula 1 sin haber sumado ni un solo punto.',
-      choices: [
-        { text: '"El coche simplemente no daba para más"', pers: 'team', delta: -15, pers2: 'media', delta2: 10, hint: 'Culpas a la máquina (-Equipo, +Medios).', fixedDesc: '"Fuimos el equipo más lento todo el año, milagros no puedo hacer." Te sacaste la responsabilidad, pero los mecánicos te miran mal.' },
-        { text: '"Debo mejorar mi conducción"', pers: 'team', delta: 15, hint: 'Asumes la culpa (+Equipo).', fixedDesc: '"He cometido demasiados errores. Prometo volver más fuerte." Asumiste la responsabilidad como un líder.' }
-      ]
-    },
-{
       id: 'ev_jet',
       title: '✈️ Vuelo Compartido',
       desc: 'Tu compañero te pide viajar en tu Jet Privado para la próxima carrera europea.',
@@ -639,7 +657,7 @@ const INTERVIEWS = [
     title: 'Polémica por órdenes de equipo',
     desc: 'Acábas de dejar pasar a tu compañero por órdenes del equipo. La prensa te pregunta qué pensas sobre eso.',
     choices: [
-      { text: '"Soy un hombre de la empresa"', pers: 'team', delta: 25, hint: 'Sumás puntos para el equipo (+Equipo).', fixedDesc: '"Me pagan para sumar puntos para el equipo, no para mi ego." El jefe de equipo sonrió.' },
+      { text: '"Soy un hombre del equipo"', pers: 'team', delta: 25, hint: 'Sumás puntos para la escuderia (+Equipo).', fixedDesc: '"Me pagan para sumar puntos para el equipo, no para mi ego." El jefe de equipo sonrió.' },
       { text: '"No me gustó, pero obedecí"', pers: 'aggressiveness', delta: 10, pers2: 'team', delta2: -10, hint: 'Muestras frustración (+Agresividad, -Equipo).', fixedDesc: '"Soy más rápido, pero hoy tocó esto." Dejaste ver tu frustración.' }
     ]
   },
@@ -664,10 +682,10 @@ const INTERVIEWS = [
   {
     id: 'f1_bad_blood',
     title: 'Guerra fría',
-    desc: 'Tu relación con tu rival es pésima y no se hablan. La prensa lo sabe y tira leña al fuego.',
+    desc: 'Tu relación con tu compañero es pésima y no se hablan. La prensa lo sabe y tira leña al fuego.',
     choices: [
       { text: '"No vengo a hacer amigos"', pers: 'aggressiveness', delta: 20, hint: 'Llenás de titulares los diarios (+Agresividad).', fixedDesc: '"Nos pagan por ganar, no por tomar café juntos." La rivalidad se encendió aún más.' },
-      { text: '"Lo respeto como piloto"', pers: 'media', delta: 15, hint: 'Respuesta madura (+Mediático).', fixedDesc: '"Fuera de la pista es otra historia, adentro somos rivales." Una respuesta madura.' }
+      { text: '"Lo respeto como piloto"', pers: 'media', delta: 15, hint: 'Respuesta madura (+Mediático).', fixedDesc: '"Fuera de la pista es otra historia, adentro somos compañeros." Una respuesta madura.' }
     ]
   },
   {
@@ -687,16 +705,6 @@ const INTERVIEWS = [
       { text: '"Somos un equipo y ganamos juntos"', pers: 'team', delta: 20, hint: 'Evitás generar una guerra interna (+Equipo).', fixedDesc: '"No creo en eso de piloto número uno. Los dos trabajamos para llevar al equipo hacia adelante." En el garaje respiraron tranquilos.' },
       { text: '"Los resultados hablan solos"', pers: 'aggressiveness', delta: 20, hint: 'Mandás un mensaje directo (+Agresividad).', fixedDesc: '"No necesito decir quién fue más rápido. Está todo en la tabla." Tu compañero no hizo comentarios.' },
       { text: 'Responder con una sonrisa', pers: 'media', delta: 15, hint: 'Alimentás el debate sin decir demasiado (+Mediático).', fixedDesc: 'Sonreíste, miraste a cámara y seguiste caminando. Al día siguiente, todos los diarios discutían exactamente lo mismo.' }
-    ]
-  },
-  {
-    id: 'f1_peer_departure',
-    title: 'Separación de caminos',
-    desc: 'Después de varias temporadas compartiendo garaje, tu compañero deja el equipo. La prensa te pregunta qué significó para vos.',
-    choices: [
-      { text: '"Fue un gran compañero"', pers: 'team', delta: 15, hint: 'Mostrás respeto (+Equipo).', fixedDesc: '"Competimos duro, pero siempre empujamos al equipo hacia adelante." La despedida fue cordial.' },
-      { text: '"Ahora veremos quién era el problema"', pers: 'aggressiveness', delta: 20, hint: 'No perdés la oportunidad de lanzar una indirecta (+Agresividad).', fixedDesc: '"El próximo año tendremos respuestas." La frase no tardó en llegar a su nuevo equipo.' },
-      { text: '"Que le vaya bien... excepto contra mí"', pers: 'media', delta: 15, hint: 'Convertís la despedida en un titular (+Mediático).', fixedDesc: 'La frase fue tomada como una broma, aunque algunos en el paddock no estaban tan seguros.' }
     ]
   },
   {
@@ -735,7 +743,7 @@ function showInterview(postSeasonId = null) {
   // Select an interview
   let pool = INTERVIEWS.filter(iv => {
     if (postSeasonId) return iv.id === postSeasonId;
-    const psIds = ['f1_epic_champion', 'f1_championship_contender', 'f1_retirement_talk', 'f1_win_record', 'f1_teammate_destroyed', 'f1_peer_departure', 'f1_first_title', 'f1_title_lost', 'f1_title_record_broken', 'f1_constructors_champ', 'f1_teammate_champ', 'f1_zero_points', 'f1_reg_change_better', 'f1_reg_change_worse', 'f1_underperform'];
+    const psIds = ['f1_epic_champion', 'f1_championship_contender', 'f1_retirement_talk', 'f1_win_record', 'f1_teammate_destroyed', 'f1_first_title', 'f1_title_lost', 'f1_title_record_broken', 'f1_constructors_champ', 'f1_teammate_champ', 'f1_reg_change_better', 'f1_reg_change_worse', 'f1_underperform'];
     if (!postSeasonId && (psIds.includes(iv.id) || iv.id.startsWith('ev_'))) return false; // Hide post-season interviews from mid-season
     if (G.catIndex < 5) return false; // ONLY IN F1
     if (G.storyFlags['interview_' + iv.id]) return false; // NO REPEATS
@@ -873,14 +881,6 @@ function showInterview(postSeasonId = null) {
 
 
     let ivDesc = iv.desc;
-    if (iv.id === 'f1_peer_departure' && G.peer && G.peer.team) {
-      const f1Teams = TEAMS['F1'] || [];
-      const newTeamObj = f1Teams.find(t => t.name === G.peer.team);
-      const logoHtml = (newTeamObj && newTeamObj.logo) 
-        ? `<img src="${newTeamObj.logo}" style="height:16px; vertical-align:middle; margin-left:6px; margin-right:2px; border-radius:2px">` 
-        : '';
-      ivDesc += ` <br><span style="color:var(--muted); font-size:13px">(Se confirmó que firmó con${logoHtml} <b>${G.peer.team}</b>)</span>`;
-    }
     document.getElementById('int-desc').innerHTML = ivDesc;
 
   const ch = document.getElementById('int-choices');
@@ -1620,7 +1620,7 @@ function computeSeasonResult() {
       effStats.speed = clamp(effStats.speed + 8, 1, 99);
       effStats.tyres = clamp(effStats.tyres - 10, 1, 99);
       extraDnf = 1;
-      G._seasonEventLogs.push(`⚔️ Enemistad con ${G.peer.name}: +Agresividad, -Gestión y +Riesgo.`);
+      G._seasonEventLogs.push(`⚡ Tensión en el box con ${G.peer.name}: +Agresividad, -Gestión y +Riesgo.`);
     } else if (G.peer.relationship > 30) {
       effStats.tyres = clamp(effStats.tyres + 6, 1, 99);
       effStats.quali = clamp(effStats.quali + 6, 1, 99);
@@ -1885,10 +1885,6 @@ function computeSeasonResult() {
     
     if (G.age >= 35 && !G.storyFlags['interview_f1_retirement_talk']) {
       G._seasonSteps.push('event:f1_retirement_talk');
-    }
-    
-    if (G.points === 0 && !G.storyFlags['interview_f1_zero_points']) {
-      G._seasonSteps.push('event:f1_zero_points');
     }
 
     if (G._evaluatingRegChange) {
@@ -2658,6 +2654,17 @@ function processNextStep() {
   } else if (step === 'contracts') {
     showContracts();
   } else if (step === 'preseason') {
+    if (G._pendingTeammateChangeMsg) {
+      const p = G._pendingTeammateChangeMsg;
+      const title = '🤝 Cambio en el Garaje';
+      const resultText = p.h2hWins > p.h2hLosses ? 'a tu favor' : (p.h2hWins < p.h2hLosses ? 'en tu contra' : 'en empate');
+      const desc = `Tu antiguo compañero, <strong>${p.oldName}</strong>, ${p.destination}.<br><br>El duelo interno durante estos años finalizó con un récord de <strong>${p.h2hWins} a ${p.h2hLosses}</strong> ${resultText}.<br><br>Tu nuevo compañero de equipo será <strong>${p.newName}</strong>.`;
+      G._pendingTeammateChangeMsg = null;
+      G._nextSteps.unshift('preseason');
+      showMessageScreen(title, desc);
+      return;
+    }
+
     const cat = CATEGORIES[G.catIndex];
     if (G._tempStarBonusCalculatedForYear !== G.year) {
       G._tempStarBonusCalculatedForYear = G.year;
@@ -2754,7 +2761,7 @@ function showRandomEvent() {
       if (G._directivaUsed) return false; // Only once per career
       if (Math.random() >= 0.5) return false; // 50% chance if conditions met
     }
-    if (ev.id === 'peer_choque' || ev.id === 'peer_amigo' || ev.id === 'peer_numero1') {
+    if (ev.id === 'peer_choque' || ev.id === 'peer_amigo' || ev.id === 'peer_numero1' || ev.id === 'peer_wall') {
       if (!G.peer) return false; // Peer must exist
       if (G.catIndex < 5) return false; // F1 only
       // peer_choque more likely when relationship is neutral or hostile
@@ -2765,6 +2772,7 @@ function showRandomEvent() {
         if (!G.team || G.team.name !== G.peer.team) return false;
         if (G.peer.h2hWins <= G.peer.h2hLosses) return false;
       }
+      if (ev.id === 'peer_wall' && G.peer.relationship >= -30) return false;
     }
     return true;
   });
@@ -2905,6 +2913,9 @@ function showMinigame() {
     if (mg.id === 'midfield' && G.team && G.team.stars > 3) return false;
     if (mg.id === 'peer_ordenes') return G.peer && G.team && G.team.name === G.peer.team;
     if (mg.id === 'peer_brake_test') return G.peer && G.peer.relationship < -30;
+    if (mg.id === 'peer_double_stack') return G.peer && G.catIndex === 5;
+    if (mg.id === 'peer_turn_1') return G.peer && G.catIndex === 5 && G.team && G.team.stars >= 4;
+    if (mg.id === 'peer_defense') return G.peer && G.catIndex === 5 && G.peer.relationship > 30 && G.team && G.team.stars >= 3;
 
     const canGiveWin = mg.choices.some(c => !c.noWinOnSuccess && !c.pureLuck || (c.pureLuck && !c.noWinOnSuccess));
     if (canGiveWin && G.catIndex === 5) {
@@ -3456,7 +3467,6 @@ function showRetirement() {
     legacyCompare = 'A la altura de Juan Manuel Fangio, Michael Schumacher y Lewis Hamilton.';
   } else {
     legacyClass = 'legacy-legend'; legacyIcon = '🐐'; legacyTitle = 'El Mejor de Todos los Tiempos'; 
-    legacyClass = 'legacy-legend'; legacyIcon = '🐐'; legacyTitle = 'El Mejor de Todos los Tiempos'; 
     legacyCompare = 'Incomparable. Destrozaste todos los récords de la historia de la Fórmula 1.';
   }
 
@@ -3688,6 +3698,24 @@ function refreshTeammate() {
     return;
   }
 
+  // Teammate changed!
+  if (G.peer && G.seasons.filter(s => s.cat === 'F1').length > 0) {
+     const oldPeerInRoster = G.aiRoster.find(d => d.id === G.peer.id);
+     let destination = 'se retiró del automovilismo';
+     if (oldPeerInRoster) {
+         if (oldPeerInRoster.cat === 'F1') destination = `fichó por ${oldPeerInRoster.team}`;
+         else destination = `quedó fuera de la F1 (ahora corre en ${oldPeerInRoster.cat})`;
+     }
+     
+     G._pendingTeammateChangeMsg = {
+         oldName: G.peer.name,
+         destination: destination,
+         h2hWins: G.peer.h2hWins,
+         h2hLosses: G.peer.h2hLosses,
+         newName: (newTm.flag || '🏁') + ' ' + newTm.name
+     };
+  }
+
   // New teammate: fresh slate
   const prevName = G.peer ? G.peer.name : null;
   G.peer = {
@@ -3875,7 +3903,7 @@ let _lastStandings = null; // cache de la clasificación generada para el resume
 //  sin simular carrera por carrera. Se cachea una vez por temporada
 //  para que el modal siempre muestre lo mismo que dice el resumen.
 // ═══════════════════════════════════════════════════════════
-﻿﻿function generateStandingsTable(r) {
+﻿function generateStandingsTable(r) {
   const sizes = { 'Karting': 24, 'F4': 24, 'Formula Regional': 24, 'F3': 30, 'F2': 22, 'F1': 22 };
   const N = sizes[r.cat] || 20;
   const BASE = Math.max(140, r.races * 20);

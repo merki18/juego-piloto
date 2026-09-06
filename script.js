@@ -1110,6 +1110,11 @@ function initState(name, number, nat, talent) {
     f1Titles: 0,
     epicTitles: 0,
     f1ContractYearsLeft: 0,
+    blacklistedTeams: [],     // teams that will never offer a contract again (shadow-offer betrayal)
+    _shadowBetrayalActive: false, // true when the dev-focus event this season must be skipped (betrayal fallout)
+    _shadowSecretTeam: null,  // name of the team the player secretly pre-signed with
+    _shadowOldTeam: null,     // name of the team that got betrayed
+    _shadowVerdictPending: false, // true until the "was it worth it" reveal message is shown
     regulationBonus: 0,      // rating bonus for THIS season (player focused on current)
     nextSeasonRegBonus: 0,
       nextSeasonRegPenalty: 0,   // star bonus applied when reg change fires
@@ -1573,6 +1578,14 @@ function runSimulation() {
         G._pendingRegChange = true;
         G.lastRegChangeYear = G.year;
         G.nextRegChangeYear = G.year + 4 + Math.floor(Math.random() * 3);
+
+        // ── EXCLUSIVE EVENT: "Una Oferta en las Sombras" ──
+        // Only fires in the season right before a reg change, if the player has
+        // 1+ years left on their current contract with a top (4-5 star) team.
+        if (G.f1ContractYearsLeft >= 1 && G.team && G.team.stars >= 4) {
+          G._seasonSteps.push('shadow_offer');
+        }
+
         G._seasonSteps.push('regulation');
       }
     }
@@ -1599,7 +1612,8 @@ function processSeasonStep() {
     return;
   }
   const step = G._seasonSteps.shift();
-  if (step === 'regulation') showRegulationEvent();
+  if (step === 'shadow_offer') showShadowOfferEvent();
+  else if (step === 'regulation') showRegulationEvent();
   else if (step === 'event') showRandomEvent();
   else if (step === 'minigame') showMinigame();
   else if (step === 'interview') showInterview();
@@ -1963,7 +1977,94 @@ function calcChampPosition(rating) {
 // ═══════════════════════════════════════════════════════════
 //  REGULATION CHANGE EVENT
 // ═══════════════════════════════════════════════════════════
+function resetEventChrome() {
+  const label = document.querySelector('#screen-event .label');
+  const card = document.querySelector('#screen-event .card');
+  if (label) label.textContent = 'Evento especial';
+  if (card) { card.style.borderColor = ''; card.style.boxShadow = ''; }
+  const titleEl = document.getElementById('ev-title');
+  if (titleEl) titleEl.style.color = '';
+}
+
+// ═══════════════════════════════════════════════════════════
+//  SHADOW OFFER — "Una Oferta en las Sombras"
+// ═══════════════════════════════════════════════════════════
+function showShadowOfferEvent() {
+  resetEventChrome();
+
+  const icon = document.getElementById('ev-icon');
+  const title = document.getElementById('ev-title');
+  const desc = document.getElementById('ev-desc');
+  const ch = document.getElementById('ev-choices');
+  const label = document.querySelector('#screen-event .label');
+  const card = document.querySelector('#screen-event .card');
+
+  const existingRadio = document.getElementById('ev-radio-block');
+  if (existingRadio) existingRadio.remove();
+
+  const rivalTeams = TEAMS['F1'].filter(t => t.name !== G.team.name);
+  const offerTeam = randFrom(rivalTeams.length ? rivalTeams : TEAMS['F1']);
+
+  if (label) label.textContent = '🕵️ Oferta Secreta';
+  if (card) { card.style.borderColor = 'var(--accent)'; card.style.boxShadow = '0 0 24px rgba(232,200,74,.2)'; }
+  icon.textContent = '🕵️';
+  title.textContent = 'Una Oferta en las Sombras';
+  title.style.color = 'var(--accent)';
+  desc.innerHTML = `El director de <strong>${offerTeam.name}</strong> te aborda en secreto en el paddock:<br><br>` +
+    `<span style="font-style:italic">"El año que viene cambia el reglamento. Tenemos el diseño muy avanzado y te aseguro que nuestro auto volará. ` +
+    `Firmá ahora este pre-contrato. Si tu equipo actual se entera, te van a echar, pero es tu chance de dominar la nueva era."</span>`;
+
+  ch.innerHTML = '';
+
+  const bReject = document.createElement('div');
+  bReject.className = 'minigame-choice';
+  bReject.innerHTML = `<h3>🤝 Rechazar y ser leal</h3><p style="margin-bottom:6px">Te quedás en ${G.team.name} y confiás en su desarrollo legal. (+40 Equipo)</p>`;
+  bReject.onclick = () => {
+    G.personality.team = clamp(G.personality.team + 40, -100, 100);
+    const logText = `🤝 Rechazaste la oferta secreta de ${offerTeam.name} y le fuiste leal a ${G.team.name}.`;
+    G._seasonEventLogs.push(logText);
+    ch.innerHTML = `
+      <div class="card" style="text-align:center; padding: 24px">
+        <div style="font-size:36px;margin-bottom:12px">🤝</div>
+        <div class="heading" style="font-size:18px;margin-bottom:8px">Lealtad ante todo</div>
+        <div class="sub" style="margin-bottom:16px">${logText}</div>
+        <button class="btn btn-primary" onclick="processSeasonStep()">Continuar</button>
+      </div>
+    `;
+  };
+  ch.appendChild(bReject);
+
+  const bAccept = document.createElement('div');
+  bAccept.className = 'minigame-choice';
+  bAccept.style.borderColor = 'var(--accent)';
+  bAccept.style.boxShadow = '0 0 16px rgba(232,200,74,.25)';
+  bAccept.innerHTML = `<h3 style="color:var(--accent)">🕵️ Firmar el pre-contrato (Traición)</h3><p style="margin-bottom:6px">Firmás en secreto con ${offerTeam.name}. No hay vuelta atrás. (+20 Agresividad)</p>`;
+  bAccept.onclick = () => {
+    G.personality.aggressiveness = clamp(G.personality.aggressiveness + 20, -100, 100);
+    G._shadowBetrayalActive = true;
+    G._shadowSecretTeam = offerTeam.name;
+    G._shadowOldTeam = G.team.name;
+    if (!G.blacklistedTeams) G.blacklistedTeams = [];
+    if (!G.blacklistedTeams.includes(G.team.name)) G.blacklistedTeams.push(G.team.name);
+    G.f1ContractYearsLeft = 0; // contract manipulated to expire at the end of this season
+    const logText = `🕵️ Firmaste en secreto un pre-contrato con ${offerTeam.name}. Tu contrato con ${G.team.name} quedó reducido a esta temporada.`;
+    G._seasonEventLogs.push(logText);
+    ch.innerHTML = `
+      <div class="card" style="text-align:center; padding: 24px; border-color:var(--accent)">
+        <div style="font-size:36px;margin-bottom:12px">🕵️</div>
+        <div class="heading" style="font-size:18px;margin-bottom:8px;color:var(--accent)">El trato está hecho</div>
+        <div class="sub" style="margin-bottom:16px">${logText}</div>
+        <button class="btn btn-primary" onclick="processSeasonStep()">Continuar</button>
+      </div>
+    `;
+  };
+  ch.appendChild(bAccept);
+
+  goto('screen-event');
+}
+
 function showRegulationEvent() {
+  resetEventChrome();
   const icon = document.getElementById('ev-icon');
   const title = document.getElementById('ev-title');
   const desc = document.getElementById('ev-desc');
@@ -1974,9 +2075,43 @@ function showRegulationEvent() {
 
   icon.textContent = '📐';
   title.textContent = '¡Cambio de Reglamento Técnico!';
-  desc.textContent = `La FIA anunció un nuevo reglamento técnico que entrará en vigor al final de esta temporada. ¿Cómo enfocás los recursos de tu equipo?`;
-
   ch.innerHTML = '';
+
+  // If the player betrayed their team via the shadow pre-contract, they're
+  // excluded from the development-focus decision entirely.
+  if (G._shadowBetrayalActive) {
+    G._shadowBetrayalActive = false;
+    desc.textContent = `La FIA anunció un nuevo reglamento técnico que entrará en vigor al final de esta temporada. Tu directiva ya sospecha de tu pre-contrato secreto: fuiste excluido de las reuniones técnicas a puertas cerradas.`;
+
+    const options = ['current', 'split', 'next'];
+    const effect = randFrom(options);
+    let decisionLabel;
+    if (effect === 'current') {
+      G.regulationBonus = 8; G.nextSeasonRegBonus = -1;
+      decisionLabel = 'apostar todo al campeonato actual';
+    } else if (effect === 'split') {
+      G.regulationBonus = 4; G.nextSeasonRegBonus = 0;
+      decisionLabel = 'dividir los recursos de forma equilibrada';
+    } else {
+      G.regulationBonus = -4; G.nextSeasonRegBonus = 1;
+      decisionLabel = 'apostar todo al desarrollo del nuevo reglamento';
+    }
+    const logText = `🚫 Excluido del desarrollo: el equipo decidió, sin consultarte, ${decisionLabel}.`;
+    G._seasonEventLogs.push(logText);
+
+    ch.innerHTML = `
+      <div class="card" style="text-align:center; padding: 24px">
+        <div style="font-size:36px;margin-bottom:12px">🔒</div>
+        <div class="heading" style="font-size:18px;margin-bottom:8px">Fuera de las reuniones técnicas</div>
+        <div class="sub" style="margin-bottom:16px">${logText}</div>
+        <button class="btn btn-primary" onclick="processSeasonStep()">Continuar</button>
+      </div>
+    `;
+    goto('screen-event');
+    return;
+  }
+
+  desc.textContent = `La FIA anunció un nuevo reglamento técnico que entrará en vigor al final de esta temporada. ¿Cómo enfocás los recursos de tu equipo?`;
 
   const choices = [
     {
@@ -2471,6 +2606,7 @@ function afterSummary() {
 }
 
 function showGoldenBoyEvent(pendingSteps = []) {
+  resetEventChrome();
   const topTeams = TEAMS['F1'].filter(t => t.stars >= 4);
   const offerTeam = randFrom(topTeams);
 
@@ -2675,7 +2811,18 @@ function processNextStep() {
       let msgTitle = null;
       let msgDesc = null;
 
-      if (isRegChange) {
+      if (isRegChange && G._shadowVerdictPending) {
+        G._shadowVerdictPending = false;
+        const stars = G.team.stars;
+        let verdictLine;
+        if (stars === 5) verdictLine = '¡Cumplieron lo prometido! Tenés un cohete entre las manos.';
+        else if (stars === 4) verdictLine = 'No es el auto dominante que prometieron, pero vas a pelear arriba.';
+        else if (stars === 3) verdictLine = 'Te vendieron humo. El auto está en la mitad de la tabla.';
+        else verdictLine = '¡Te estafaron! El auto es una carreta. No vas a pelear por nada.';
+        const oldTeamName = G._shadowOldTeam || 'tu antiguo equipo';
+        msgTitle = '🕵️ La Verdad del Pre-Contrato';
+        msgDesc = `Se revelan los autos de la nueva era. Tu auto de <strong>${G.team.name}</strong> rinde al nivel de <strong>${stars} estrella${stars === 1 ? '' : 's'}</strong>.<br><br>${verdictLine}<br><br><span style="color:var(--accent2)">Tu antiguo equipo, ${oldTeamName}, te cerró las puertas para siempre.</span>`;
+      } else if (isRegChange) {
         msgTitle = '⚠️ Nuevo Reglamento';
         msgDesc = `Los cambios técnicos entraron en vigor. Tras los test de pretemporada, se confirmó que tu auto rinde al nivel de <strong>${G.team.stars} estrellas</strong>.`;
       } else if (cat === 'F1' && Math.random() < 0.2) {
@@ -2730,6 +2877,7 @@ function typewriterRadio(elId, text, speed = 15) {
 }
 
 function showRandomEvent() {
+  resetEventChrome();
   const playerStars = G.team ? G.team.stars : 0;
 
   // Build candidate event pool — filter out special one-time or conditional events
@@ -3097,7 +3245,12 @@ function canMeetNextCatReqs(nextCatIdx) {
 }
 function showContracts() {
   const cat = CATEGORIES[G.catIndex];
-  const allTeams = TEAMS[cat] || TEAMS['F1'];
+  let allTeams = TEAMS[cat] || TEAMS['F1'];
+
+  // Teams the player permanently burned bridges with (shadow-offer betrayal) never offer again
+  if (G.blacklistedTeams && G.blacklistedTeams.length) {
+    allTeams = allTeams.filter(t => !G.blacklistedTeams.includes(t.name));
+  }
 
   // Rep & OVR requirements logic
   const ovr = Math.round(Object.values(G.stats).reduce((a, b) => a + b) / 5);
@@ -3133,8 +3286,19 @@ function showContracts() {
     offerPool = allTeams.filter(t => t.stars === minStars);
   }
 
+  // Shadow-offer betrayal: the market is locked. The only "offer" on the table
+  // is the pre-contract signed in secret — there is no going back.
+  let isLockedShadowMarket = false;
+  if (cat === 'F1' && G._shadowSecretTeam) {
+    const secretTeam = TEAMS['F1'].find(t => t.name === G._shadowSecretTeam);
+    if (secretTeam) {
+      offerPool = [secretTeam];
+      isLockedShadowMarket = true;
+    }
+  }
+
   // F1 logic: limit offers based on previous performance and add renewals
-  if (cat === 'F1') {
+  if (!isLockedShadowMarket && cat === 'F1') {
     const prevChamp = (G.lastResult && G.lastResult.cat === 'F1') ? G.lastResult.champ : 20;
 
     // Current team always gets to offer renewal if player met the position requirement for their team's stars
@@ -3181,8 +3345,13 @@ function showContracts() {
   list.innerHTML = '';
 
   // Restore the heading in case showCategoryChoiceScreen changed it
-  document.querySelector('#screen-contracts .heading').textContent = 'Ofertas de equipos';
-  document.querySelector('#screen-contracts .sub').textContent = `Elegí dónde correr la próxima temporada en ${cat}`;
+  if (isLockedShadowMarket) {
+    document.querySelector('#screen-contracts .heading').textContent = '🕵️ El pre-contrato secreto';
+    document.querySelector('#screen-contracts .sub').textContent = 'No hay vuelta atrás. Esta es la única oferta sobre la mesa.';
+  } else {
+    document.querySelector('#screen-contracts .heading').textContent = 'Ofertas de equipos';
+    document.querySelector('#screen-contracts .sub').textContent = `Elegí dónde correr la próxima temporada en ${cat}`;
+  }
 
   offerPool.forEach(team => {
     const salary = [30000, 80000, 150000, 300000, 500000, 2000000][G.catIndex];
@@ -3319,6 +3488,11 @@ function showContracts() {
       G.totalMoney += Math.round(salarySpin * 0.1);
       if (isF1) G.f1ContractYearsLeft = contractYears - 1;
       if (isF1) refreshTeammate();
+      if (isLockedShadowMarket) {
+        // The secret pre-contract is now official — set up next season's "was it worth it" reveal
+        G._shadowVerdictPending = true;
+        G._shadowSecretTeam = null;
+      }
       updateTopBar();
       processNextStep();
     };

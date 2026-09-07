@@ -1875,7 +1875,10 @@ function computeSeasonResult() {
       const peerStRow = standingsRows.find(s => s.isPeer);
       if (myStRow && peerStRow) {
         if (myStRow.rank < peerStRow.rank) G.peer.h2hLosses = (G.peer.h2hLosses || 0) + 1;
-        else if (peerStRow.rank < myStRow.rank) G.peer.h2hWins = (G.peer.h2hWins || 0) + 1;
+        else if (peerStRow.rank < myStRow.rank) {
+          G.peer.h2hWins = (G.peer.h2hWins || 0) + 1;
+          G.careerH2HLosses = (G.careerH2HLosses || 0) + 1;
+        }
       }
     }
     
@@ -3998,6 +4001,7 @@ const TIER_LABELS = { platinum: 'Platino', gold: 'Oro', silver: 'Plata', bronze:
 
 const ACHIEVEMENTS = [
   // Platino
+  { id: 'undefeated_h2h', name: 'Imbatible en el equipo', desc: 'Terminaste tu carrera deportiva sin haber perdido nunca un duelo de compañeros.', icon: '🛡️', tier: 'platinum', condition: () => G.isRetired && G.seasons.length > 0 && (G.careerH2HLosses || 0) === 0 },
   { id: 'fangio', name: 'Como Fangio!', desc: 'Ganaste el campeonato del mundo con cuatro equipos diferentes.', icon: '🏆', tier: 'platinum', condition: () => new Set(G.seasons.filter(s => s.champ === 1 && s.cat === 'F1').map(s => s.teamName)).size >= 4 },
   { id: 'goat', name: 'Máxima Gloria', desc: 'El mejor de todos los tiempos. Ganaste 8 campeonatos mundiales.', icon: '🐐', tier: 'platinum', condition: () => G.f1Titles >= 8 },
   { id: 'most_wins', name: 'El Más Ganador', desc: 'Nadie ganó más carreras que vos. Superaste las 105 victorias en F1.', icon: '🥇', tier: 'platinum', condition: () => G.seasons.filter(s => s.cat === 'F1').reduce((a, b) => a + b.wins, 0) > 105 },
@@ -4132,12 +4136,12 @@ let _lastStandings = null; // cache de la clasificación generada para el resume
 //  sin simular carrera por carrera. Se cachea una vez por temporada
 //  para que el modal siempre muestre lo mismo que dice el resumen.
 // ═══════════════════════════════════════════════════════════
-﻿function generateStandingsTable(r) {
+function generateStandingsTable(r) {
   const sizes = { 'Karting': 24, 'F4': 24, 'Formula Regional': 24, 'F3': 30, 'F2': 22, 'F1': 22 };
   const N = sizes[r.cat] || 20;
-  //    Points calibration                                                                  
-  // F1: 24 GP � 101 pts + 6 Sprints � 36 pts = 2,640 total available.
-  // DECAY (0.820.87) varies each season: lower = dominant champ, higher = close field.
+  //    Points calibration                                                                  
+  // F1: 24 GP × 101 pts + 6 Sprints × 36 pts = 2,640 total available.
+  // DECAY (0.82 0.87) varies each season: lower = dominant champ, higher = close field.
   // All rows are scaled so the total always equals TARGET for the category.
   const TARGETS = { 'F1': 2640, 'F2': 2016, 'F3': 1704, 'Formula Regional': 900, 'F4': 700, 'Karting': 500 };
   const TARGET = TARGETS[r.cat] || 1000;

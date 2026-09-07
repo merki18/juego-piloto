@@ -469,9 +469,65 @@ const INTERVIEWS = [
       ]
     },
     {
+      id: 'f1_overpaid',
+      title: 'El peso del contrato',
+      desc: 'Sos uno de los pilotos mejor pagados de la Fórmula 1, pero tus resultados están lejos de justificar ese salario. ¿Sentís que estás obligado a demostrar que valés cada dólar?',
+      choices: [
+        { text: '“La presión es parte del trabajo, lo voy a revertir.”', pers: 'team', delta: 15, hint: 'Asumís la culpa y prometés mejoras (+Equipo).', fixedDesc: '"Este año no estuve a la altura, pero el equipo confía en mí y yo en ellos. Voy a devolverles esa confianza en la pista."' },
+        { text: '“Mi historial justifica mi salario.”', pers: 'aggressiveness', delta: 20, pers2: 'team', delta2: -10, hint: 'Te defendés con tus logros del pasado (+Agresividad, -Equipo).', fixedDesc: '"No llegué a donde estoy por suerte. Una mala temporada no borra mi carrera. El auto también tiene que ayudar."' }
+      ]
+    },
+    {
+      id: 'f1_fallen_champion',
+      title: 'Un campeón en caída',
+      desc: 'Hace un año eras el campeón del mundo. Ahora estás luchando por entrar entre los primeros lugares. ¿Te preocupa que aquel título haya sido más mérito del auto que tuyo?',
+      choices: [
+        { text: '“El año pasado fuimos los mejores, este año sufrimos juntos.”', pers: 'team', delta: 15, hint: 'Evitás morder el anzuelo y protegés al equipo (+Equipo).', fixedDesc: '"La F1 es cíclica. Cuando ganamos fue gracias a todos, y ahora que nos cuesta, también saldremos adelante juntos."' },
+        { text: '“Necesito las herramientas correctas.”', pers: 'aggressiveness', delta: 15, pers2: 'team', delta2: -15, hint: 'Echás la culpa implícitamente al rendimiento del auto (+Agresividad, -Equipo).', fixedDesc: '"El talento no desaparece de un año para el otro. Si me dan un auto para ganar, gano. Así de simple."' },
+        { text: '“Los que dudan se van a arrepentir pronto.”', pers: 'media', delta: 15, hint: 'Respuesta desafiante a la prensa (+Mediático).', fixedDesc: '"Me encanta que me subestimen. Guarden esta entrevista para fin del año que viene."' }
+      ]
+    },
+    {
+      id: 'f1_carried_by_car',
+      title: '¿El piloto o la máquina?',
+      desc: 'Acabás de ganar el campeonato, pero el dominio de tu equipo fue tan absoluto que algunos dicen que cualquier piloto habría ganado con este auto. ¿Qué respondés a quienes creen que el coche hizo al campeón y no al revés?',
+      choices: [
+        { text: '“El auto es fantástico, pero manejarlo al límite es mérito mío.”', pers: 'aggressiveness', delta: 10, hint: 'Defendés tu talento sin desmerecer al auto (+Agresividad).', fixedDesc: '"Tener el mejor auto te da la oportunidad de ganar, pero los domingos hay que salir y hacerlo. Yo no vi a nadie más rápido que yo."' },
+        { text: '“Es el resultado del trabajo de toda la fábrica.”', pers: 'team', delta: 20, hint: 'Le das todo el crédito a los ingenieros (+Equipo).', fixedDesc: '"Este título es 99% de la gente en la fábrica que diseñó esta obra de arte. Yo solo tuve el honor de llevarlo a la meta."' }
+      ]
+    },
+    {
+      id: 'f1_shadow_contract_good',
+      title: 'La gran apuesta',
+      desc: 'Muchos dudaron de tu decisión de abandonar tu equipo antes del cambio de reglamento. Hoy, con los resultados a la vista, parece que tenías razón. ¿Siempre supiste que este proyecto funcionaría?',
+      choices: [
+        { text: '“Siempre supe que este equipo tenía el potencial.”', pers: 'team', delta: 15, hint: 'Validás tu decisión y el trabajo del nuevo equipo (+Equipo).', fixedDesc: '"Había visto lo que estaban preparando en secreto y confié plenamente. Han hecho un trabajo extraordinario."' },
+        { text: '“Los campeones sabemos leer el futuro.”', pers: 'media', delta: 15, hint: 'Respuesta presumida (+Mediático).', fixedDesc: '"Para ganar en la Fórmula 1 hay que saber dónde estar en el momento justo. Fue una jugada maestra."' }
+      ]
+    },
+    {
+      id: 'f1_shadow_contract_bad',
+      title: 'Una apuesta fallida',
+      desc: 'Abandonaste un equipo confiando en un nuevo proyecto que, con el nuevo reglamento, nunca despegó. ¿Tomaste la peor decisión de tu carrera?',
+      choices: [
+        { text: '“Roma no se construyó en un día, este es un proyecto a largo plazo.”', pers: 'team', delta: 15, hint: 'Pedís paciencia (+Equipo).', fixedDesc: '"Sabíamos que este año sería de transición. Estamos construyendo las bases para dominar en el futuro."' },
+        { text: '“Es fácil hablar con el diario del lunes.”', pers: 'aggressiveness', delta: 10, hint: 'Te ponés a la defensiva (+Agresividad).', fixedDesc: '"Las decisiones se toman con la información del momento. No me arrepiento de haber buscado un nuevo desafío."' },
+        { text: '“Esto no era lo que me prometieron. Si no mejora, me voy.”', pers: 'aggressiveness', delta: 20, pers2: 'team', delta2: -25, hint: 'Le das un ultimátum al equipo (+Agresividad, -Equipo).', fixedDesc: '"Dejé mucho atrás por este proyecto y hasta ahora solo veo excusas. Tienen que reaccionar ya o mi paciencia se agotará."' }
+      ]
+    },
+    {
+      id: 'f1_beaten_by_young_peer',
+      title: 'El relevo generacional',
+      desc: 'Tu compañero es mucho más joven que vos y ya te está superando regularmente. ¿Seguís teniendo lo necesario para competir al máximo nivel?',
+      choices: [
+        { text: '“Él hizo un gran trabajo, pero la experiencia no se compra.”', pers: 'team', delta: 10, hint: 'Reconocés su talento sin bajar los brazos (+Equipo).', fixedDesc: '"Es un piloto rapidísimo y el futuro del equipo. Me obliga a mejorar y eso es bueno para todos."' },
+        { text: '“Tuvimos mala suerte. Todavía soy el más rápido de este garaje.”', pers: 'aggressiveness', delta: 15, pers2: 'team', delta2: -10, hint: 'Negás la realidad y te ponés presión extra (+Agresividad, -Equipo).', fixedDesc: '"Los puntos no cuentan toda la historia. Sé de lo que soy capaz y el año que viene las cosas van a ser muy diferentes."' }
+      ]
+    },
+    {
       id: 'f1_regulations_criticism',
       title: '🏆 El campeón y las nuevas reglas',
-      desc: 'Acabás de conseguir tu segundo campeonato consecutivo, pero tu dominio no es lo único que está en boca de todos. Muchos aficionados y algunos pilotos consideran que las nuevas regulaciones han hecho que las carreras sean menos entretenidas y que los autos sean difíciles de disfrutar. Ahora que sos el campeón, te preguntan directamente: ¿qué opinás de estas regulaciones?',
+      desc: 'Conseguiste tu segundo campeonato consecutivo, Sin embargo, muchos aficionados y pilotos consideran que las regulaciones actuales han hecho que las carreras sean menos entretenidas y que los autos sean difíciles de disfrutar. Ahora que sos el campeón, te preguntan directamente: ¿qué opinás de estas regulaciones?',
       choices: [
         { text: '“Si no les gusta, que sean más rápidos.”', pers: 'aggressiveness', delta: 10, hint: '🏎️ Defendés la categoría y dejás claro que los pilotos están para competir, no para decidir las reglas.', fixedDesc: '“Entiendo las críticas, pero nosotros no escribimos las reglas. Nos adaptamos y hacemos nuestro trabajo. Si otros equipos quieren ganarnos, tienen que hacerlo dentro de las mismas reglas que nosotros.”' },
         { text: '“Hay cosas que deberían cambiar.”', pers: 'team', delta: 5, hint: '🎙️ Reconocés que el reglamento tiene problemas, incluso después de haber sido beneficiado por él.', fixedDesc: '“Estoy orgulloso de lo que conseguimos, pero eso no significa que crea que todo está perfecto. Hay aspectos de estas regulaciones que podrían mejorarse. Si los pilotos y los aficionados sienten que algo no funciona, creo que hay que escucharlos.”' },
@@ -753,7 +809,7 @@ function showInterview(postSeasonId = null) {
   // Select an interview
   let pool = INTERVIEWS.filter(iv => {
     if (postSeasonId) return iv.id === postSeasonId;
-    const psIds = ['f1_epic_champion', 'f1_championship_contender', 'f1_retirement_talk', 'f1_win_record', 'f1_teammate_destroyed', 'f1_first_title', 'f1_title_lost', 'f1_title_record_broken', 'f1_constructors_champ', 'f1_teammate_champ', 'f1_reg_change_better', 'f1_reg_change_worse', 'f1_underperform', 'f1_regulations_criticism'];
+    const psIds = ['f1_overpaid', 'f1_fallen_champion', 'f1_carried_by_car', 'f1_shadow_contract_good', 'f1_shadow_contract_bad', 'f1_beaten_by_young_peer', 'f1_epic_champion', 'f1_championship_contender', 'f1_retirement_talk', 'f1_win_record', 'f1_teammate_destroyed', 'f1_first_title', 'f1_title_lost', 'f1_title_record_broken', 'f1_constructors_champ', 'f1_teammate_champ', 'f1_reg_change_better', 'f1_reg_change_worse', 'f1_underperform', 'f1_regulations_criticism'];
     if (!postSeasonId && (psIds.includes(iv.id) || iv.id.startsWith('ev_'))) return false; // Hide post-season interviews from mid-season
     if (G.catIndex < 5) return false; // ONLY IN F1
     if (G.storyFlags['interview_' + iv.id]) return false; // NO REPEATS
@@ -991,7 +1047,7 @@ function generateInitialRoster() {
     const foundNat = NATIONALITIES.find(n => n.name === nat);
     if (foundNat) flag = foundNat.flag;
     const stars = (TEAMS[cat] || []).find(t => t.name === team)?.stars || 3;
-    const contractYearsLeft = Math.floor(Math.random() * (stars >= 4 ? 4 : 2)) + 1;
+    const contractYearsLeft = Math.floor(Math.random() * (stars >= 4 ? 4 : 2)) + 2;
     roster.push({ id: 'ai_' + idCounter++, name, team, age, flag, cat, skill, contractYearsLeft, consecutiveLosses: 0 });
   };
 
@@ -1938,6 +1994,24 @@ function computeSeasonResult() {
     if (G.age >= 35 && !G.storyFlags['interview_f1_retirement_talk']) {
       G._seasonSteps.push('event:f1_retirement_talk');
     }
+    if (champ > 10 && G.money > 20000000 && !G.storyFlags['interview_f1_overpaid']) {
+      G._seasonSteps.push('event:f1_overpaid');
+    }
+    const prevSeason_fc = G.seasons.find(s => s.year === G.year - 1 && s.cat === 'F1');
+    if (prevSeason_fc && prevSeason_fc.champ === 1 && champ > 5 && !G.storyFlags['interview_f1_fallen_champion']) {
+      G._seasonSteps.push('event:f1_fallen_champion');
+    }
+    if (champ === 1 && G.team.stars === 5 && peerPos <= 3 && !G.storyFlags['interview_f1_carried_by_car']) {
+      G._seasonSteps.push('event:f1_carried_by_car');
+    }
+    if (G.age >= 34 && peerPos < champ && !G.storyFlags['interview_f1_beaten_by_young_peer']) {
+      G._seasonSteps.push('event:f1_beaten_by_young_peer');
+    }
+    if (G.lastRegChangeYear === G.year && G._shadowOldTeam && G.f1ContractYearsLeft >= 0) {
+      if (G.team.stars >= 4 && !G.storyFlags['interview_f1_shadow_contract_good']) G._seasonSteps.push('event:f1_shadow_contract_good');
+      else if (G.team.stars < 4 && !G.storyFlags['interview_f1_shadow_contract_bad']) G._seasonSteps.push('event:f1_shadow_contract_bad');
+    }
+
 
     if (G._evaluatingRegChange) {
       G._evaluatingRegChange = false;
@@ -3523,7 +3597,7 @@ function showContracts() {
                 // Swap them into the seat the player just vacated
                 displaced.team = oldTeamName;
                 const stars = TEAMS['F1'].find(t => t.name === oldTeamName)?.stars || 3;
-                displaced.contractYearsLeft = Math.floor(Math.random() * (stars >= 4 ? 4 : 2)) + 1;
+                displaced.contractYearsLeft = Math.floor(Math.random() * (stars >= 4 ? 4 : 2)) + 2;
               } else if (!wasInF1 || oldTeamName === team.name) {
                 // Player came from F2, so F1 was full. The displaced driver is out.
                 G.aiRoster = G.aiRoster.filter(d => d.id !== displaced.id);
@@ -4493,13 +4567,13 @@ function simulateDriverMarket() {
       d.contractYearsLeft = (d.contractYearsLeft || 1) - 1;
 
       // Retirement (age)
-      if (d.age >= 39 || (d.age >= 36 && Math.random() < 0.4)) {
+      if (d.age >= 40 || (d.age >= 37 && Math.random() < 0.4)) {
         if (!isDisplacedByPlayer) openF1Seats.push(d.team);
         return false; 
       }
 
       // Fired (performance)
-      if ((d.consecutiveLosses || 0) >= 3) {
+      if ((d.consecutiveLosses || 0) >= 4) {
         if (!isDisplacedByPlayer) openF1Seats.push(d.team);
         // They drop out of F1 (demoted or retired)
         return false;
@@ -4537,7 +4611,7 @@ function simulateDriverMarket() {
       const newTeam = openF1Seats.splice(bestSeatIdx, 1)[0];
       driver.team = newTeam;
       const stars = TEAMS['F1'].find(t => t.name === newTeam)?.stars || 3;
-      driver.contractYearsLeft = Math.floor(Math.random() * (stars >= 4 ? 4 : 2)) + 1; // Top teams give longer contracts
+      driver.contractYearsLeft = Math.floor(Math.random() * (stars >= 4 ? 4 : 2)) + 2; // Top teams give longer contracts
     }
   });
 
@@ -4556,7 +4630,7 @@ function simulateDriverMarket() {
         f2Drivers[i].team = openF1Seats[i];
         f2Drivers[i].consecutiveLosses = 0;
         const stars = TEAMS['F1'].find(t => t.name === openF1Seats[i])?.stars || 3;
-        f2Drivers[i].contractYearsLeft = Math.floor(Math.random() * (stars >= 4 ? 4 : 2)) + 1;
+        f2Drivers[i].contractYearsLeft = Math.floor(Math.random() * (stars >= 4 ? 4 : 2)) + 2;
       }
     }
 

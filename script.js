@@ -4607,7 +4607,7 @@ function processF1TeammateBattles() {
         // We know this from G.peer.h2hWins and G.peer.h2hLosses, but those are cumulative.
         // Let's just compare their standings in the current season.
         if (_lastStandings && _lastStandings.rows) {
-          const myRow = _lastStandings.rows.find(r => r.name === G.name);
+          const myRow = _lastStandings.rows.find(r => r.isPlayer);
           const peerRow = _lastStandings.rows.find(r => r.name.includes(G.peer.name));
           if (myRow && peerRow) {
             if (myRow.rank < peerRow.rank) {

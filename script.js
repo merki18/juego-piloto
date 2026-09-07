@@ -218,7 +218,7 @@ const RANDOM_EVENTS = [
   {
     icon: '🏋️', title: 'Preparación de pretemporada', desc: 'Tenés un mes libre. ¿Cómo lo usás?', choices: [
       { text: 'Entrenamiento físico', stat: 'tyres', delta: 0, money: 0, skillStat: 'tyres', skillBonus: 5, skillFail: 0, hint: '🛞 Gestión: cuerpo fuerte, poco riesgo de fallar.', successDesc: 'Ciclismo en los Alpes, nado en el océano, trabajo de cuello y core. Llegaste al primer test de pretemporada sin una gota de grasa de más. La vuelta 60 se sintió igual que la 1.', failDesc: 'Entrenaste fuerte pero te exigiste demasiado. Una contractura a fines de enero te obligó a parar dos semanas. Llegaste al primer test con la espalda entumecida.' },
-      { text: 'Simulador y análisis de datos', stat: 'quali', delta: 0, money: 0, skillStat: 'quali', skillBonus: 5, skillFail: 0, hint: '🏎 Clasificación: el simulador amplifica tu técnica', successDesc: 'Horas y horas en el simulador pagaron. Llegaste al primer test sabiendo de memoria los puntos de frenada de los 23 circuitos del calendario. Tu ingeniero no podía creer el nivel de detalle de tu feedback desde el primer día.', failDesc: 'Demasiado tiempo en el simulador y poco en la pista real. Cuando llegaste a Bahréin para el primer test, el asfalto real se sintió extraño. Tardaste dos días en adaptarte.' },
+      { text: 'Simulador y análisis de datos', stat: 'quali', delta: 0, money: 0, skillStat: 'quali', skillBonus: 5, skillFail: 0, hint: '🏎 Clasificación: el simulador amplifica tu técnica', successDesc: 'Horas y horas en el simulador pagaron. Llegaste al primer test sabiendo de memoria los puntos de frenada de los 24 circuitos del calendario. Tu ingeniero no podía creer el nivel de detalle de tu feedback desde el primer día.', failDesc: 'Demasiado tiempo en el simulador y poco en la pista real. Cuando llegaste a Bahréin para el primer test, el asfalto real se sintió extraño. Tardaste dos días en adaptarte.' },
     ]
   },
   {
@@ -980,7 +980,9 @@ function generateInitialRoster() {
     let flag = '🏁';
     const foundNat = NATIONALITIES.find(n => n.name === nat);
     if (foundNat) flag = foundNat.flag;
-    roster.push({ id: 'ai_' + idCounter++, name, team, age, flag, cat, skill });
+    const stars = (TEAMS[cat] || []).find(t => t.name === team)?.stars || 3;
+    const contractYearsLeft = Math.floor(Math.random() * (stars >= 4 ? 4 : 2)) + 1;
+    roster.push({ id: 'ai_' + idCounter++, name, team, age, flag, cat, skill, contractYearsLeft, consecutiveLosses: 0 });
   };
 
   // F1
@@ -2551,58 +2553,7 @@ function afterSummary() {
       if (d.age < 28) d.skill += Math.floor(Math.random() * 3);
       else if (d.age > 33) d.skill -= Math.floor(Math.random() * 3);
     });
-    let retiredF1Seats = [];
-    G.aiRoster = G.aiRoster.filter(d => {
-      if (d.cat === 'F1' && (d.age >= 39 || (d.age >= 36 && Math.random() < 0.4))) {
-        retiredF1Seats.push(d.team);
-        return false;
-      }
-      return true;
-    });
-    if (retiredF1Seats.length > 0) {
-      // Randomize which seat the promoted drivers get
-      retiredF1Seats.sort(() => Math.random() - 0.5);
-      
-      let f2Drivers = G.aiRoster.filter(d => d.cat === 'F2').sort((a,b) => (b.skill + (Math.random() * 5)) - (a.skill + (Math.random() * 5)));
-      for (let i = 0; i < retiredF1Seats.length; i++) {
-        if (f2Drivers[i]) {
-          f2Drivers[i].cat = 'F1';
-          f2Drivers[i].team = retiredF1Seats[i];
-        }
-      }
-      
-      // Cascade promotions for lower categories
-      const cats = ['F2', 'F3', 'Formula Regional', 'F4', 'Karting'];
-      const numToPromote = retiredF1Seats.length;
-      for (let c = 1; c < cats.length; c++) {
-        let fromCat = cats[c];
-        let toCat = cats[c-1];
-        let drivers = G.aiRoster.filter(d => d.cat === fromCat).sort((a,b) => (b.skill + (Math.random() * 5)) - (a.skill + (Math.random() * 5)));
-        for(let i=0; i < numToPromote; i++) {
-          if (drivers[i]) {
-            drivers[i].cat = toCat;
-            const catTeams = TEAMS[toCat];
-            if (catTeams && catTeams.length > 0) drivers[i].team = catTeams[Math.floor(Math.random() * catTeams.length)].name;
-          }
-        }
-      }
-      
-      // Replenish Karting with new generated drivers
-      for(let i=0; i < numToPromote; i++) {
-        const kartTeams = TEAMS['Karting'];
-        const newTeam = kartTeams && kartTeams.length > 0 ? kartTeams[Math.floor(Math.random() * kartTeams.length)].name : 'Privado';
-        const newNat = NATIONALITIES[Math.floor(Math.random() * NATIONALITIES.length)];
-        G.aiRoster.push({
-          id: 'ai_gen_' + Math.floor(Math.random()*1000000),
-          name: FIRST_NAMES[Math.floor(Math.random()*FIRST_NAMES.length)] + ' ' + LAST_NAMES[Math.floor(Math.random()*LAST_NAMES.length)],
-          team: newTeam,
-          age: 15 + Math.floor(Math.random()*3),
-          flag: newNat ? newNat.flag : '??',
-          cat: 'Karting',
-          skill: 30 + Math.floor(Math.random() * 20)
-        });
-      }
-    }
+    simulateDriverMarket();
   }
 
   // Check retirement
@@ -3535,11 +3486,36 @@ function showContracts() {
         G.nonRenewalsCount++;
         G.renewalsCount = 0;
       }
+      const oldTeamName = G.team ? G.team.name : null;
       G.team = team;
       G.money += Math.round(salarySpin * 0.1);
       G.totalMoney += Math.round(salarySpin * 0.1);
       if (isF1) G.f1ContractYearsLeft = contractYears - 1;
-      if (isF1) refreshTeammate();
+      const wasInF1 = G.seasons.length > 0 && G.seasons[G.seasons.length - 1].cat === 'F1';
+      
+      if (isF1) {
+        refreshTeammate();
+        
+        // Handle the AI driver that the player just displaced from their new team
+        if (G.aiRoster && team.name) {
+          const newTeamDrivers = G.aiRoster.filter(d => d.cat === 'F1' && d.team === team.name);
+          // If there are 2 AIs in this team, one is the peer, the other is displaced
+          if (newTeamDrivers.length > 1) {
+            const displaced = newTeamDrivers.find(d => !G.peer || d.id !== G.peer.id);
+            if (displaced) {
+              if (wasInF1 && oldTeamName && oldTeamName !== team.name) {
+                // Swap them into the seat the player just vacated
+                displaced.team = oldTeamName;
+                const stars = TEAMS['F1'].find(t => t.name === oldTeamName)?.stars || 3;
+                displaced.contractYearsLeft = Math.floor(Math.random() * (stars >= 4 ? 4 : 2)) + 1;
+              } else if (!wasInF1 || oldTeamName === team.name) {
+                // Player came from F2, so F1 was full. The displaced driver is out.
+                G.aiRoster = G.aiRoster.filter(d => d.id !== displaced.id);
+              }
+            }
+          }
+        }
+      }
       if (isLockedShadowMarket) {
         // The secret pre-contract is now official — set up next season's "was it worth it" reveal
         G._shadowVerdictPending = true;
@@ -4205,29 +4181,31 @@ let _lastStandings = null; // cache de la clasificación generada para el resume
   } else {
     let catDrivers = G.aiRoster.filter(d => d.cat === r.cat);
     
-    let teamDrivers = catDrivers.filter(d => d.team === playerTeamName);
-    if (teamDrivers.length > 0) {
-      // Never displace the peer — they must appear in standings for H2H tracking
-      const nonPeerTeammates = teamDrivers.filter(d => !(G.peer && G.peer.id === d.id));
-      if (nonPeerTeammates.length > 0) {
-        // Remove a non-peer teammate (e.g. if team had 2 AI drivers)
-        nonPeerTeammates.sort((a,b) => a.skill - b.skill);
-        const displaced = nonPeerTeammates[0];
-        catDrivers = catDrivers.filter(d => d.id !== displaced.id);
-      } else {
-        // Peer is the only one from this team — remove lowest-skill from another team instead
-        const othersSkill = catDrivers.filter(d => d.team !== playerTeamName);
-        if (othersSkill.length > 0) {
-          othersSkill.sort((a,b) => a.skill - b.skill);
-          catDrivers = catDrivers.filter(d => d.id !== othersSkill[0].id);
+    // Only delete drivers if we have more than needed (e.g., if applyContract failed to delete one)
+    while (catDrivers.length > N - 1) {
+      let teamDrivers = catDrivers.filter(d => d.team === playerTeamName);
+      if (teamDrivers.length > 0) {
+        const nonPeerTeammates = teamDrivers.filter(d => !(G.peer && G.peer.id === d.id));
+        if (nonPeerTeammates.length > 0) {
+          nonPeerTeammates.sort((a,b) => a.skill - b.skill);
+          const displaced = nonPeerTeammates[0];
+          catDrivers = catDrivers.filter(d => d.id !== displaced.id);
+        } else {
+          const othersSkill = catDrivers.filter(d => d.team !== playerTeamName);
+          if (othersSkill.length > 0) {
+            othersSkill.sort((a,b) => a.skill - b.skill);
+            catDrivers = catDrivers.filter(d => d.id !== othersSkill[0].id);
+          } else {
+            break;
+          }
         }
+      } else {
+        catDrivers.sort((a,b) => a.skill - b.skill);
+        catDrivers.shift(); 
       }
-    } else {
-      catDrivers.sort((a,b) => a.skill - b.skill);
-      catDrivers.shift(); 
     }
 
-    aiPool = catDrivers.map(d => {
+        aiPool = catDrivers.map(d => {
       const tObj = catTeams.find(t => t.name === d.team);
       const stars = tObj ? tObj.stars : 3;
       const power = (stars * 10) + d.skill + (Math.random() * 15);
@@ -4476,3 +4454,181 @@ loadAchievements();
 
 
 
+
+// PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+//  MERCADO DE PILOTOS (SILLY SEASON)
+// PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+function simulateDriverMarket() {
+  if (!G.aiRoster) return;
+
+  // 1. Process teammate battles in F1 to find who is underperforming
+  processF1TeammateBattles();
+
+  let openF1Seats = [];
+  
+  // 2. Identify retirements and firings
+  G.aiRoster = G.aiRoster.filter(d => {
+    // Player displacement check: if AI was in F1, and their team is the player's team, but they aren't the player's peer,
+    // they were displaced. We handle them as out of contract so they can find a new seat.
+    const isDisplacedByPlayer = (G.catIndex === 5 && d.team === G.team.name && (!G.peer || G.peer.id !== d.id));
+
+    if (d.cat === 'F1') {
+      d.contractYearsLeft = (d.contractYearsLeft || 1) - 1;
+
+      // Retirement (age)
+      if (d.age >= 39 || (d.age >= 36 && Math.random() < 0.4)) {
+        if (!isDisplacedByPlayer) openF1Seats.push(d.team);
+        return false; 
+      }
+
+      // Fired (performance)
+      if ((d.consecutiveLosses || 0) >= 3) {
+        if (!isDisplacedByPlayer) openF1Seats.push(d.team);
+        // They drop out of F1 (demoted or retired)
+        return false;
+      }
+
+      if (isDisplacedByPlayer) {
+        d.contractYearsLeft = 0;
+        d.team = 'Free Agent';
+      } else if (d.contractYearsLeft <= 0) {
+        openF1Seats.push(d.team);
+        d.team = 'Free Agent';
+      }
+    }
+    return true;
+  });
+
+  // 3. F1 Silly Season (Transfers)
+  let freeAgentsF1 = G.aiRoster.filter(d => d.cat === 'F1' && d.team === 'Free Agent');
+  // Sort agents by skill (best drivers pick first)
+  freeAgentsF1.sort((a,b) => b.skill - a.skill);
+
+  // Teams with open seats want the best drivers
+  // We sort open seats by team prestige (stars)
+  openF1Seats.sort((a,b) => {
+    const tA = TEAMS['F1'].find(t => t.name === a)?.stars || 3;
+    const tB = TEAMS['F1'].find(t => t.name === b)?.stars || 3;
+    return tB - tA;
+  });
+
+  freeAgentsF1.forEach(driver => {
+    if (openF1Seats.length > 0) {
+      // Driver negotiates for the best available seat
+      // Small randomness so it's not strictly deterministic
+      const bestSeatIdx = Math.random() < 0.8 ? 0 : Math.min(1, openF1Seats.length - 1);
+      const newTeam = openF1Seats.splice(bestSeatIdx, 1)[0];
+      driver.team = newTeam;
+      const stars = TEAMS['F1'].find(t => t.name === newTeam)?.stars || 3;
+      driver.contractYearsLeft = Math.floor(Math.random() * (stars >= 4 ? 4 : 2)) + 1; // Top teams give longer contracts
+    }
+  });
+
+  // Any remaining free agents who didn't get a seat are out of F1
+  G.aiRoster = G.aiRoster.filter(d => !(d.cat === 'F1' && d.team === 'Free Agent'));
+
+  // 4. Promotions from F2 to fill remaining open F1 seats
+  if (openF1Seats.length > 0) {
+    let openSeatsInCurrentCat = [];
+    
+    let f2Drivers = G.aiRoster.filter(d => d.cat === 'F2').sort((a,b) => (b.skill + (Math.random() * 5)) - (a.skill + (Math.random() * 5)));
+    for (let i = 0; i < openF1Seats.length; i++) {
+      if (f2Drivers[i]) {
+        openSeatsInCurrentCat.push(f2Drivers[i].team); // Record F2 seat vacated
+        f2Drivers[i].cat = 'F1';
+        f2Drivers[i].team = openF1Seats[i];
+        f2Drivers[i].consecutiveLosses = 0;
+        const stars = TEAMS['F1'].find(t => t.name === openF1Seats[i])?.stars || 3;
+        f2Drivers[i].contractYearsLeft = Math.floor(Math.random() * (stars >= 4 ? 4 : 2)) + 1;
+      }
+    }
+
+    // Cascade promotions for lower categories
+    const cats = ['F2', 'F3', 'Formula Regional', 'F4', 'Karting'];
+    const numToPromote = openF1Seats.length;
+    for (let c = 1; c < cats.length; c++) {
+      let fromCat = cats[c];
+      let toCat = cats[c-1];
+      let nextOpenSeats = [];
+      
+      let drivers = G.aiRoster.filter(d => d.cat === fromCat).sort((a,b) => (b.skill + (Math.random() * 5)) - (a.skill + (Math.random() * 5)));
+      for(let i=0; i < numToPromote; i++) {
+        if (drivers[i]) {
+          nextOpenSeats.push(drivers[i].team); // Record seat vacated in fromCat
+          drivers[i].cat = toCat;
+          if (openSeatsInCurrentCat[i]) {
+            drivers[i].team = openSeatsInCurrentCat[i]; // Fill the seat that was just vacated in toCat
+          } else {
+            // Fallback just in case
+            const catTeams = TEAMS[toCat];
+            if (catTeams && catTeams.length > 0) drivers[i].team = catTeams[Math.floor(Math.random() * catTeams.length)].name;
+          }
+        }
+      }
+      openSeatsInCurrentCat = nextOpenSeats;
+    }
+    
+    // Replenish Karting with new generated drivers
+    for(let i=0; i < numToPromote; i++) {
+      const newTeam = openSeatsInCurrentCat[i] || 'Privado';
+      const newNat = NATIONALITIES[Math.floor(Math.random() * NATIONALITIES.length)];
+      G.aiRoster.push({
+        id: 'ai_gen_' + Math.floor(Math.random()*1000000),
+        name: FIRST_NAMES[Math.floor(Math.random()*FIRST_NAMES.length)] + ' ' + LAST_NAMES[Math.floor(Math.random()*LAST_NAMES.length)],
+        team: newTeam,
+        age: 15 + Math.floor(Math.random()*3),
+        flag: newNat ? newNat.flag : '??',
+        cat: 'Karting',
+        skill: 30 + Math.floor(Math.random() * 20),
+        contractYearsLeft: Math.floor(Math.random() * 2) + 1,
+        consecutiveLosses: 0
+      });
+    }
+  }
+}
+
+function processF1TeammateBattles() {
+  // Uses _lastStandings or shadow simulation to determine who beat who
+  // Here we just use AI skill + some RNG as a proxy for who won the teammate battle,
+  // except for the player's team where we have definitive H2H data.
+  const f1Drivers = G.aiRoster.filter(d => d.cat === 'F1');
+  const teams = [...new Set(f1Drivers.map(d => d.team))];
+
+  teams.forEach(teamName => {
+    if (G.catIndex === 5 && G.team && G.team.name === teamName && G.peer) {
+      // Player's team
+      const peerInRoster = f1Drivers.find(d => d.id === G.peer.id);
+      if (peerInRoster) {
+        // Did peer lose? (we use player's perspective: if myRank < peerRank, peer lost)
+        // We know this from G.peer.h2hWins and G.peer.h2hLosses, but those are cumulative.
+        // Let's just compare their standings in the current season.
+        if (_lastStandings && _lastStandings.rows) {
+          const myRow = _lastStandings.rows.find(r => r.name === G.name);
+          const peerRow = _lastStandings.rows.find(r => r.name.includes(G.peer.name));
+          if (myRow && peerRow) {
+            if (myRow.rank < peerRow.rank) {
+              peerInRoster.consecutiveLosses = (peerInRoster.consecutiveLosses || 0) + 1;
+            } else {
+              peerInRoster.consecutiveLosses = 0;
+            }
+          }
+        }
+      }
+    } else {
+      // AI team
+      const drivers = f1Drivers.filter(d => d.team === teamName);
+      if (drivers.length >= 2) {
+        // Compare skill + rng
+        const d1Score = drivers[0].skill + Math.random() * 10;
+        const d2Score = drivers[1].skill + Math.random() * 10;
+        if (d1Score > d2Score) {
+          drivers[1].consecutiveLosses = (drivers[1].consecutiveLosses || 0) + 1;
+          drivers[0].consecutiveLosses = 0;
+        } else {
+          drivers[0].consecutiveLosses = (drivers[0].consecutiveLosses || 0) + 1;
+          drivers[1].consecutiveLosses = 0;
+        }
+      }
+    }
+  });
+}

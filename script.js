@@ -468,6 +468,16 @@ const INTERVIEWS = [
         { text: 'Llamar a la calma', pers: 'team', delta: 20, pers2: 'media', delta2: -10, hint: 'Proteges al equipo (+Equipo, -Medios).', fixedDesc: '"Es solo el inicio de una nueva era. Vamos a recuperarnos juntos." Eres el líder que el equipo necesitaba en las malas.' }
       ]
     },
+    {
+      id: 'f1_regulations_criticism',
+      title: '🏆 El campeón y las nuevas reglas',
+      desc: 'Acabás de conseguir tu segundo campeonato consecutivo, pero tu dominio no es lo único que está en boca de todos. Muchos aficionados y algunos pilotos consideran que las nuevas regulaciones han hecho que las carreras sean menos entretenidas y que los autos sean difíciles de disfrutar. Ahora que sos el campeón, te preguntan directamente: ¿qué opinás de estas regulaciones?',
+      choices: [
+        { text: '“Si no les gusta, que sean más rápidos.”', pers: 'aggressiveness', delta: 10, hint: '🏎️ Defendés la categoría y dejás claro que los pilotos están para competir, no para decidir las reglas.', fixedDesc: '“Entiendo las críticas, pero nosotros no escribimos las reglas. Nos adaptamos y hacemos nuestro trabajo. Si otros equipos quieren ganarnos, tienen que hacerlo dentro de las mismas reglas que nosotros.”' },
+        { text: '“Hay cosas que deberían cambiar.”', pers: 'team', delta: 5, hint: '🎙️ Reconocés que el reglamento tiene problemas, incluso después de haber sido beneficiado por él.', fixedDesc: '“Estoy orgulloso de lo que conseguimos, pero eso no significa que crea que todo está perfecto. Hay aspectos de estas regulaciones que podrían mejorarse. Si los pilotos y los aficionados sienten que algo no funciona, creo que hay que escucharlos.”' },
+        { text: '“A mí me encanta. Gané dos campeonatos con ellas.”', pers: 'media', delta: 5, hint: '🏆 Defendés las reglas desde la perspectiva del campeón.', fixedDesc: '“Para mí han sido fantásticas. He ganado dos campeonatos y disfruto muchísimo pilotando estos autos. Entiendo que haya opiniones diferentes, pero desde dentro del cockpit puedo decir que estas máquinas siguen siendo increíbles.”' }
+      ]
+    },
 {
       id: 'f1_constructors_champ',
       title: '¡Campeones de Constructores!',
@@ -743,7 +753,7 @@ function showInterview(postSeasonId = null) {
   // Select an interview
   let pool = INTERVIEWS.filter(iv => {
     if (postSeasonId) return iv.id === postSeasonId;
-    const psIds = ['f1_epic_champion', 'f1_championship_contender', 'f1_retirement_talk', 'f1_win_record', 'f1_teammate_destroyed', 'f1_first_title', 'f1_title_lost', 'f1_title_record_broken', 'f1_constructors_champ', 'f1_teammate_champ', 'f1_reg_change_better', 'f1_reg_change_worse', 'f1_underperform'];
+    const psIds = ['f1_epic_champion', 'f1_championship_contender', 'f1_retirement_talk', 'f1_win_record', 'f1_teammate_destroyed', 'f1_first_title', 'f1_title_lost', 'f1_title_record_broken', 'f1_constructors_champ', 'f1_teammate_champ', 'f1_reg_change_better', 'f1_reg_change_worse', 'f1_underperform', 'f1_regulations_criticism'];
     if (!postSeasonId && (psIds.includes(iv.id) || iv.id.startsWith('ev_'))) return false; // Hide post-season interviews from mid-season
     if (G.catIndex < 5) return false; // ONLY IN F1
     if (G.storyFlags['interview_' + iv.id]) return false; // NO REPEATS
@@ -1580,15 +1590,15 @@ function runSimulation() {
 
     G._seasonEventLogs.push(logMsg);
 
-    // In F1, regulation changes happen every 4 to 6 years
+    // In F1, regulation changes happen every 3 to 5 years
     if (CATEGORIES[G.catIndex] === 'F1') {
       if (!G.nextRegChangeYear) {
-        G.nextRegChangeYear = G.year + 4 + Math.floor(Math.random() * 3);
+        G.nextRegChangeYear = G.year + 3 + Math.floor(Math.random() * 3);
       }
       if (G.year >= G.nextRegChangeYear) {
         G._pendingRegChange = true;
         G.lastRegChangeYear = G.year;
-        G.nextRegChangeYear = G.year + 4 + Math.floor(Math.random() * 3);
+        G.nextRegChangeYear = G.year + 3 + Math.floor(Math.random() * 3);
 
         // ── EXCLUSIVE EVENT: "Una Oferta en las Sombras" ──
         // Only fires in the season right before a reg change, if the player has
@@ -1904,6 +1914,9 @@ function computeSeasonResult() {
 
     if (G.f1Titles > 7 && !G.storyFlags['interview_f1_title_record_broken']) {
       G._seasonSteps.push('event:f1_title_record_broken');
+    }
+    else if (champ === 1 && G.f1Titles >= 2 && G.lastRegChangeYear && G.year >= G.lastRegChangeYear + 1 && !G.storyFlags['interview_f1_regulations_criticism'] && G.seasons.find(s => s.year === G.year - 1 && s.cat === 'F1' && s.champ === 1 && s.year >= G.lastRegChangeYear)) {
+      G._seasonSteps.push('event:f1_regulations_criticism');
     }
     else if (champ === 1 && G.f1Titles === 1 && !G.storyFlags['interview_f1_first_title']) {
       G._seasonSteps.push('event:f1_first_title');

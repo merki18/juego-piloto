@@ -1128,6 +1128,15 @@ function initState(name, number, nat, talent) {
     _goldenBoyChecked: false,
     _pendriveUsed: false,
     f1ConsecutiveTitles: 0,
+    // Living table of F1 world champion title counts (seed with real history)
+    aiChampions: {
+      'Michael Schumacher': 7,
+      'Lewis Hamilton': 7,
+      'Juan Manuel Fangio': 5,
+      'Alain Prost': 4,
+      'Sebastian Vettel': 4,
+      'Max Verstappen': 4
+    },
     _directivaUsed: false,
     peer: null,
     _peerInitialized: false,
@@ -1835,6 +1844,15 @@ function computeSeasonResult() {
   if (cat === 'F1') {
     // 1. Calculate Standings
     const standingsRows = generateStandingsTable(result);
+    // Track AI champion titles in the living historical table
+    if (result.champ !== 1) {
+      const winner = standingsRows.find(r => r.rank === 1 && !r.isPlayer);
+      if (winner) {
+        const winnerName = winner.name.replace(/^\S+\s/, '').trim(); // strip flag emoji
+        if (!G.aiChampions) G.aiChampions = {};
+        G.aiChampions[winnerName] = (G.aiChampions[winnerName] || 0) + 1;
+      }
+    }
     const teamMap = {};
     standingsRows.forEach(row => {
       if (!teamMap[row.team]) teamMap[row.team] = { team: row.team, logo: row.logo, points: 0, hasPlayer: false };
@@ -1962,6 +1980,36 @@ function computeSeasonResult() {
 
     G._seasonEventLogs.push(`📝 ¡El nuevo reglamento entró en vigor! El mapa de poder en F1 ha cambiado.`);
   }
+
+  // When the player is NOT in F1, simulate the F1 season so the
+  // champions table and G.lastF1Champion stay current every year.
+  if (cat !== 'F1') simulateShadowF1Season();
+}
+
+// PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+//  SHADOW F1 SIMULATION
+//  Runs every non-F1 player season to keep the world alive.
+//  G.lastF1Champion is available for future news / narrative mechanics.
+// PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP
+function simulateShadowF1Season() {
+  if (!G.aiRoster) return;
+  const f1Drivers = G.aiRoster.filter(d => d.cat === 'F1');
+  if (f1Drivers.length === 0) return;
+
+  // Score: team stars * 12 + individual skill + RNG (up to 20)
+  const scored = f1Drivers.map(d => {
+    const team = (TEAMS['F1'] || []).find(t => t.name === d.team);
+    const stars = team ? team.stars : 3;
+    return { name: d.name, team: d.team, power: (stars * 12) + d.skill + (Math.random() * 20) };
+  });
+  scored.sort((a, b) => b.power - a.power);
+
+  const champion = scored[0];
+  if (!champion) return;
+
+  if (!G.aiChampions) G.aiChampions = {};
+  G.aiChampions[champion.name] = (G.aiChampions[champion.name] || 0) + 1;
+  G.lastF1Champion = { name: champion.name, team: champion.team, year: G.year };
 }
 
 function calcChampPosition(rating) {
@@ -3721,29 +3769,39 @@ function showRetirement() {
   // Timeline
   let timelineHtml = '';
   
-  if (G.peer && f1Seasons > 0) {
-    const rel = G.peer.relationship;
-    const relPct = Math.round((rel + 100) / 2); // 0% = -100, 100% = +100
-    const relIcon = rel > 50 ? '🤝' : rel < -50 ? '⚔️' : '😐';
-    const relLabel = rel > 50 ? 'Aliados' : rel < -50 ? 'Enemigos juramentados' : rel > 0 ? 'Buena onda' : rel < 0 ? 'Tensión' : 'Neutral';
-    const relColor = rel > 30 ? '#4ade80' : rel < -30 ? '#f87171' : '#facc15';
-    const h2hClass = G.peer.h2hWins > G.peer.h2hLosses ? 'bad' : G.peer.h2hWins < G.peer.h2hLosses ? 'good' : '';
-    const peerHtml = `
-      <div class="section-title">Compañero de Equipo</div>
-      <div class="card" style="margin-bottom:24px">
-        <div class="result-row"><div class="r-label">Nombre</div><div class="r-val" style="font-weight:bold">${G.peer.name} <span style="font-size:12px;color:var(--muted)">(${G.peer.nat.flag})</span></div></div>
-        <div class="result-row"><div class="r-label">H2H (Tú vs Él)</div><div class="r-val ${h2hClass}" style="font-weight:bold">${G.peer.h2hLosses} a ${G.peer.h2hWins}</div></div>
-        
-        <div style="margin-top:16px; padding:16px; border-radius:8px; background:rgba(255,255,255,0.04); text-align:center">
-          <div style="font-size:14px; margin-bottom:8px; color:var(--muted)">Relación</div>
-          <div style="font-size:18px; margin-bottom:8px">${relIcon} ${relLabel}</div>
-          <div style="width:100%; height:6px; background:#333; border-radius:3px; overflow:hidden">
-            <div style="width:${relPct}%; height:100%; background:${relColor}; transition:width 0.3s"></div>
+  if (f1Seasons > 0) {
+    // Build the living Hall of Champions table
+    const champMap = Object.assign({}, G.aiChampions || {});
+    if (G.f1Titles > 0) champMap[G.name] = G.f1Titles;
+    const champList = Object.entries(champMap)
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 6);
+    const maxTitles = champList[0] ? champList[0][1] : 1;
+    const champRows = champList.map(([name, titles], i) => {
+      const isPlayer = name === G.name;
+      const bar = Math.round((titles / maxTitles) * 100);
+      const color = isPlayer ? 'var(--accent)' : titles >= 7 ? '#ffd700' : titles >= 5 ? '#c084fc' : titles >= 3 ? '#60a5fa' : 'var(--muted)';
+      const rank = i + 1;
+      const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : `${rank}.`;
+      return `
+        <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.06)">
+          <div style="width:28px;text-align:center;font-size:15px">${medal}</div>
+          <div style="flex:1;min-width:0">
+            <div style="font-size:14px;font-weight:${isPlayer?'bold':'normal'};color:${isPlayer?'var(--accent)':'var(--text)'};white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${isPlayer ? '🏁 ' : ''}${name}</div>
+            <div style="height:4px;background:rgba(255,255,255,0.08);border-radius:2px;margin-top:4px;overflow:hidden">
+              <div style="height:100%;width:${bar}%;background:${color};border-radius:2px"></div>
+            </div>
           </div>
-        </div>
+          <div style="font-size:16px;font-weight:bold;color:${color};min-width:36px;text-align:right">${titles}🏆</div>
+        </div>`;
+    }).join('');
+    const champHtml = `
+      <div class="section-title">🏆 Top Campeones de la Historia</div>
+      <div class="card" style="margin-bottom:24px;padding:8px 16px">
+        ${champRows || '<div style="color:var(--muted);text-align:center;padding:12px">Sin datos aún.</div>'}
       </div>
     `;
-    document.getElementById('ret-history-rows').parentElement.insertAdjacentHTML('afterend', peerHtml);
+    document.getElementById('ret-history-rows').parentElement.insertAdjacentHTML('afterend', champHtml);
   }
   G.seasons.forEach(s => {
     let positionColor = '';

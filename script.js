@@ -4159,13 +4159,22 @@ let _lastStandings = null; // cache de la clasificación generada para el resume
 ﻿function generateStandingsTable(r) {
   const sizes = { 'Karting': 24, 'F4': 24, 'Formula Regional': 24, 'F3': 30, 'F2': 22, 'F1': 22 };
   const N = sizes[r.cat] || 20;
-  const BASE = Math.max(140, r.races * 20);
-  const DECAY = 0.85;
+  //    Points calibration                                                                  
+  // F1: 24 GP � 101 pts + 6 Sprints � 36 pts = 2,640 total available.
+  // DECAY (0.820.87) varies each season: lower = dominant champ, higher = close field.
+  // All rows are scaled so the total always equals TARGET for the category.
+  const TARGETS = { 'F1': 2640, 'F2': 2016, 'F3': 1704, 'Formula Regional': 900, 'F4': 700, 'Karting': 500 };
+  const TARGET = TARGETS[r.cat] || 1000;
   const catTeams = TEAMS[r.cat] || TEAMS['F1'];
+  const DECAY = 0.82 + Math.random() * 0.05; // 0.820.87: controls field spread each season
+
+  const rawWeights = [];
+  for (let k = 0; k < N; k++) rawWeights.push(Math.pow(DECAY, k));
+  const rawSum = rawWeights.reduce((a, b) => a + b, 0);
 
   const rows = [];
-  for (let k = 1; k <= N; k++) {
-    rows.push({ rank: k, points: Math.round(BASE * Math.pow(DECAY, k - 1)) });
+  for (let k = 0; k < N; k++) {
+    rows.push({ rank: k + 1, points: Math.round(rawWeights[k] / rawSum * TARGET) });
   }
 
   const myRank = Math.min(Math.max(r.champ, 1), N);

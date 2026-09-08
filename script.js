@@ -42,70 +42,70 @@ const TEAMS = {
     { name: 'Parolin', stars: 4, logo: null, focus: 'equilibrado' },
   ],
   'F4': [
-    { name: 'Campos', stars: 3, logo: 'assets/images/logo campos.png', focus: 'desarrollo' },
-    { name: 'Van Amersfoort', stars: 4, logo: 'assets/images/logo van amersfoort.png', focus: 'equilibrado' },
-    { name: 'Prema', stars: 5, logo: 'assets/images/logo prema.png', focus: 'ganar' },
-    { name: 'US Racing', stars: 4, logo: 'assets/images/logo us racing.png', focus: 'equilibrado' },
-    { name: 'PHM Racing', stars: 3, logo: 'assets/images/logo phm racing.png', focus: 'desarrollo' },
-    { name: 'Jenzer Motorsport', stars: 3, logo: 'assets/images/logo jenzer.png', focus: 'desarrollo' },
-    { name: 'AKM Motorsport', stars: 3, logo: 'assets/images/logo akm.png', focus: 'desarrollo' },
-    { name: 'Hitech', stars: 5, logo: 'assets/images/logo hitech.png', focus: 'ganar' },
+    { name: 'Campos', stars: 3, logo: 'assets/images/logos/logo campos.png', focus: 'desarrollo' },
+    { name: 'Van Amersfoort', stars: 4, logo: 'assets/images/logos/logo van amersfoort.png', focus: 'equilibrado' },
+    { name: 'Prema', stars: 5, logo: 'assets/images/logos/logo prema.png', focus: 'ganar' },
+    { name: 'US Racing', stars: 4, logo: 'assets/images/logos/logo us racing.png', focus: 'equilibrado' },
+    { name: 'PHM Racing', stars: 3, logo: 'assets/images/logos/logo phm racing.png', focus: 'desarrollo' },
+    { name: 'Jenzer Motorsport', stars: 3, logo: 'assets/images/logos/logo jenzer.png', focus: 'desarrollo' },
+    { name: 'AKM Motorsport', stars: 3, logo: 'assets/images/logos/logo akm.png', focus: 'desarrollo' },
+    { name: 'Hitech', stars: 5, logo: 'assets/images/logos/logo hitech.png', focus: 'ganar' },
   ],
   'Formula Regional': [
-    { name: 'Trident', stars: 3, logo: 'assets/images/logo trident.png', focus: 'desarrollo' },
-    { name: 'ART Grand Prix', stars: 4, logo: 'assets/images/logo art grand prix.png', focus: 'equilibrado' },
-    { name: 'Prema', stars: 5, logo: 'assets/images/logo prema.png', focus: 'ganar' },
-    { name: 'R-ace GP', stars: 5, logo: 'assets/images/logo r-ace.png', focus: 'ganar' },
-    { name: 'MP Motorsport', stars: 4, logo: 'assets/images/logo mp motorsports.png', focus: 'equilibrado' },
-    { name: 'Van Amersfoort', stars: 4, logo: 'assets/images/logo van amersfoort.png', focus: 'equilibrado' },
-    { name: 'RPM', stars: 3, logo: 'assets/images/logo rpm.png', focus: 'desarrollo' },
-    { name: 'G4 Racing', stars: 3, logo: 'assets/images/logo g4.png', focus: 'desarrollo' },
+    { name: 'Trident', stars: 3, logo: 'assets/images/logos/logo trident.png', focus: 'desarrollo' },
+    { name: 'ART Grand Prix', stars: 4, logo: 'assets/images/logos/logo art grand prix.png', focus: 'equilibrado' },
+    { name: 'Prema', stars: 5, logo: 'assets/images/logos/logo prema.png', focus: 'ganar' },
+    { name: 'R-ace GP', stars: 5, logo: 'assets/images/logos/logo r-ace.png', focus: 'ganar' },
+    { name: 'MP Motorsport', stars: 4, logo: 'assets/images/logos/logo mp motorsports.png', focus: 'equilibrado' },
+    { name: 'Van Amersfoort', stars: 4, logo: 'assets/images/logos/logo van amersfoort.png', focus: 'equilibrado' },
+    { name: 'RPM', stars: 3, logo: 'assets/images/logos/logo rpm.png', focus: 'desarrollo' },
+    { name: 'G4 Racing', stars: 3, logo: 'assets/images/logos/logo g4.png', focus: 'desarrollo' },
   ],
   'F3': [
-    { name: 'Hitech', stars: 3, logo: 'assets/images/logo hitech.png', focus: 'desarrollo' },
-    { name: 'AIX Racing', stars: 4, logo: 'assets/images/logo aix racing.png', focus: 'equilibrado' },
-    { name: 'Prema', stars: 5, logo: 'assets/images/logo prema.png', focus: 'ganar' },
-    { name: 'Trident', stars: 5, logo: 'assets/images/logo trident.png', focus: 'ganar' },
-    { name: 'ART Grand Prix', stars: 4, logo: 'assets/images/logo art grand prix.png', focus: 'equilibrado' },
-    { name: 'MP Motorsport', stars: 4, logo: 'assets/images/logo mp motorsports.png', focus: 'equilibrado' },
-    { name: 'Campos', stars: 3, logo: 'assets/images/logo campos.png', focus: 'desarrollo' },
-    { name: 'Van Amersfoort', stars: 3, logo: 'assets/images/logo van amersfoort.png', focus: 'desarrollo' },
-    { name: 'Rodin Motorsport', stars: 4, logo: 'assets/images/logo rodin.png', focus: 'equilibrado' },
-    { name: 'Jenzer Motorsport', stars: 3, logo: 'assets/images/logo jenzer.png', focus: 'desarrollo' },
+    { name: 'Hitech', stars: 3, logo: 'assets/images/logos/logo hitech.png', focus: 'desarrollo' },
+    { name: 'AIX Racing', stars: 4, logo: 'assets/images/logos/logo aix racing.png', focus: 'equilibrado' },
+    { name: 'Prema', stars: 5, logo: 'assets/images/logos/logo prema.png', focus: 'ganar' },
+    { name: 'Trident', stars: 5, logo: 'assets/images/logos/logo trident.png', focus: 'ganar' },
+    { name: 'ART Grand Prix', stars: 4, logo: 'assets/images/logos/logo art grand prix.png', focus: 'equilibrado' },
+    { name: 'MP Motorsport', stars: 4, logo: 'assets/images/logos/logo mp motorsports.png', focus: 'equilibrado' },
+    { name: 'Campos', stars: 3, logo: 'assets/images/logos/logo campos.png', focus: 'desarrollo' },
+    { name: 'Van Amersfoort', stars: 3, logo: 'assets/images/logos/logo van amersfoort.png', focus: 'desarrollo' },
+    { name: 'Rodin Motorsport', stars: 4, logo: 'assets/images/logos/logo rodin.png', focus: 'equilibrado' },
+    { name: 'Jenzer Motorsport', stars: 3, logo: 'assets/images/logos/logo jenzer.png', focus: 'desarrollo' },
   ],
   'F2': [
-    { name: 'MP Motorsport', stars: 3, logo: 'assets/images/logo mp motorsports.png', focus: 'desarrollo' },
-    { name: 'Prema', stars: 4, logo: 'assets/images/logo prema.png', focus: 'equilibrado' },
-    { name: 'Invicta', stars: 5, logo: 'assets/images/logo invicta.png', focus: 'ganar' },
-    { name: 'ART Grand Prix', stars: 4, logo: 'assets/images/logo art grand prix.png', focus: 'equilibrado' },
-    { name: 'Rodin Motorsport', stars: 4, logo: 'assets/images/logo rodin.png', focus: 'equilibrado' },
-    { name: 'Hitech Pulse-Eight', stars: 4, logo: 'assets/images/logo hitech.png', focus: 'equilibrado' },
-    { name: 'DAMS', stars: 4, logo: 'assets/images/logo dams.png', focus: 'equilibrado' },
-    { name: 'Campos', stars: 3, logo: 'assets/images/logo campos.png', focus: 'desarrollo' },
-    { name: 'Trident', stars: 3, logo: 'assets/images/logo trident.png', focus: 'desarrollo' },
-    { name: 'Van Amersfoort', stars: 3, logo: 'assets/images/logo van amersfoort.png', focus: 'desarrollo' },
-    { name: 'AIX Racing', stars: 3, logo: 'assets/images/logo aix racing.png', focus: 'desarrollo' },
+    { name: 'MP Motorsport', stars: 3, logo: 'assets/images/logos/logo mp motorsports.png', focus: 'desarrollo' },
+    { name: 'Prema', stars: 4, logo: 'assets/images/logos/logo prema.png', focus: 'equilibrado' },
+    { name: 'Invicta', stars: 5, logo: 'assets/images/logos/logo invicta.png', focus: 'ganar' },
+    { name: 'ART Grand Prix', stars: 4, logo: 'assets/images/logos/logo art grand prix.png', focus: 'equilibrado' },
+    { name: 'Rodin Motorsport', stars: 4, logo: 'assets/images/logos/logo rodin.png', focus: 'equilibrado' },
+    { name: 'Hitech Pulse-Eight', stars: 4, logo: 'assets/images/logos/logo hitech.png', focus: 'equilibrado' },
+    { name: 'DAMS', stars: 4, logo: 'assets/images/logos/logo dams.png', focus: 'equilibrado' },
+    { name: 'Campos', stars: 3, logo: 'assets/images/logos/logo campos.png', focus: 'desarrollo' },
+    { name: 'Trident', stars: 3, logo: 'assets/images/logos/logo trident.png', focus: 'desarrollo' },
+    { name: 'Van Amersfoort', stars: 3, logo: 'assets/images/logos/logo van amersfoort.png', focus: 'desarrollo' },
+    { name: 'AIX Racing', stars: 3, logo: 'assets/images/logos/logo aix racing.png', focus: 'desarrollo' },
   ],
   'F1': [
-    { name: 'Cadillac', stars: 1, logo: 'assets/images/logo cadillac.png' },
-    { name: 'Audi', stars: 2, logo: 'assets/images/logo audi.png' },
-    { name: 'Haas F1', stars: 2, logo: 'assets/images/logo haas.png' },
-    { name: 'Williams', stars: 3, logo: 'assets/images/logo williams.png' },
-    { name: 'Racing Bulls', stars: 3, logo: 'assets/images/logo racing bulls.png' },
-    { name: 'Alpine', stars: 4, logo: 'assets/images/logo alpine.png' },
-    { name: 'Aston Martin', stars: 4, logo: 'assets/images/logo aston martin.png' },
-    { name: 'McLaren', stars: 4, logo: 'assets/images/logo mclaren.png' },
-    { name: 'Mercedes', stars: 5, logo: 'assets/images/logo mercedes.png' },
-    { name: 'Ferrari', stars: 5, logo: 'assets/images/logo Ferrari.png' },
-    { name: 'Red Bull', stars: 5, logo: 'assets/images/logo red bull.png' },
+    { name: 'Cadillac', stars: 1, logo: 'assets/images/logos/logo cadillac.png' },
+    { name: 'Audi', stars: 2, logo: 'assets/images/logos/logo audi.png' },
+    { name: 'Haas F1', stars: 2, logo: 'assets/images/logos/logo haas.png' },
+    { name: 'Williams', stars: 3, logo: 'assets/images/logos/logo williams.png' },
+    { name: 'Racing Bulls', stars: 3, logo: 'assets/images/logos/logo racing bulls.png' },
+    { name: 'Alpine', stars: 4, logo: 'assets/images/logos/logo alpine.png' },
+    { name: 'Aston Martin', stars: 4, logo: 'assets/images/logos/logo aston martin.png' },
+    { name: 'McLaren', stars: 4, logo: 'assets/images/logos/logo mclaren.png' },
+    { name: 'Mercedes', stars: 5, logo: 'assets/images/logos/logo mercedes.png' },
+    { name: 'Ferrari', stars: 5, logo: 'assets/images/logos/logo Ferrari.png' },
+    { name: 'Red Bull', stars: 5, logo: 'assets/images/logos/logo red bull.png' },
   ],
 };
 
 const CAT_LOGOS = {
-  'Formula Regional': 'assets/images/logo FR.png',
-  'F1': 'assets/images/logo F1.png',
-  'F2': 'assets/images/logo F2.png',
-  'F3': 'assets/images/logo F3.png',
+  'Formula Regional': 'assets/images/logos/logo FR.png',
+  'F1': 'assets/images/logos/logo F1.png',
+  'F2': 'assets/images/logos/logo F2.png',
+  'F3': 'assets/images/logos/logo F3.png',
 };
 
 const WIN_PROBS = ['Muy baja', 'Baja', 'Media', 'Alta', 'Muy alta'];
@@ -657,7 +657,7 @@ const INTERVIEWS = [
   {
     id: 'f1_transfer_rumors',
     title: 'Rumores en el Paddock',
-    desc: 'Tu contrato termina este año y estás rindiendo por encima del coche. La prensa pregunta sobre tu futuro.',
+    desc: 'Tu contrato termina dentro de poco y estás rindiendo por encima del coche. La prensa pregunta sobre tu futuro.',
     choices: [
       { text: '"Soy leal a mi equipo"', pers: 'team', delta: 20, hint: 'Demostrás lealtad (+Equipo).', fixedDesc: '"Ellos me dieron la oportunidad, mi cabeza está acá." El equipo agradeció tu lealtad.' },
       { text: '"Siempre busco el mejor auto"', pers: 'aggressiveness', delta: 20, hint: 'Ponés presión a la directiva (+Agresividad).', fixedDesc: '"Soy un ganador. Si no me dan el auto para ganar, miraré otras opciones." Pusiste presión a la directiva.' },
@@ -1048,7 +1048,8 @@ function generateInitialRoster() {
     if (foundNat) flag = foundNat.flag;
     const stars = (TEAMS[cat] || []).find(t => t.name === team)?.stars || 3;
     const contractYearsLeft = Math.floor(Math.random() * (stars >= 4 ? 4 : 2)) + 2;
-    roster.push({ id: 'ai_' + idCounter++, name, team, age, flag, cat, skill, contractYearsLeft, consecutiveLosses: 0 });
+    const avatar = EMOJI_AVATARS[Math.floor(Math.random() * EMOJI_AVATARS.length)];
+    roster.push({ id: 'ai_' + idCounter++, name, team, age, flag, cat, skill, contractYearsLeft, consecutiveLosses: 0, avatar });
   };
 
   // F1
@@ -1953,7 +1954,7 @@ function computeSeasonResult() {
     const myStRow = standingsRows.find(s => s.isPlayer);
     const tmRow = standingsRows.find(s => s.isPeer);
     const myTeamRow = constructorRows.find(c => c.team === result.teamName);
-
+    const peerPos = tmRow ? tmRow.rank : 99;
     if (champ <= 10 && myStRow && tmRow && tmRow.rank >= myStRow.rank + 4 && !G.storyFlags['interview_f1_teammate_destroyed']) {
       G._seasonSteps.push('event:f1_teammate_destroyed');
     }
@@ -2606,8 +2607,17 @@ function buildSummary() {
       <div style="margin-top:10px; padding:14px; border-radius:8px; background:rgba(255,255,255,0.04); border:1px solid var(--border)">
         <div style="font-size:12px; color:var(--muted); margin-bottom:6px; text-transform:uppercase; letter-spacing:1px">Compañero de Garaje</div>
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px">
-          <div style="font-weight:bold">${relIcon} ${G.peer.name} <span style="font-size:12px; color:var(--muted); font-weight:normal">(${G.peer.nat.flag} ${G.peer.team})</span></div>
-          <div style="font-size:12px; color:${relColor}; font-weight:bold">${relLabel}</div>
+          <div style="display:flex; align-items:center;">
+            <div style="position:relative; width:40px; height:40px; margin-right:12px; flex-shrink:0; border-radius:50%; background:rgba(255,255,255,0.1); display:flex; align-items:center; justify-content:center; overflow:hidden; font-size:24px; border:1px solid rgba(255,255,255,0.2);">
+              <span style="position:absolute;">${G.peer.avatar || '👨🏻'}</span>
+              <img src="assets/images/caras/cara ${G.peer.name.split(' ').pop().toLowerCase()}.png" onerror="this.style.display='none'" style="width:100%; height:100%; object-fit:cover; position:absolute; top:0; left:0; z-index:2;" />
+            </div>
+            <div>
+              <div style="font-weight:bold">${G.peer.name} <span style="font-size:12px; color:var(--muted); font-weight:normal">(${G.peer.nat.flag} ${G.peer.team})</span></div>
+              <div style="font-size:12px; color:var(--muted); font-weight:normal">${G.peer.h2hLosses} victorias, ${G.peer.h2hWins} derrotas</div>
+            </div>
+          </div>
+          <div style="font-size:12px; color:${relColor}; font-weight:bold; text-align:right">${relLabel}</div>
         </div>
         <div style="background:rgba(0,0,0,0.3); border-radius:4px; height:8px; position:relative; overflow:hidden">
           <div style="position:absolute; left:0; top:0; height:100%; width:${relPct}%; background:${relColor}; border-radius:4px; transition:width 0.4s"></div>
@@ -2798,7 +2808,8 @@ function goToContracts(oldCatIdx, repeatCat = false, skipContracts = false) {
   const steps = [];
 
   // Refresh teammate every F1 season from aiRoster
-  if (G.catIndex === 5) {
+  // If not skipping contracts, refreshTeammate is handled after contract selection
+  if (G.catIndex === 5 && skipContracts) {
     refreshTeammate();
   }
 
@@ -2958,15 +2969,25 @@ const STAT_LABELS = { speed: 'Velocidad', quali: 'Clasificación', rain: 'Lluvia
 function typewriterRadio(elId, text, speed = 15) {
   const el = document.getElementById(elId);
   if (!el) return;
+  if (el._typewriterTimeout) clearTimeout(el._typewriterTimeout);
   el.textContent = '';
+  el._fullText = text;
   let i = 0;
   const tick = () => {
     if (i < text.length) {
       el.textContent += text[i++];
-      setTimeout(tick, speed);
+      el._typewriterTimeout = setTimeout(tick, speed);
     }
   };
   tick();
+}
+
+function autocompleteRadio(elId) {
+  const el = document.getElementById(elId);
+  if (el && el._fullText) {
+    if (el._typewriterTimeout) clearTimeout(el._typewriterTimeout);
+    el.textContent = el._fullText;
+  }
 }
 
 function showRandomEvent() {
@@ -3095,6 +3116,7 @@ function showRandomEvent() {
     b.innerHTML = `<h3>${c.text}</h3>${hintHtml}`;
 
     b.onclick = () => {
+      autocompleteRadio('ev-radio-text');
       let relChange = c.peerRelDelta || 0;
       if (success === false && c.peerRelFailDelta !== undefined) {
         relChange = c.peerRelFailDelta;
@@ -3224,6 +3246,7 @@ function showMinigame() {
         ${mg.hidePct ? '' : `<span style="color:var(--muted)">Éxito: <strong style="color:${pctColor}">${pct}%</strong></span>`}
       </div>`;
     b.onclick = () => {
+      autocompleteRadio('mg-radio-text');
       G.storyFlags['minigame_' + mg.id] = index;
       const success = Math.random() < successChance;
       let logText;
@@ -3995,6 +4018,7 @@ function showHallOfFame() {
 // ═══════════════════════════════════════════════════════════
 
 const FIRST_NAMES = ["Oliver", "Jack", "Harry", "Jacob", "Charlie", "Thomas", "George", "Oscar", "James", "William", "Noah", "Leo", "Lucas", "Mateo", "Alex", "David", "Juan", "Pedro", "Pablo", "Diego", "Carlos", "Luis", "Fernando", "Jorge", "Javier", "Arthur", "Louis", "Jules", "Hugo", "Enzo", "Max", "Lando", "Charles", "Pierre", "Esteban", "Yuki", "Kevin", "Nico", "Lance", "Logan", "Valtteri", "Guanyu"];
+const EMOJI_AVATARS = ['👨🏻', '🧔🏽‍♂️', '👱🏼‍♂️', '🧑🏾‍🦲', '👨🏿‍🦱', '👨🏽', '🧔🏼‍♂️', '👱🏻‍♂️', '🧑🏿‍🦲', '👨🏼‍🦱', '👱🏽', '👦🏻', '👦🏽', '🧔🏻', '👨🏾‍🦲'];
 const LAST_NAMES = ["Smith", "Jones", "Taylor", "Brown", "Williams", "Wilson", "Johnson", "Davies", "Robinson", "Wright", "Thompson", "Evans", "Walker", "White", "Roberts", "Green", "Hall", "Wood", "Jackson", "Clarke", "García", "Martínez", "López", "González", "Rodríguez", "Fernández", "Pérez", "Gómez", "Sánchez", "Romero", "Sosa", "Torres", "Álvarez", "Ruiz", "Ramírez", "Flores", "Benítez", "Acosta", "Medina", "Herrera", "Suárez", "Dupont", "Dubois", "Lefebvre", "Leroy", "Roux", "Müller", "Schmidt", "Schneider", "Fischer", "Weber", "Meyer", "Wagner", "Becker"];
 
 function refreshTeammate() {
@@ -4047,6 +4071,7 @@ function refreshTeammate() {
     h2hLosses: 0,
     yearsAsTeammate: 0,
     skill: newTm.skill || 50,
+    avatar: newTm.avatar || EMOJI_AVATARS[Math.floor(Math.random() * EMOJI_AVATARS.length)]
   };
   G._lastTeammateLeft = prevName;
 }
@@ -4605,10 +4630,28 @@ function simulateDriverMarket() {
 
   freeAgentsF1.forEach(driver => {
     if (openF1Seats.length > 0) {
+      let availableSeats = openF1Seats;
+      
+      // Si es tu ex-compañero y perdió contra vos (consecutiveLosses > 0), no puede ir a un equipo mejor
+      if (G.peer && driver.id === G.peer.id && driver.consecutiveLosses > 0 && G.team) {
+        availableSeats = openF1Seats.filter(s => {
+          const sStars = TEAMS['F1'].find(t => t.name === s)?.stars || 3;
+          return sStars <= G.team.stars;
+        });
+        if (availableSeats.length === 0) {
+          availableSeats = [openF1Seats[openF1Seats.length - 1]]; // Si no hay peores, se va al peor equipo disponible
+        }
+      }
+
       // Driver negotiates for the best available seat
       // Small randomness so it's not strictly deterministic
-      const bestSeatIdx = Math.random() < 0.8 ? 0 : Math.min(1, openF1Seats.length - 1);
-      const newTeam = openF1Seats.splice(bestSeatIdx, 1)[0];
+      const bestSeatIdx = Math.random() < 0.8 ? 0 : Math.min(1, availableSeats.length - 1);
+      const newTeam = availableSeats[bestSeatIdx];
+      
+      // Sacarlo de la lista real
+      const realIdx = openF1Seats.indexOf(newTeam);
+      if (realIdx > -1) openF1Seats.splice(realIdx, 1);
+
       driver.team = newTeam;
       const stars = TEAMS['F1'].find(t => t.name === newTeam)?.stars || 3;
       driver.contractYearsLeft = Math.floor(Math.random() * (stars >= 4 ? 4 : 2)) + 2; // Top teams give longer contracts
@@ -4672,7 +4715,8 @@ function simulateDriverMarket() {
         cat: 'Karting',
         skill: 30 + Math.floor(Math.random() * 20),
         contractYearsLeft: Math.floor(Math.random() * 2) + 1,
-        consecutiveLosses: 0
+        consecutiveLosses: 0,
+        avatar: EMOJI_AVATARS[Math.floor(Math.random() * EMOJI_AVATARS.length)]
       });
     }
   }

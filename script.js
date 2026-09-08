@@ -3366,7 +3366,7 @@ const INTERACTIVE_MINIGAMES = [
     icon: '⚡',
     title: 'TIMING PERFECTO — ERS',
     situation: 'Estás pegado atrás de tu rival. Activás el ERS potencia extra. Si lo usás en el momento exacto, lo pasás. Si errás, perdés la oportunidad.',
-    instructions: 'Una barra se mueve de izquierda a derecha rápido. Presioná el botón cuando el cursor esté dentro de la ZONA VERDE. Tenés 3 intentos.',
+    instructions: 'Una barra se mueve de izquierda a derecha rápido. Presioná el botón cuando el cursor esté dentro de la ZONA VERDE. Tenés que lograrlo 3 veces.',
     minCat: 4, // F2/F1 only
   },
   {
@@ -3430,6 +3430,8 @@ function showInteractiveMinigame(forcedId = null) {
   // Filter by category
   const eligible = INTERACTIVE_MINIGAMES.filter(mg => {
     if (G.catIndex < mg.minCat) return false;
+    const winGames = ['img_reaction', 'img_pitstop', 'img_timing', 'img_defense', 'img_slipstream'];
+    if (winGames.includes(mg.id) && (G.carStars || 0) < 3) return false;
     return true;
   });
   if (eligible.length === 0) { processSeasonStep(); return; }
@@ -3465,9 +3467,9 @@ function showInteractiveMinigame(forcedId = null) {
 }
 
 // ── Common: Show Result ──
-function showIMGResult(success, title, detail, narrative) {
+function showIMGResult(success, title, detail, narrative, givesWin = true) {
   const area = document.getElementById('img-game-area');
-  const icon = success ? '🏆' : '💥';
+  const icon = success ? (givesWin ? '🏆' : '✅') : '💥';
   const color = success ? '#4ade80' : '#f87171';
   area.innerHTML = `
     <div class="card" style="padding:28px;text-align:center">
@@ -3480,11 +3482,15 @@ function showIMGResult(success, title, detail, narrative) {
   `;
 
   if (success) {
-    G.lastResult.wins = Math.min((G.lastResult.wins || 0) + 1, 99);
-    G.wins++;
-    G.lastResult.podiums = Math.max(G.lastResult.podiums || 0, G.lastResult.wins);
-    G.podiums++;
-    G._seasonEventLogs.push(`🏆 Minijuego interactivo: ¡Éxito! +1 Victoria`);
+    if (givesWin) {
+      G.lastResult.wins = Math.min((G.lastResult.wins || 0) + 1, 99);
+      G.wins++;
+      G.lastResult.podiums = Math.max(G.lastResult.podiums || 0, G.lastResult.wins);
+      G.podiums++;
+      G._seasonEventLogs.push(`🏆 Minijuego interactivo: ¡Éxito! +1 Victoria`);
+    } else {
+      G._seasonEventLogs.push(`✅ Minijuego interactivo: ¡Éxito! (Ventaja obtenida)`);
+    }
   } else {
     G._seasonEventLogs.push(`💥 Minijuego interactivo: Fallaste`);
   }
@@ -3590,7 +3596,7 @@ function startReactionGame() {
       narrative = 'Perdiste dos posiciones en la salida. El auto del lado te tapó completamente.';
       success = false;
     }
-    showIMGResult(success, title, detail, narrative);
+    showIMGResult(success, title, detail, narrative, success ? false : true);
   };
 }
 
@@ -3862,7 +3868,7 @@ function startSequenceGame() {
             const title = '¡Memoria perfecta!';
             const detail = `${score}/${MAX_ROUNDS} rondas`;
             const narrative = 'Memorizaste cada curva del circuito a la perfección. Tu velocidad en calificación mejora notablemente.';
-            showIMGResult(success, title, detail, narrative);
+            showIMGResult(success, title, detail, narrative, false);
           }, 600);
         } else {
           addToSequence();
@@ -3963,7 +3969,7 @@ function startTempGame() {
     if (timeInZone >= GOAL_DURATION) {
       done = true;
       showIMGResult(true, '¡Gomas a Temperatura!', 'Gomas listas para atacar',
-        'Las gomas están perfectamente calientes. Cuando el Safety Car se fue, tenés agarre total y atacás la primera curva con confianza.');
+        'Las gomas están perfectamente calientes. Cuando el Safety Car se fue, tenés agarre total y atacás la primera curva con confianza.', false);
       return;
     }
     
@@ -4082,11 +4088,11 @@ function startSlipstreamGame() {
   let elapsedTime = 0;
   let rivalX = 0;       // -MAX_OFFSET to MAX_OFFSET
   let playerX = 0;
-  const RIVAL_SPEED = 0.8;
+  const RIVAL_SPEED = 1.1;
   const PLAYER_SPEED = 18;
   let rivalDir = 1;
   let fillPct = 0;
-  const FILL_RATE = 1.4;  // per frame when aligned
+  const FILL_RATE = 1.0;  // per frame when aligned
   const DRAIN_RATE = 2.2; // per frame when misaligned
   const ALIGN_THRESHOLD = 28; // px difference allowed
   let animId = null;
@@ -4163,7 +4169,7 @@ function startSlipstreamGame() {
     if (elapsedTime >= TOTAL_TIME) {
       done = true;
       showIMGResult(false, 'Se Acabó la Recta', 'No lograste enganchar el rebufo',
-        'Se terminó la recta antes de que pudieras ganar suficiente velocidad. El rival te desacomodo.');
+        'Se terminó la recta antes de que pudieras ganar suficiente velocidad. El rival defendió su posición y te dejó sin el impulso necesario para intentar el adelantamiento.');
       return;
     }
     
@@ -4196,7 +4202,7 @@ function startSetupGame() {
       total += 100 - Math.abs(playerVals[i] - optimal[i]);
       // Update hints for next render
       const diff = optimal[i] - playerVals[i];
-      if (Math.abs(diff) <= 3) hints[i] = '✅';
+      if (Math.abs(diff) <= 5) hints[i] = '✅';
       else if (diff > 0) hints[i] = '⬆️ Subir';
       else hints[i] = '⬇️ Bajar';
     });
@@ -4241,7 +4247,7 @@ function startSetupGame() {
         done = true;
         render(); // render final hints
         showIMGResult(true, '¡Setup Perfecto!', `${score}% de efectividad`,
-          'El auto responde exactamente como querías. En la vuelta rápida te sentiste en casa.');
+          'El auto responde exactamente como querías. En la vuelta rápida te sentiste en casa.', false);
       } else if (attempts >= MAX_ATTEMPTS) {
         done = true;
         render(); // render final hints
@@ -5325,7 +5331,7 @@ const ACHIEVEMENTS = [
   { id: 'almost_there', name: 'Al Borde de la Gloria', desc: 'Estuviste muy cerca. Terminaste 2.º en el campeonato de F1.', icon: '🥈', tier: 'silver', condition: () => G.seasons.some(s => s.cat === 'F1' && s.champ === 2) },
 
     { id: 'giant_killer', name: 'Matagigantes', desc: 'Ganaste una carrera con un equipo de 3 estrellas o menos.', icon: '🗡️', tier: 'silver', condition: () => G.seasons.some(s => s.cat === 'F1' && s.wins > 0 && (s.teamStars || 5) <= 3) },
-  { id: 'rain_master', name: 'Que Llueva', desc: 'Ganaste un campeonato teniendo la lluvia como tu estadística más fuerte.', icon: '🌧️', tier: 'silver', condition: () => G.seasons.some(s => s.cat === 'F1' && s.champ === 1 && G.stats.rain >= Math.max(G.stats.speed, G.stats.quali, G.stats.tyres, G.stats.overtake)) },
+  { id: 'rain_master', name: 'Que Llueva', desc: 'Ganaste un campeonato teniendo la lluvia como tu estadística más fuerte.', icon: '💧', tier: 'silver', condition: () => G.seasons.some(s => s.cat === 'F1' && s.champ === 1 && G.stats.rain >= Math.max(G.stats.speed, G.stats.quali, G.stats.tyres, G.stats.overtake)) },
 
   // Bronce
   { id: 'first_win', name: 'Primer Golpe', desc: 'Tu nombre apareció entre los ganadores. Conseguiste tu primera victoria en F1.', icon: '🥇', tier: 'bronze', condition: () => G.seasons.some(s => s.cat === 'F1' && s.wins > 0) },

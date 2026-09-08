@@ -168,6 +168,35 @@
     </div>
 
     <!-- ══════════════════════════════════════════════
+       SCREEN: INTERACTIVE MINIGAME INTRO
+  ══════════════════════════════════════════════ -->
+    <div class="screen" id="screen-img-intro" style="justify-content:center;align-items:center;text-align:center">
+      <div class="label" style="margin-bottom:8px" id="img-intro-label">🏎️ Minijuego Interactivo</div>
+      <div style="font-size:72px;margin-bottom:20px" id="img-intro-icon">🚦</div>
+      <div class="heading" style="margin-bottom:12px;font-size:24px" id="img-intro-title">Título</div>
+      <div class="card" style="margin-bottom:24px;text-align:left" id="img-intro-card">
+        <div class="sub" style="margin-bottom:16px" id="img-intro-situation">Situación...</div>
+        <div style="border-top:1px solid var(--border);padding-top:14px;margin-top:4px">
+          <div class="label" style="margin-bottom:8px;color:var(--accent)">🎮 Cómo jugar</div>
+          <div class="sub" id="img-intro-instructions">Instrucciones...</div>
+        </div>
+      </div>
+      <button class="btn btn-primary" id="img-intro-btn" style="max-width:280px">¡EMPEZAR!</button>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
+       SCREEN: INTERACTIVE MINIGAME PLAY
+  ══════════════════════════════════════════════ -->
+    <div class="screen" id="screen-img-play" style="justify-content:center;align-items:center;text-align:center">
+      <div class="label" style="margin-bottom:8px" id="img-play-label">🏁 En pista</div>
+      <div id="img-countdown" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:100;align-items:center;justify-content:center;flex-direction:column">
+        <div class="label" style="margin-bottom:12px;color:var(--muted)">Preparáte...</div>
+        <div id="img-countdown-num" style="font-family:'Barlow Condensed',sans-serif;font-weight:900;font-size:120px;color:var(--accent);line-height:1">3</div>
+      </div>
+      <div id="img-game-area" style="width:100%;max-width:360px"></div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════
        SCREEN: CONTRACTS
   ══════════════════════════════════════════════ -->
     <div class="screen" id="screen-contracts">

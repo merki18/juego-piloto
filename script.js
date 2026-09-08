@@ -1673,8 +1673,10 @@ function runSimulation() {
 
     const hasEvent = Math.random() < 0.4;
     const hasMini = Math.random() < 0.2;
+    const hasInteractiveMini = Math.random() < 0.25; // 1 in 4 seasons gets an interactive minigame
     if (hasEvent) G._seasonSteps.push('event');
     if (hasMini) G._seasonSteps.push('minigame');
+    if (hasInteractiveMini) G._seasonSteps.push('interactive_minigame');
     const hasInterview = Math.random() < 0.3 || (G.catIndex === 5 && G.wins > 0 && !G.storyFlags.firstWinDone);
     if (hasInterview) G._seasonSteps.push('interview');
 
@@ -1695,6 +1697,7 @@ function processSeasonStep() {
   else if (step === 'regulation') showRegulationEvent();
   else if (step === 'event') showRandomEvent();
   else if (step === 'minigame') showMinigame();
+  else if (step === 'interactive_minigame') showInteractiveMinigame();
   else if (step === 'interview') showInterview();
   else if (step.startsWith('event:')) showInterview(step.split(':')[1]);
   else if (step === 'compute') {
@@ -2490,6 +2493,11 @@ function launchConfetti() {
 function buildSummary() {
   checkAchievements('season_end');
   const r = G.lastResult;
+  if (!r) {
+    goto('screen-main');
+    return;
+  }
+
 
   document.getElementById('sum-season-label').textContent = `Temporada ${r.year} (Edad: ${G.age})`;
   document.getElementById('sum-cat-label').textContent = r.cat;
@@ -3327,6 +3335,1091 @@ function showMinigame(forcedId = null) {
     ch.appendChild(b);
   });
   goto('screen-minigame');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  INTERACTIVE MINIGAMES — Definitions
+// ═══════════════════════════════════════════════════════════
+
+const INTERACTIVE_MINIGAMES = [
+  {
+    id: 'img_reaction',
+    label: '🚦 Largada',
+    icon: '🚦',
+    title: 'REFLEJOS EN LA LARGADA',
+    situation: 'Esta por comenzar la carrera. Los 5 semáforos rojos se encienden uno por uno... y en cualquier momento se apagan. Tu reacción en ese instante puede ganarte o costarte la carrera.',
+    instructions: 'Cuando los 5 semáforos se enciendan y luego se APAGUEN, presioná el botón grande lo más rápido posible. Si apretás antes que se apaguen, es FALSA LARGADA.',
+    minCat: 1, 
+  },
+  {
+    id: 'img_pitstop',
+    label: '🔧 Pitstop',
+    icon: '🔧',
+    title: 'PARADA EN BOXES',
+    situation: 'Tu ingeniero grita por la radio: "¡BOX BOX BOX!" Entrás al pit lane a toda velocidad. El equipo está listo, pero las cuatro ruedas necesitan cambiarse cuanto antes.',
+    instructions: 'Tocá cada rueda del auto 3 veces para cambiar las gomas. Completá las 4 ruedas lo más rápido que puedas. El tiempo corre desde que empezás.',
+    minCat: 1, // F4 onwards
+  },
+  {
+    id: 'img_timing',
+    label: '⚡ ERS',
+    icon: '⚡',
+    title: 'TIMING PERFECTO — ERS',
+    situation: 'Estás pegado atrás de tu rival. Activás el ERS potencia extra. Si lo usás en el momento exacto, lo pasás. Si errás, perdés la oportunidad.',
+    instructions: 'Una barra se mueve de izquierda a derecha rápido. Presioná el botón cuando el cursor esté dentro de la ZONA VERDE. Tenés 3 intentos.',
+    minCat: 4, // F2/F1 only
+  },
+  {
+    id: 'img_sequence',
+    label: '🧠 Trazado',
+    icon: '🧠',
+    title: 'MEMORIZAR EL TRAZADO',
+    situation: 'Estás en el simulador del equipo, aprendiendo el circuito a ciegas. El ingeniero grita las curvas una por una. Tenés que recordarlas y reproducirlas en orden exacto.',
+    instructions: 'Memorizá la secuencia de flechas que aparece en pantalla. Cuando desaparezca, repetí las flechas en el mismo orden tocando los botones. La secuencia crece con cada ronda.',
+    minCat: 1,
+  },
+  {
+    id: 'img_temp',
+    label: '🌡️ Temperatura',
+    icon: '🌡️',
+    title: 'GESTIÓN DE TEMPERATURA',
+    situation: 'Salio el Safety Car y paraste en boxes. Cuando salga, si tus neumáticos no están en temperatura, perdés agarre y quedas en desventaja.',
+    instructions: 'La temperatura baja sola. Tocá el botón repetidamente para subirla. Mantenés el indicador dentro de la zona verde durante 6 segundos.',
+    minCat: 1,
+  },
+  {
+    id: 'img_defense',
+    label: '🛡️ Defensa',
+    icon: '🛡️',
+    title: 'CERRAR LA PUERTA',
+    situation: 'Es la última vuelta, estás peleando la posición y tu rival ataca tres veces buscando pasarte.',
+    instructions: 'Cuando aparezca la flecha, tocá el botón correcto (⬅️ o ➡️) antes de que el medidor llegue al final. Sobrevivé los 3 intentos del rival.',
+    minCat: 1,
+  },
+  {
+    id: 'img_slipstream',
+    label: '💨 Rebufo',
+    icon: '💨',
+    title: 'ATRAPAR EL REBUFO',
+    situation: 'Llevas varias vueltas pegándote al rival. La única forma de pasarlo es usar su rebufo en la recta.',
+    instructions: 'Tu auto debe mantenerse justo detrás del rival. Usá los botones ⬅️ y ➡️ para ajustar posición. Llenás la barra de rebufo al 100%.',
+    minCat: 1,
+  },
+  {
+    id: 'img_setup',
+    label: '🔧 Setup',
+    icon: '🔧',
+    title: 'ENCONTRAR EL SETUP',
+    situation: 'El auto tiene subviraje y bajo top speed. Tenés 3 intentos para encontrar el punto óptimo antes de clasificar.',
+    instructions: 'Mové los 3 controles deslizables y presioná PROBAR. Necesitás llegar al 90% o más de efectividad.',
+    minCat: 2,
+  },
+  {
+    id: 'img_line',
+    label: '✏️ Trazada',
+    icon: '✏️',
+    title: 'LA TRAZADA IDEAL',
+    situation: 'Mónaco. Un error y el muro te espera. El simulador pide trazar la vuelta perfecta.',
+    instructions: 'Arrastrá el cursor siguiendo exactamente la línea verde. Si te salís, vuelta invalidada. Completá las 3 curvas sin errores.',
+    minCat: 1,
+  },
+];
+
+// ── Show Interactive Minigame Intro ──
+function showInteractiveMinigame(forcedId = null) {
+  // Filter by category
+  const eligible = INTERACTIVE_MINIGAMES.filter(mg => {
+    if (G.catIndex < mg.minCat) return false;
+    return true;
+  });
+  if (eligible.length === 0) { processSeasonStep(); return; }
+
+  let mg = null;
+  if (forcedId) mg = INTERACTIVE_MINIGAMES.find(m => m.id === forcedId);
+  if (!mg) mg = randFrom(eligible);
+
+  document.getElementById('img-intro-label').textContent = mg.label;
+  document.getElementById('img-intro-icon').textContent = mg.icon;
+  document.getElementById('img-intro-title').textContent = mg.title;
+  document.getElementById('img-intro-situation').textContent = mg.situation;
+  document.getElementById('img-intro-instructions').textContent = mg.instructions;
+
+  const btn = document.getElementById('img-intro-btn');
+  btn.onclick = () => {
+    goto('screen-img-play');
+    document.getElementById('img-play-label').textContent = mg.label;
+    // Launch the specific minigame
+    switch (mg.id) {
+      case 'img_reaction':    startReactionGame();    break;
+      case 'img_pitstop':     startPitstopGame();     break;
+      case 'img_timing':      startTimingGame();      break;
+      case 'img_sequence':    startSequenceGame();    break;
+      case 'img_temp':        startTempGame();        break;
+      case 'img_defense':     startDefenseGame();     break;
+      case 'img_slipstream':  startSlipstreamGame();  break;
+      case 'img_setup':       startSetupGame();       break;
+      case 'img_line':        startLineGame();        break;
+    }
+  };
+  goto('screen-img-intro');
+}
+
+// ── Common: Show Result ──
+function showIMGResult(success, title, detail, narrative) {
+  const area = document.getElementById('img-game-area');
+  const icon = success ? '🏆' : '💥';
+  const color = success ? '#4ade80' : '#f87171';
+  area.innerHTML = `
+    <div class="card" style="padding:28px;text-align:center">
+      <div style="font-size:56px;margin-bottom:12px">${icon}</div>
+      <div class="heading" style="font-size:22px;color:${color};margin-bottom:8px">${title}</div>
+      <div class="sub" style="margin-bottom:14px">${detail}</div>
+      ${narrative ? `<div style="font-size:13px;line-height:1.6;color:var(--text);background:rgba(255,255,255,0.04);border-radius:8px;padding:12px;margin-bottom:16px;text-align:left;border-left:3px solid ${color}">${narrative}</div>` : ''}
+      <button class="btn btn-primary" onclick="processSeasonStep()">CONTINUAR</button>
+    </div>
+  `;
+
+  if (success) {
+    G.lastResult.wins = Math.min((G.lastResult.wins || 0) + 1, 99);
+    G.wins++;
+    G.lastResult.podiums = Math.max(G.lastResult.podiums || 0, G.lastResult.wins);
+    G.podiums++;
+    G._seasonEventLogs.push(`🏆 Minijuego interactivo: ¡Éxito! +1 Victoria`);
+  } else {
+    G._seasonEventLogs.push(`💥 Minijuego interactivo: Fallaste`);
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  1. REACTION — Semáforos
+// ══════════════════════════════════════════════════════════
+function startReactionGame() {
+  const area = document.getElementById('img-game-area');
+  area.innerHTML = `
+    <div class="img-lights-row">
+      <div class="img-light" id="rl0"></div>
+      <div class="img-light" id="rl1"></div>
+      <div class="img-light" id="rl2"></div>
+      <div class="img-light" id="rl3"></div>
+      <div class="img-light" id="rl4"></div>
+    </div>
+    <div style="margin-bottom:20px">
+      <div class="label" style="color:var(--muted);margin-bottom:4px" id="react-status">Esperá los semáforos...</div>
+    </div>
+    <button id="img-react-btn">LARGADA</button>
+  `;
+
+  const btn = document.getElementById('img-react-btn');
+  let phase = 'waiting'; // waiting | lights_on | go | done
+  let lightOnTime = null;
+  let falseStart = false;
+  let lightTimers = [];
+
+  // Light on sequence: 0.6s between each
+  for (let i = 0; i < 5; i++) {
+    const t = setTimeout(() => {
+      document.getElementById('rl' + i).classList.add('on');
+    }, 800 + i * 600);
+    lightTimers.push(t);
+  }
+
+  // Lights off after a random delay (3.5s to 5.5s from start)
+  const offDelay = 800 + 4 * 600 + 800 + Math.random() * 2000;
+  const offTimer = setTimeout(() => {
+    if (phase === 'done') return;
+    phase = 'go';
+    lightOnTime = Date.now();
+    for (let i = 0; i < 5; i++) {
+      const el = document.getElementById('rl' + i);
+      if (el) { el.classList.remove('on'); el.classList.add('green'); }
+    }
+    document.getElementById('react-status').textContent = '¡¡AHORA!!';
+    btn.classList.add('active-green');
+    btn.textContent = 'LARGADA';
+
+    // Auto-fail if too slow (2s window)
+    setTimeout(() => {
+      if (phase === 'go') {
+        phase = 'done';
+        btn.disabled = true;
+        showIMGResult(false, '¡Reacción lenta!',
+          'Tu reacción superó los 2 segundos. Perdiste varias posiciones en la salida.',
+          'El pelotón te cerró y quedaste atrapado en el tráfico del inicio.');
+      }
+    }, 2000);
+  }, offDelay);
+
+  lightTimers.push(offTimer);
+
+  btn.onclick = () => {
+    if (phase === 'done') return;
+    if (phase !== 'go') {
+      // FALSE START
+      phase = 'done';
+      lightTimers.forEach(clearTimeout);
+      btn.disabled = true;
+      for (let i = 0; i < 5; i++) {
+        const el = document.getElementById('rl' + i);
+        if (el) el.classList.remove('on');
+      }
+      showIMGResult(false, '¡Falsa Largada!',
+        'Apretaste antes que se apagaran los semáforos. Tenes una penalizacion de stop-and-go.',
+        'El comisario de pista levantó la bandera negra y blanca. Pasás por el pitlane y carrera arruinada.');
+      return;
+    }
+    // Valid press
+    phase = 'done';
+    btn.disabled = true;
+    const reaction = Date.now() - lightOnTime;
+    const ms = reaction;
+    let success = false, title, detail, narrative;
+    if (ms < 200) {
+      title = '¡REACCIÓN PERFECTA!'; detail = `${ms}ms — Nivel de campeón`;
+      narrative = 'Salida limpia y explosiva. Para la segunda curva ya estás dos posiciones arriba.';
+      success = true;
+    } else if (ms < 300) {
+      title = '¡Buena largada!'; detail = `${ms}ms — Muy rápido`;
+      narrative = 'Salida limpia. Mantenés tu posición y el auto sale perfectamente.';
+      success = true;
+    } else if (ms < 500) {
+      title = 'Largada aceptable'; detail = `${ms}ms — Normal`;
+      narrative = 'Salida decente, nada especial. El pelotón sale parejo.';
+      success = false;
+    } else {
+      title = 'Largada lenta'; detail = `${ms}ms — Tarde`;
+      narrative = 'Perdiste dos posiciones en la salida. El auto del lado te tapó completamente.';
+      success = false;
+    }
+    showIMGResult(success, title, detail, narrative);
+  };
+}
+
+// ══════════════════════════════════════════════════════════
+//  2. PITSTOP — Click wheels
+// ══════════════════════════════════════════════════════════
+function startPitstopGame() {
+  const area = document.getElementById('img-game-area');
+  area.innerHTML = `
+    <div id="img-pitstop-timer" style="margin-bottom:8px">0.000s</div>
+    <div class="label" style="margin-bottom:16px;color:var(--muted)" id="ps-status">Tocá cada rueda 3 veces</div>
+    <div class="img-car-top">
+      <div class="img-car-body"></div>
+      <div class="img-car-cockpit"></div>
+      <!-- FL, FR, RL, RR -->
+      <div class="img-wheel-btn active" id="ps-fl" style="top:20px;left:10px">FL<br>0/3</div>
+      <div class="img-wheel-btn" id="ps-fr" style="top:20px;right:10px">FR<br>0/3</div>
+      <div class="img-wheel-btn" id="ps-rl" style="bottom:20px;left:10px">RL<br>0/3</div>
+      <div class="img-wheel-btn" id="ps-rr" style="bottom:20px;right:10px">RR<br>0/3</div>
+    </div>
+  `;
+
+  const wheels = [
+    { id: 'ps-fl', label: 'FL', clicks: 0 },
+    { id: 'ps-fr', label: 'FR', clicks: 0 },
+    { id: 'ps-rl', label: 'RL', clicks: 0 },
+    { id: 'ps-rr', label: 'RR', clicks: 0 },
+  ];
+  const NEEDED = 3;
+  let currentWheel = 0;
+  let started = false;
+  let startTime = null;
+  let timerInterval = null;
+
+  const timerEl = document.getElementById('img-pitstop-timer');
+  const statusEl = document.getElementById('ps-status');
+
+  const updateTimer = () => {
+    if (!startTime) return;
+    const elapsed = (Date.now() - startTime) / 1000;
+    timerEl.textContent = elapsed.toFixed(3) + 's';
+  };
+
+  wheels.forEach((w, wi) => {
+    const el = document.getElementById(w.id);
+    el.onclick = () => {
+      if (wi !== currentWheel) return; // must do in order
+      if (!started) {
+        started = true;
+        startTime = Date.now();
+        timerInterval = setInterval(updateTimer, 33);
+      }
+      w.clicks++;
+      el.textContent = w.label + '\n' + w.clicks + '/3';
+      if (w.clicks >= NEEDED) {
+        el.classList.remove('active');
+        el.classList.add('done');
+        el.textContent = '✓';
+        currentWheel++;
+        if (currentWheel < wheels.length) {
+          document.getElementById(wheels[currentWheel].id).classList.add('active');
+          statusEl.textContent = `Rueda ${wheels[currentWheel].label} — 0/3`;
+        } else {
+          // Done!
+          clearInterval(timerInterval);
+          const elapsed = (Date.now() - startTime) / 1000;
+          timerEl.textContent = elapsed.toFixed(3) + 's';
+          const success = elapsed < 2.8;
+          let title, detail, narrative;
+          if (elapsed < 2.0) {
+            title = '¡PITSTOP RÉCORD!'; detail = `${elapsed.toFixed(3)}s — Impresionante`;
+            narrative = 'El equipo te aplaude. Ese pitstop se transmitirá en todos los highlights del fin de semana.';
+          } else if (elapsed < 3.0) {
+            title = 'Buen pitstop'; detail = `${elapsed.toFixed(3)}s — Eficiente`;
+            narrative = 'Salís limpio del pit lane y recuperás tu posición sin problemas.';
+          } else if (elapsed < 4.5) {
+            title = 'Pitstop lento'; detail = `${elapsed.toFixed(3)}s — Mejorable`;
+            narrative = 'La demora en boxes te costó dos posiciones. Salís al tráfico de mitad de parrilla.';
+          } else {
+            title = 'Pitstop desastroso'; detail = `${elapsed.toFixed(3)}s — Muy lento`;
+            narrative = 'Una rueda no calzó bien. Perdiste varias posiciones y la carrera está cuesta arriba.';
+          }
+          setTimeout(() => showIMGResult(success, title, detail, narrative), 400);
+        }
+      } else {
+        statusEl.textContent = `Rueda ${w.label} — ${w.clicks}/3`;
+      }
+    };
+  });
+}
+
+// ══════════════════════════════════════════════════════════
+//  3. TIMING BAR — ERS
+// ══════════════════════════════════════════════════════════
+function startTimingGame() {
+  const area = document.getElementById('img-game-area');
+
+  const ATTEMPTS = 3;
+  let attempt = 0;
+  let hits = 0;
+  let animFrame = null;
+  let cursorPos = 0;
+  let direction = 1;
+  const SPEED = 1.2; // % per frame at 60fps
+  // Zone: centered, width 14%
+  const ZONE_START = 43;
+  const ZONE_END = 57;
+
+  const render = () => {
+    area.innerHTML = `
+      <div style="font-size:36px;margin-bottom:8px">⚡</div>
+      <div class="heading" style="font-size:20px;margin-bottom:4px">ERS — ATACAR</div>
+      <div class="label" style="color:var(--muted);margin-bottom:20px">Intento ${attempt + 1} de ${ATTEMPTS}</div>
+      <div id="img-timing-bar-wrap">
+        <div id="img-timing-zone" style="left:${ZONE_START}%;width:${ZONE_END - ZONE_START}%"></div>
+        <div id="img-timing-cursor" style="left:${cursorPos}%"></div>
+      </div>
+      <button id="img-timing-press-btn">¡ AHORA ! ( TOQUE / CLICK )</button>
+      <div class="label" style="margin-top:16px;color:var(--muted)">Aciertos: ${hits}/${ATTEMPTS}</div>
+    `;
+
+    document.getElementById('img-timing-press-btn').onclick = onPress;
+    startCursor();
+  };
+
+  const startCursor = () => {
+    if (animFrame) cancelAnimationFrame(animFrame);
+    const loop = () => {
+      cursorPos += SPEED * direction;
+      if (cursorPos >= 100) { cursorPos = 100; direction = -1; }
+      if (cursorPos <= 0)   { cursorPos = 0;   direction = 1; }
+      const el = document.getElementById('img-timing-cursor');
+      if (el) {
+        el.style.left = cursorPos + '%';
+        animFrame = requestAnimationFrame(loop);
+      }
+    };
+    animFrame = requestAnimationFrame(loop);
+  };
+
+  const onPress = () => {
+    if (animFrame) cancelAnimationFrame(animFrame);
+    const inZone = cursorPos >= ZONE_START && cursorPos <= ZONE_END;
+    if (inZone) hits++;
+    attempt++;
+
+    const feedbackColor = inZone ? '#4ade80' : '#f87171';
+    const feedbackText = inZone ? '✓ ¡Perfecto!' : '✗ Fallaste';
+    const cursor = document.getElementById('img-timing-cursor');
+    if (cursor) { cursor.style.background = feedbackColor; cursor.style.boxShadow = '0 0 16px ' + feedbackColor; }
+
+    setTimeout(() => {
+      if (attempt >= ATTEMPTS || !inZone) {
+        const success = hits === 3;
+        let title, detail, narrative;
+        if (success) {
+          title = '¡ERS Perfecto!'; detail = '3/3 — Timing impecable';
+          narrative = 'Activaste el ERS en el momento exacto las tres veces. Pasaste a tu rival como si estuviera parado.';
+        } else {
+          title = '¡Error de Timing!'; detail = 'Te anticipaste o tardaste de más';
+          narrative = 'Activaste el ERS en una zona muy complicada para adelantar, desperdiciaste la energía y perdiste la oportunidad de pasar al rival.';
+        }
+        showIMGResult(success, title, detail, narrative);
+      } else {
+        render();
+      }
+    }, 500);
+  };
+
+  render();
+}
+
+// ══════════════════════════════════════════════════════════
+//  4. SEQUENCE — Memorizar trazado
+// ══════════════════════════════════════════════════════════
+function startSequenceGame() {
+  const area = document.getElementById('img-game-area');
+  const ARROWS = ['⬆️','⬇️','⬅️','➡️'];
+  const KEYS = ['up','down','left','right'];
+  const MAX_ROUNDS = 5;
+  let sequence = [];
+  let playerIndex = 0;
+  let round = 0;
+  let score = 0;
+  let showing = false;
+  let done = false;
+
+  const addToSequence = () => {
+    sequence.push(Math.floor(Math.random() * 4));
+  };
+
+  const showSequence = () => {
+    showing = true;
+    playerIndex = 0;
+    const display = document.getElementById('img-seq-display');
+    if (!display) return;
+    display.innerHTML = '';
+
+    let i = 0;
+    const showNext = () => {
+      if (i >= sequence.length) {
+        showing = false;
+        display.innerHTML = '❔';
+        document.getElementById('img-seq-status').textContent = '¡Tu turno! Repetí la secuencia';
+        enableButtons(true);
+        return;
+      }
+      display.innerHTML = '';
+      const span = document.createElement('span');
+      span.className = 'img-seq-arrow-shown';
+      span.textContent = ARROWS[sequence[i]];
+      display.appendChild(span);
+      i++;
+      setTimeout(showNext, 650);
+    };
+    setTimeout(showNext, 400);
+  };
+
+  const enableButtons = (en) => {
+    KEYS.forEach(k => {
+      const btn = document.getElementById('img-seq-' + k);
+      if (btn) btn.style.opacity = en ? '1' : '0.4';
+    });
+  };
+
+  const renderUI = () => {
+    area.innerHTML = `
+      <div style="font-size:36px;margin-bottom:6px">🧠</div>
+      <div class="heading" style="font-size:20px;margin-bottom:4px">MEMORIZAR TRAZADO</div>
+      <div class="label" style="color:var(--muted);margin-bottom:16px">Ronda ${round + 1} de ${MAX_ROUNDS}</div>
+      <div class="img-seq-display" id="img-seq-display">
+        <span style="color:var(--muted);font-size:14px">Memorizá...</span>
+      </div>
+      <div class="label" style="color:var(--accent);margin-bottom:14px" id="img-seq-status">Observá la secuencia</div>
+      <div class="img-seq-btns">
+        <div class="img-seq-btn" id="img-seq-up" style="opacity:0.4">⬆️</div>
+        <div class="img-seq-btn" id="img-seq-down" style="opacity:0.4">⬇️</div>
+        <div class="img-seq-btn" id="img-seq-left" style="opacity:0.4">⬅️</div>
+        <div class="img-seq-btn" id="img-seq-right" style="opacity:0.4">➡️</div>
+      </div>
+      <div class="label" style="color:var(--muted)">Puntaje: ${score}/${MAX_ROUNDS}</div>
+    `;
+
+    KEYS.forEach((k, ki) => {
+      document.getElementById('img-seq-' + k).onclick = () => onInput(ki);
+    });
+  };
+
+  const onInput = (idx) => {
+    if (showing || done) return;
+    const el = document.getElementById('img-seq-' + KEYS[idx]);
+    const correct = sequence[playerIndex] === idx;
+
+    if (correct) {
+      el.classList.add('correct');
+      setTimeout(() => el.classList.remove('correct'), 300);
+      playerIndex++;
+      document.getElementById('img-seq-status').textContent = `${playerIndex}/${sequence.length} ✓`;
+
+      if (playerIndex >= sequence.length) {
+        // Round complete!
+        score++;
+        round++;
+        enableButtons(false);
+        if (round >= MAX_ROUNDS) {
+          done = true;
+          setTimeout(() => {
+            const success = true;
+            const title = '¡Memoria perfecta!';
+            const detail = `${score}/${MAX_ROUNDS} rondas`;
+            const narrative = 'Memorizaste cada curva del circuito a la perfección. Tu velocidad en calificación mejora notablemente.';
+            showIMGResult(success, title, detail, narrative);
+          }, 600);
+        } else {
+          addToSequence();
+          document.getElementById('img-seq-status').textContent = '¡Ronda superada! Siguiente...';
+          setTimeout(() => {
+            renderUI();
+            showSequence();
+          }, 800);
+        }
+      }
+    } else {
+      // Wrong!
+      el.classList.add('wrong');
+      enableButtons(false);
+      done = true;
+      setTimeout(() => {
+        const success = false;
+        const title = 'Mal día en el simulador';
+        const detail = 'Equivocaste la secuencia';
+        const narrative = 'Un error de memoria te costó caro. Salís al circuito real sin la confianza necesaria y perdés ritmo.';
+        showIMGResult(success, title, detail, narrative);
+      }, 700);
+    }
+  };
+
+  // Start
+  addToSequence();
+  renderUI();
+  showSequence();
+}
+
+// ════════════════════════════════════════════════════════
+//  5. TEMPERATURE — Callentar gomas Safety Car
+// ════════════════════════════════════════════════════════
+function startTempGame() {
+  const area = document.getElementById('img-game-area');
+  const GOAL_DURATION = 6000; // ms inside zone
+  const TOTAL_TIME = 15000; // 15 seconds limit
+  const ZONE_MIN = 38;
+  const ZONE_MAX = 62;
+  let temp = 25; // starts cold
+  const DECAY = 0.15; // deg per frame @ 60fps
+  const BOOST = 2.5;  // deg per tap
+  let timeInZone = 0;
+  let elapsedTime = 0;
+  let lastFrame = null;
+  let animId = null;
+  let done = false;
+
+  area.innerHTML = `
+    <div style="font-size:36px;margin-bottom:8px">🌡️</div>
+    <div class="heading" style="font-size:20px;margin-bottom:4px">TEMPERATURA DE GOMAS</div>
+    <div class="label" style="color:var(--muted);margin-bottom:14px">Mantené las gomas en la zona verde</div>
+    <div id="img-temp-bar-wrap" style="position:relative;width:100%;height:38px;background:#1a1a2e;border-radius:20px;overflow:hidden;margin-bottom:12px;border:1px solid rgba(255,255,255,0.1)">
+      <div id="img-temp-zone" style="position:absolute;left:${ZONE_MIN}%;width:${ZONE_MAX-ZONE_MIN}%;top:0;height:100%;background:rgba(74,222,128,0.25);border-left:2px solid #4ade80;border-right:2px solid #4ade80"></div>
+      <div id="img-temp-fill" style="position:absolute;left:0;top:0;height:100%;width:${temp}%;background:linear-gradient(90deg,#60a5fa,#4ade80);border-radius:20px;transition:width 0.05s"></div>
+      <div id="img-temp-val" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:12px;color:white;font-weight:bold">${Math.round(temp)}%</div>
+    </div>
+    <div id="img-temp-timer" style="font-size:20px;color:var(--accent);margin-bottom:6px;font-weight:bold">6.0s restantes en zona</div>
+    <div id="img-temp-global-timer" style="font-size:14px;color:var(--text);margin-bottom:18px">Tiempo total: 15.0s</div>
+    <button id="img-temp-btn" class="btn btn-primary" style="font-size:22px;padding:22px 0;width:100%">🔥 CALENTAR</button>
+  `;
+
+  const btn = document.getElementById('img-temp-btn');
+  btn.onclick = () => { if (!done) temp = Math.min(100, temp + BOOST); };
+
+  const loop = (ts) => {
+    if (!lastFrame) lastFrame = ts;
+    const dt = ts - lastFrame;
+    lastFrame = ts;
+    if (done) return;
+
+    elapsedTime += dt;
+    temp = Math.max(0, temp - DECAY * (dt / 16.67));
+    
+    const fill = document.getElementById('img-temp-fill');
+    const val = document.getElementById('img-temp-val');
+    const timerEl = document.getElementById('img-temp-timer');
+    const gTimerEl = document.getElementById('img-temp-global-timer');
+    if (!fill) return;
+
+    fill.style.width = temp + '%';
+    fill.style.background = temp >= ZONE_MIN && temp <= ZONE_MAX
+      ? 'linear-gradient(90deg,#4ade80,#22c55e)'
+      : 'linear-gradient(90deg,#60a5fa,#3b82f6)';
+    if (val) val.textContent = Math.round(temp) + '%';
+
+    if (temp >= ZONE_MIN && temp <= ZONE_MAX) {
+      timeInZone += dt;
+    } else {
+      timeInZone = Math.max(0, timeInZone - dt * 0.5);
+    }
+    const remaining = Math.max(0, (GOAL_DURATION - timeInZone) / 1000);
+    const totalRemaining = Math.max(0, (TOTAL_TIME - elapsedTime) / 1000);
+    if (timerEl) timerEl.textContent = remaining.toFixed(1) + 's restantes en zona';
+    if (gTimerEl) gTimerEl.textContent = 'Tiempo total: ' + totalRemaining.toFixed(1) + 's';
+
+    if (timeInZone >= GOAL_DURATION) {
+      done = true;
+      showIMGResult(true, '¡Gomas a Temperatura!', 'Gomas listas para atacar',
+        'Las gomas están perfectamente calientes. Cuando el Safety Car se fue, tenés agarre total y atacás la primera curva con confianza.');
+      return;
+    }
+    
+    if (elapsedTime >= TOTAL_TIME) {
+      done = true;
+      showIMGResult(false, 'Se Acabó el Tiempo', 'No lograste calentar las gomas a tiempo',
+        'El Safety Car se fue y tus gomas seguían frías. Perdiste todo el agarre y un par de posiciones en la relargada.');
+      return;
+    }
+
+    if (temp <= 0) {
+      done = true;
+      showIMGResult(false, 'Gomas Frías', 'Las gomas se enfriaron demasiado',
+        'Sin calor en las gomas, perdés grip instantáneamente al reiniciarse la carrera. Dos autos te adelantan antes de la primera curva.');
+      return;
+    }
+    animId = requestAnimationFrame(loop);
+  };
+  animId = requestAnimationFrame(loop);
+}
+
+// ════════════════════════════════════════════════════════
+//  6. DEFENSE — Cerrar la Puerta
+// ════════════════════════════════════════════════════════
+function startDefenseGame() {
+  const area = document.getElementById('img-game-area');
+  const TOTAL_ATTACKS = 3;
+  const ATTACK_TIME = 900; // ms to react
+  let attack = 0;
+  let done = false;
+  let attackDir = null;
+  let attackTimer = null;
+  let fillAnim = null;
+
+  const render = () => {
+    area.innerHTML = `
+      <div style="font-size:36px;margin-bottom:8px">🛡️</div>
+      <div class="heading" style="font-size:20px;margin-bottom:4px">CERRANDO LA PUERTA</div>
+      <div class="label" style="color:var(--muted);margin-bottom:16px">Ataque ${attack + 1} de ${TOTAL_ATTACKS}</div>
+      <div id="img-def-indicator" style="font-size:56px;text-align:center;margin-bottom:20px;min-height:70px;transition:all 0.2s">❓</div>
+      <div id="img-def-bar-wrap" style="width:100%;height:14px;background:#1a1a2e;border-radius:8px;margin-bottom:20px;border:1px solid rgba(255,255,255,0.1)">
+        <div id="img-def-bar" style="height:100%;width:100%;background:#ef4444;border-radius:8px;transition:none"></div>
+      </div>
+      <div style="display:flex;gap:16px">
+        <button id="img-def-left" class="btn btn-secondary" style="flex:1;font-size:32px;padding:20px 0">⬅️</button>
+        <button id="img-def-right" class="btn btn-secondary" style="flex:1;font-size:32px;padding:20px 0">➡️</button>
+      </div>
+      <div class="label" style="color:var(--muted);margin-top:12px">Bloqueados: ${attack}/3</div>
+    `;
+
+    document.getElementById('img-def-left').onclick = () => tryBlock('left');
+    document.getElementById('img-def-right').onclick = () => tryBlock('right');
+    startAttack();
+  };
+
+  const startAttack = () => {
+    attackDir = Math.random() < 0.5 ? 'left' : 'right';
+    const indicator = document.getElementById('img-def-indicator');
+    // Brief delay before showing direction
+    setTimeout(() => {
+      if (done) return;
+      if (indicator) indicator.textContent = attackDir === 'left' ? '⬅️' : '➡️';
+      // Animate bar shrinking
+      const bar = document.getElementById('img-def-bar');
+      if (bar) {
+        bar.style.transition = `width ${ATTACK_TIME}ms linear`;
+        bar.style.width = '0%';
+      }
+      attackTimer = setTimeout(() => {
+        if (done) return;
+        // Time ran out
+        done = true;
+        showIMGResult(false, '¡Puerta Abierta!', 'Reaccionaste demasiado lento',
+          'El rival se coló por el hueco. Para la siguiente curva ya estás una posición atrás.');
+      }, ATTACK_TIME);
+    }, 600);
+  };
+
+  const tryBlock = (dir) => {
+    if (done || attackDir === null) return;
+    clearTimeout(attackTimer);
+    const correct = dir === attackDir;
+    if (correct) {
+      attackDir = null;
+      attack++;
+      const indicator = document.getElementById('img-def-indicator');
+      if (indicator) { indicator.textContent = '✅'; indicator.style.color = '#4ade80'; }
+      setTimeout(() => {
+        if (attack >= TOTAL_ATTACKS) {
+          done = true;
+          showIMGResult(true, '¡Defensa Perfecta!', `${TOTAL_ATTACKS}/${TOTAL_ATTACKS} ataques bloqueados`,
+            'No le diste ni un centímetro. El rival llega a la línea de meta mordiéndose los guantes.');
+        } else {
+          render();
+        }
+      }, 600);
+    } else {
+      done = true;
+      showIMGResult(false, '¡Lado Equivocado!', 'Bloqueo incorrecto',
+        'Te tiraste para el lado equivocado y dejaste la puerta abierta. El rival no perdonó.');
+    }
+  };
+
+  render();
+}
+
+// ════════════════════════════════════════════════════════
+//  7. SLIPSTREAM — Rebufo
+// ════════════════════════════════════════════════════════
+function startSlipstreamGame() {
+  const area = document.getElementById('img-game-area');
+  const TRACK_W = 280;
+  const CAR_W = 44;
+  const MAX_OFFSET = (TRACK_W - CAR_W) / 2;
+  const TOTAL_TIME = 10000;
+  let elapsedTime = 0;
+  let rivalX = 0;       // -MAX_OFFSET to MAX_OFFSET
+  let playerX = 0;
+  const RIVAL_SPEED = 0.8;
+  const PLAYER_SPEED = 18;
+  let rivalDir = 1;
+  let fillPct = 0;
+  const FILL_RATE = 1.4;  // per frame when aligned
+  const DRAIN_RATE = 2.2; // per frame when misaligned
+  const ALIGN_THRESHOLD = 28; // px difference allowed
+  let animId = null;
+  let done = false;
+  let lastTs = null;
+
+  area.innerHTML = `
+    <div style="font-size:36px;margin-bottom:6px">💨</div>
+    <div class="heading" style="font-size:20px;margin-bottom:4px">ATRAPAR EL REBUFO</div>
+    <div class="label" style="color:var(--muted);margin-bottom:12px">Quedáte justo detrás del rival antes que acabe la recta</div>
+    <div id="img-slip-track" style="position:relative;width:${TRACK_W}px;height:120px;background:#1a1a2e;border-radius:12px;margin:0 auto 14px;border:1px solid rgba(255,255,255,0.15);overflow:hidden">
+      <div id="img-slip-rival" style="position:absolute;top:8px;font-size:28px;transform:translateX(-50%);left:50%">🏎️</div>
+      <div id="img-slip-player" style="position:absolute;bottom:8px;font-size:28px;transform:translateX(-50%);left:50%;filter:hue-rotate(120deg)">🏎️</div>
+    </div>
+    <div class="label" style="color:var(--muted);margin-bottom:6px;display:flex;justify-content:space-between">
+      <span>Rebufo:</span>
+      <span id="img-slip-timer">15.0s</span>
+    </div>
+    <div style="width:100%;height:20px;background:#1a1a2e;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,0.1);margin-bottom:18px">
+      <div id="img-slip-fill" style="height:100%;width:0%;background:linear-gradient(90deg,#60a5fa,#a78bfa);border-radius:10px;transition:width 0.08s"></div>
+    </div>
+    <div style="display:flex;gap:12px">
+      <button id="img-slip-left" class="btn btn-secondary" style="flex:1;font-size:28px;padding:18px 0">⬅️</button>
+      <button id="img-slip-right" class="btn btn-secondary" style="flex:1;font-size:28px;padding:18px 0">➡️</button>
+    </div>
+  `;
+
+  document.getElementById('img-slip-left').onclick  = () => { playerX = Math.max(-MAX_OFFSET, playerX - PLAYER_SPEED); };
+  document.getElementById('img-slip-right').onclick = () => { playerX = Math.min(MAX_OFFSET,  playerX + PLAYER_SPEED); };
+
+  const loop = (ts) => {
+    if (!lastTs) lastTs = ts;
+    const realDt = ts - lastTs;
+    const dt = realDt / 16.67;
+    lastTs = ts;
+    if (done) return;
+
+    elapsedTime += realDt;
+    
+    rivalX += RIVAL_SPEED * rivalDir * dt;
+    if (rivalX >= MAX_OFFSET) { rivalX = MAX_OFFSET; rivalDir = -1; }
+    if (rivalX <= -MAX_OFFSET) { rivalX = -MAX_OFFSET; rivalDir = 1; }
+
+    const rivalEl  = document.getElementById('img-slip-rival');
+    const playerEl = document.getElementById('img-slip-player');
+    const fillEl   = document.getElementById('img-slip-fill');
+    const timerEl  = document.getElementById('img-slip-timer');
+    if (!rivalEl) return;
+
+    const trackCenter = TRACK_W / 2;
+    rivalEl.style.left  = (trackCenter + rivalX) + 'px';
+    playerEl.style.left = (trackCenter + playerX) + 'px';
+
+    const diff = Math.abs(rivalX - playerX);
+    if (diff <= ALIGN_THRESHOLD) {
+      fillPct = Math.min(100, fillPct + FILL_RATE * dt);
+      rivalEl.style.filter = 'none';
+    } else {
+      fillPct = Math.max(0, fillPct - DRAIN_RATE * dt);
+      rivalEl.style.filter = 'brightness(0.6)';
+    }
+    if (fillEl) fillEl.style.width = fillPct + '%';
+    
+    const rem = Math.max(0, (TOTAL_TIME - elapsedTime) / 1000);
+    if (timerEl) timerEl.textContent = rem.toFixed(1) + 's';
+
+    if (fillPct >= 100) {
+      done = true;
+      showIMGResult(true, '¡REBUFO CONSEGUIDO!', 'Velocidad perfecta — adelantamiento logrado',
+        'Te mantuviste por detras el tiempo justo. Activás el DRS y volás por la recta, pasándolo antes del final.');
+      return;
+    }
+    
+    if (elapsedTime >= TOTAL_TIME) {
+      done = true;
+      showIMGResult(false, 'Se Acabó la Recta', 'No lograste enganchar el rebufo',
+        'Se terminó la recta antes de que pudieras ganar suficiente velocidad. El rival te desacomodo.');
+      return;
+    }
+    
+    animId = requestAnimationFrame(loop);
+  };
+  animId = requestAnimationFrame(loop);
+}
+
+// ════════════════════════════════════════════════════════
+//  8. SETUP — Encontrar el Setup
+// ════════════════════════════════════════════════════════
+function startSetupGame() {
+  const area = document.getElementById('img-game-area');
+  const PARAMS = [
+    { name: 'Aerón', id: 'aero' },
+    { name: 'Suspensión', id: 'susp' },
+    { name: 'Frenos', id: 'brak' },
+  ];
+  // Secret optimal values (0-100)
+  const optimal = PARAMS.map(() => 20 + Math.floor(Math.random() * 60));
+  let attempts = 0;
+  const MAX_ATTEMPTS = 3;
+  let playerVals = [50, 50, 50];
+  let hints = ['', '', ''];
+  let done = false;
+
+  const calcScore = () => {
+    let total = 0;
+    PARAMS.forEach((_, i) => {
+      total += 100 - Math.abs(playerVals[i] - optimal[i]);
+      // Update hints for next render
+      const diff = optimal[i] - playerVals[i];
+      if (Math.abs(diff) <= 3) hints[i] = '✅';
+      else if (diff > 0) hints[i] = '⬆️ Subir';
+      else hints[i] = '⬇️ Bajar';
+    });
+    return Math.round(total / PARAMS.length);
+  };
+
+  const render = () => {
+    area.innerHTML = `
+      <div style="font-size:36px;margin-bottom:6px">🔧</div>
+      <div class="heading" style="font-size:20px;margin-bottom:4px">SETUP DEL AUTO</div>
+      <div class="label" style="color:var(--muted);margin-bottom:16px">Intento ${attempts + 1} de ${MAX_ATTEMPTS} — Necesitás 90%+</div>
+      ${PARAMS.map((p, i) => `
+        <div style="margin-bottom:14px">
+          <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+            <span class="label">${p.name} ${hints[i] ? `<span style="color:var(--accent);font-size:11px;margin-left:6px">${hints[i]}</span>` : ''}</span>
+            <span class="label" style="color:var(--accent)" id="img-setup-val-${p.id}">${playerVals[i]}</span>
+          </div>
+          <input type="range" min="0" max="100" value="${playerVals[i]}" id="img-setup-${p.id}"
+            style="width:100%;accent-color:var(--accent)" data-idx="${i}">
+        </div>
+      `).join('')}
+      <button id="img-setup-try" class="btn btn-primary" style="width:100%;margin-top:8px">PROBAR EN PISTA</button>
+      <div id="img-setup-feedback" style="margin-top:12px;min-height:24px"></div>
+    `;
+
+    PARAMS.forEach((p, i) => {
+      const el = document.getElementById('img-setup-' + p.id);
+      if(el) {
+        el.oninput = () => {
+          playerVals[i] = parseInt(el.value);
+          const valEl = document.getElementById('img-setup-val-' + p.id);
+          if (valEl) valEl.textContent = playerVals[i];
+        };
+      }
+    });
+
+    document.getElementById('img-setup-try').onclick = () => {
+      if (done) return;
+      attempts++;
+      const score = calcScore();
+      if (score >= 90) {
+        done = true;
+        render(); // render final hints
+        showIMGResult(true, '¡Setup Perfecto!', `${score}% de efectividad`,
+          'El auto responde exactamente como querías. En la vuelta rápida te sentiste en casa.');
+      } else if (attempts >= MAX_ATTEMPTS) {
+        done = true;
+        render(); // render final hints
+        showIMGResult(false, 'Setup Mediocre', `${score}% de efectividad — Quedó el auto armado a medias`,
+          'Sin tiempo para más vueltas. Salís a clasificar sabiendo que el auto no está en su mejor punto.');
+      } else {
+        render();
+        const fb = document.getElementById('img-setup-feedback');
+        const hint = score >= 75 ? '✅ Muy cerca, ajustá un poco más' : score >= 55 ? '🟡 Por buen camino, pero falta' : '❌ Lejos del óptimo, replanteá todo';
+        if (fb) fb.innerHTML = `<div class="label" style="color:var(--accent);font-size:18px">${score}% — ${hint}</div>`;
+      }
+    };
+  };
+
+  render();
+}
+
+// ════════════════════════════════════════════════════════
+//  9. LINE — Trazada Ideal
+// ════════════════════════════════════════════════════════
+function startLineGame() {
+  const area = document.getElementById('img-game-area');
+  const CURVES = [
+    { name: 'Curva 1 — Sainte-Devóte', path: [{x:10,y:70},{x:30,y:68},{x:55,y:55},{x:70,y:35},{x:80,y:15}] },
+    { name: 'Curva 2 — Massenet', path: [{x:10,y:75},{x:25,y:72},{x:50,y:60},{x:75,y:30},{x:85,y:10}] },
+    { name: 'Curva 3 — Loews (Horquilla)', path: [{x:10,y:20},{x:30,y:20},{x:60,y:25},{x:75,y:50},{x:65,y:75},{x:40,y:82},{x:15,y:75}] },
+  ];
+  let curveIdx = 0;
+  let done = false;
+
+  const renderCurve = () => {
+    const c = CURVES[curveIdx];
+    area.innerHTML = `
+      <div style="font-size:36px;margin-bottom:6px">✏️</div>
+      <div class="heading" style="font-size:18px;margin-bottom:2px">TRAZADA IDEAL</div>
+      <div class="label" style="color:var(--muted);margin-bottom:8px">${c.name}</div>
+      <canvas id="img-line-canvas" width="280" height="140"
+        style="display:block;margin:0 auto 8px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:#111827;touch-action:none"></canvas>
+      <div id="img-line-status" class="label" style="color:var(--accent);margin-bottom:10px">Arrastrá siguiendo la línea verde</div>
+      <div style="font-size:12px;color:var(--muted)">Curva ${curveIdx+1} de ${CURVES.length}</div>
+    `;
+
+    const canvas = document.getElementById('img-line-canvas');
+    const ctx = canvas.getContext('2d');
+    const W = canvas.width, H = canvas.height;
+
+    // Convert % coords to px
+    const pts = c.path.map(p => ({ x: p.x / 100 * W, y: p.y / 100 * H }));
+
+    // Draw ideal path (thick zone + thin center)
+    const drawPath = () => {
+      ctx.clearRect(0, 0, W, H);
+      // Zone
+      ctx.beginPath();
+      ctx.moveTo(pts[0].x, pts[0].y);
+      pts.slice(1).forEach(p => ctx.lineTo(p.x, p.y));
+      ctx.strokeStyle = 'rgba(74,222,128,0.25)';
+      ctx.lineWidth = 22;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      ctx.stroke();
+      // Center line
+      ctx.beginPath();
+      ctx.moveTo(pts[0].x, pts[0].y);
+      pts.slice(1).forEach(p => ctx.lineTo(p.x, p.y));
+      ctx.strokeStyle = '#4ade80';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      // Start dot
+      ctx.beginPath();
+      ctx.arc(pts[0].x, pts[0].y, 7, 0, Math.PI * 2);
+      ctx.fillStyle = '#22c55e';
+      ctx.fill();
+      // End dot
+      ctx.beginPath();
+      ctx.arc(pts[pts.length-1].x, pts[pts.length-1].y, 7, 0, Math.PI * 2);
+      ctx.fillStyle = '#f59e0b';
+      ctx.fill();
+    };
+
+    drawPath();
+
+    // Check if point is near the path
+    const distToSegment = (px, py, ax, ay, bx, by) => {
+      const dx = bx - ax, dy = by - ay;
+      const lenSq = dx*dx + dy*dy;
+      if (lenSq === 0) return Math.hypot(px-ax, py-ay);
+      const t = Math.max(0, Math.min(1, ((px-ax)*dx + (py-ay)*dy) / lenSq));
+      return Math.hypot(px - (ax + t*dx), py - (ay + t*dy));
+    };
+    const isOnPath = (px, py) => {
+      for (let i = 0; i < pts.length - 1; i++) {
+        if (distToSegment(px, py, pts[i].x, pts[i].y, pts[i+1].x, pts[i+1].y) <= 14) return true;
+      }
+      return false;
+    };
+    const nearEnd = (px, py) => Math.hypot(px - pts[pts.length-1].x, py - pts[pts.length-1].y) <= 18;
+    const nearStart = (px, py) => Math.hypot(px - pts[0].x, py - pts[0].y) <= 22;
+
+    let drawing = false;
+    let failed = false;
+    let succeeded = false;
+    let startedOnPath = false;
+
+    const getPos = (e) => {
+      const rect = canvas.getBoundingClientRect();
+      const scaleX = W / rect.width;
+      const scaleY = H / rect.height;
+      if (e.touches) {
+        return { x: (e.touches[0].clientX - rect.left) * scaleX, y: (e.touches[0].clientY - rect.top) * scaleY };
+      }
+      return { x: (e.clientX - rect.left) * scaleX, y: (e.clientY - rect.top) * scaleY };
+    };
+
+    const onStart = (e) => {
+      e.preventDefault();
+      if (done || succeeded || failed) return;
+      const pos = getPos(e);
+      if (!nearStart(pos.x, pos.y)) {
+        const status = document.getElementById('img-line-status');
+        if (status) status.textContent = '⚠️ Empezá desde el punto verde';
+        return;
+      }
+      drawing = true;
+      startedOnPath = true;
+    };
+    const onMove = (e) => {
+      e.preventDefault();
+      if (!drawing || failed || succeeded) return;
+      const pos = getPos(e);
+      if (!isOnPath(pos.x, pos.y)) {
+        failed = true;
+        drawing = false;
+        ctx.fillStyle = 'rgba(239,68,68,0.25)';
+        ctx.fillRect(0, 0, W, H);
+        const status = document.getElementById('img-line-status');
+        if (status) { status.textContent = '❌ ¡Te saliste!'; status.style.color = '#f87171'; }
+        setTimeout(() => {
+          if (!done) {
+            done = true;
+            showIMGResult(false, 'Vuelta Invalidada', 'Te saliste de pista',
+              'Los comisarios muestran la bandera amarilla. Tu vuelta queda invalidada y perdés la posibilidad de clasificar mejor.');
+          }
+        }, 900);
+        return;
+      }
+      // Draw player path
+      ctx.beginPath();
+      ctx.arc(pos.x, pos.y, 4, 0, Math.PI * 2);
+      ctx.fillStyle = 'rgba(250,204,21,0.7)';
+      ctx.fill();
+
+      if (nearEnd(pos.x, pos.y)) {
+        succeeded = true;
+        drawing = false;
+        curveIdx++;
+        if (curveIdx >= CURVES.length) {
+          done = true;
+          setTimeout(() => showIMGResult(true, '¡Trazada Perfecta!', '3/3 curvas completadas',
+            'Pasaste Mónaco como si fueras un local. Cada curva era exactamente lo que el ingeniero esperó.'), 500);
+        } else {
+          const status = document.getElementById('img-line-status');
+          if (status) { status.textContent = '✅ ¡Curva perfecta! Siguiente...'; status.style.color = '#4ade80'; }
+          setTimeout(renderCurve, 900);
+        }
+      }
+    };
+    const onEnd = (e) => { drawing = false; };
+
+    canvas.addEventListener('mousedown', onStart);
+    canvas.addEventListener('mousemove', onMove);
+    canvas.addEventListener('mouseup', onEnd);
+    canvas.addEventListener('touchstart', onStart, { passive: false });
+    canvas.addEventListener('touchmove', onMove, { passive: false });
+    canvas.addEventListener('touchend', onEnd);
+  };
+
+  renderCurve();
 }
 
 function showFlash(text) {

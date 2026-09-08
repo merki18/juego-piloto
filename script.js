@@ -1917,7 +1917,7 @@ function computeSeasonResult() {
     if (result.champ !== 1) {
       const winner = standingsRows.find(r => r.rank === 1 && !r.isPlayer);
       if (winner) {
-        const winnerName = winner.name.replace(/^\S+\s/, '').trim(); // strip flag emoji
+        const winnerName = winner.name.match(/[a-zA-ZÁÉÍÓÚáéíóúÀ-ÿ].*/)[0].trim(); // strip flags and emojis
         if (!G.aiChampions) G.aiChampions = {};
         G.aiChampions[winnerName] = (G.aiChampions[winnerName] || 0) + 1;
       }
@@ -2990,7 +2990,7 @@ function autocompleteRadio(elId) {
   }
 }
 
-function showRandomEvent() {
+function showRandomEvent(forcedId = null) {
   resetEventChrome();
   const playerStars = G.team ? G.team.stars : 0;
 
@@ -3049,7 +3049,11 @@ function showRandomEvent() {
   }
 
   // Resolve dynamic descriptions (e.g. pendrive engineer team name)
-  const evTemplate = randFrom(pool);
+  let evTemplate;
+  if (forcedId) {
+    evTemplate = RANDOM_EVENTS.find(e => e.id === forcedId);
+  }
+  if (!evTemplate) evTemplate = randFrom(pool);
   // Deep-clone so we can safely mutate descriptions
   const ev = JSON.parse(JSON.stringify(evTemplate));
 
@@ -3172,7 +3176,7 @@ function showRandomEvent() {
 // ═══════════════════════════════════════════════════════════
 //  MINIGAME
 // ═══════════════════════════════════════════════════════════
-function showMinigame() {
+function showMinigame(forcedId = null) {
   let pool = MINIGAMES.filter(mg => {
     if (mg.id === 'midfield' && G.team && G.team.stars > 3) return false;
     if (mg.id === 'peer_ordenes') return G.peer && G.team && G.team.name === G.peer.team;
@@ -3191,7 +3195,11 @@ function showMinigame() {
     processSeasonStep();
     return;
   }
-  const mg = randFrom(pool);
+  let mg;
+  if (forcedId) {
+    mg = MINIGAMES.find(e => e.id === forcedId);
+  }
+  if (!mg) mg = randFrom(pool);
   document.getElementById('mg-icon').textContent = mg.icon;
   document.getElementById('mg-title').textContent = mg.title.replace('{{PEER_NAME}}', G.peer ? G.peer.name : 'tu compañero');
   document.getElementById('mg-desc').textContent = mg.desc.replace('{{PEER_NAME}}', G.peer ? G.peer.name : 'tu compañero');
@@ -3557,7 +3565,7 @@ function showContracts() {
             <div style="text-align:right">
               <div style="font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:1px">Contrato</div>
               <div style="font-size:14px; font-weight:bold; color:var(--accent); margin-top:4px">${contractLabel ? contractLabel.replace('⏳ Contrato: ', '') : '1 temporada'}</div>
-              <div style="font-size:11px; color:var(--muted); margin-top:6px">Prob. Ganar: <span style="color:#fff">${WIN_PROBS[probIdx]}</span></div>
+              <div style="font-size:11px; color:var(--muted); margin-top:6px">Prob. Ganar: <span style="color:#fff">${isRegChange ? '❓' : WIN_PROBS[probIdx]}</span></div>
             </div>
           </div>
         </div>
@@ -3587,7 +3595,7 @@ function showContracts() {
         </div>
         <div class="result-row" style="padding:8px 0;border-color:transparent">
           <div class="r-label">Prob. de ganar</div>
-          <div class="offer-prob">${WIN_PROBS[probIdx]}</div>
+          <div class="offer-prob">${isRegChange ? '❓' : WIN_PROBS[probIdx]}</div>
         </div>
       `;
     }

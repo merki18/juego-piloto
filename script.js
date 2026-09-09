@@ -2618,7 +2618,7 @@ function buildSummary() {
           <div style="display:flex; align-items:center;">
             <div style="position:relative; width:40px; height:40px; margin-right:12px; flex-shrink:0; border-radius:50%; background:rgba(255,255,255,0.1); display:flex; align-items:center; justify-content:center; overflow:hidden; font-size:24px; border:1px solid rgba(255,255,255,0.2);">
               <span style="position:absolute;">${G.peer.avatar || '👨🏻'}</span>
-              <img src="assets/images/caras/cara ${G.peer.name.split(' ').pop().toLowerCase()}.png" onerror="this.style.display='none'" style="width:100%; height:100%; object-fit:cover; position:absolute; top:0; left:0; z-index:2;" />
+              <img src="assets/images/caras/cara ${G.peer.name.split(' ').pop().toLowerCase()}.png" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'" style="width:100%; height:100%; object-fit:cover; position:absolute; top:0; left:0; z-index:2;" />
             </div>
             <div>
               <div style="font-weight:bold">${G.peer.name} <span style="font-size:12px; color:var(--muted); font-weight:normal">(${G.peer.nat.flag} ${G.peer.team})</span></div>

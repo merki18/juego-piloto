@@ -3458,7 +3458,7 @@ function showInteractiveMinigame(forcedId = null) {
   const eligible = INTERACTIVE_MINIGAMES.filter(mg => {
     if (G.catIndex < mg.minCat) return false;
     const winGames = ['img_reaction', 'img_pitstop', 'img_timing', 'img_defense', 'img_slipstream'];
-    if (winGames.includes(mg.id) && (G.carStars || 0) < 3) return false;
+    if (winGames.includes(mg.id) && (G.team.stars || 0) < 3) return false;
     if (mg.id === 'img_rain') return false; // temporarily disabled
     return true;
   });
@@ -3695,7 +3695,7 @@ function startPitstopGame() {
           clearInterval(timerInterval);
           const elapsed = (Date.now() - startTime) / 1000;
           timerEl.textContent = elapsed.toFixed(3) + 's';
-          const success = elapsed < 2.8;
+          const success = elapsed <= 3.0;
           let title, detail, narrative;
           if (elapsed < 2.0) {
             title = '¡PITSTOP RÉCORD!'; detail = `${elapsed.toFixed(3)}s — Impresionante`;
@@ -4140,7 +4140,7 @@ function startSlipstreamGame() {
     </div>
     <div class="label" style="color:var(--muted);margin-bottom:6px;display:flex;justify-content:space-between">
       <span>Rebufo:</span>
-      <span id="img-slip-timer">15.0s</span>
+      <span id="img-slip-timer">10.0s</span>
     </div>
     <div style="width:100%;height:20px;background:#1a1a2e;border-radius:10px;overflow:hidden;border:1px solid rgba(255,255,255,0.1);margin-bottom:18px">
       <div id="img-slip-fill" style="height:100%;width:0%;background:linear-gradient(90deg,#60a5fa,#a78bfa);border-radius:10px;transition:width 0.08s"></div>

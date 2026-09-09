@@ -3423,6 +3423,33 @@ const INTERACTIVE_MINIGAMES = [
     instructions: 'Arrastrá el cursor siguiendo exactamente la línea verde. Si te salís, vuelta invalidada. Completá las 3 curvas sin errores.',
     minCat: 1,
   },
+  {
+    id: 'img_rain',
+    label: '🌧️ Lluvia',
+    icon: '🌧️',
+    title: 'EL DILUVIO',
+    situation: 'En plena carrera empieza a llover. Tu ingeniero grita: "¿Aguantamos en pista o entramos a poner Intermedias?" La decisión correcta puede ganarte posiciones. La equivocada, arruinarte la carrera.',
+    instructions: 'El nivel de lluvia sube impredeciblemente. Presioná ENTRAR A BOXES en el momento justo: ni muy seco (destrozás las gomas) ni demasiado tarde (trompo). Tenés una sola oportunidad.',
+    minCat: 1,
+  },
+  {
+    id: 'img_tyres',
+    label: '🛞 Neumáticos',
+    icon: '🛞',
+    title: 'CUIDAR EL CAUCHO',
+    situation: 'Faltan 3 vueltas, tus gomas están al límite. El que viene atrás tiene gomas nuevas y acorta distancia. Si apretás a fondo, las gomas se funden. Si aflojás demasiado, te adelanta.',
+    instructions: 'Presioná y soltá el botón de forma intermitente para gestionar el ritmo. Si el desgaste llega a 0, reventón. Si el rival te recorta toda la distancia, te pasa.',
+    minCat: 1,
+  },
+  {
+    id: 'img_reboot',
+    label: '⚙️ Reboot',
+    icon: '⚙️',
+    title: 'FALLA ELECTRÓNICA',
+    situation: 'En plena recta el volante se apaga. El auto pierde potencia. Tu ingeniero grita una secuencia de botones para reiniciar el MGU-K antes de llegar a la curva.',
+    instructions: 'Memorizá la secuencia de 5 botones de colores que aparece en pantalla y repetila en orden exacto. Tenés 7 segundos desde que empieza la cuenta. Un solo error y el motor muere.',
+    minCat: 4,
+  },
 ];
 
 // ── Show Interactive Minigame Intro ──
@@ -3432,6 +3459,7 @@ function showInteractiveMinigame(forcedId = null) {
     if (G.catIndex < mg.minCat) return false;
     const winGames = ['img_reaction', 'img_pitstop', 'img_timing', 'img_defense', 'img_slipstream'];
     if (winGames.includes(mg.id) && (G.carStars || 0) < 3) return false;
+    if (mg.id === 'img_rain') return false; // temporarily disabled
     return true;
   });
   if (eligible.length === 0) { processSeasonStep(); return; }
@@ -3461,6 +3489,9 @@ function showInteractiveMinigame(forcedId = null) {
       case 'img_slipstream':  startSlipstreamGame();  break;
       case 'img_setup':       startSetupGame();       break;
       case 'img_line':        startLineGame();        break;
+      case 'img_rain':        startRainGame();        break;
+      case 'img_tyres':       startTyresGame();       break;
+      case 'img_reboot':      startRebootGame();      break;
     }
   };
   goto('screen-img-intro');
@@ -4426,6 +4457,320 @@ function startLineGame() {
   };
 
   renderCurve();
+}
+
+// ════════════════════════════════════════════════════════
+//  10. RAIN — El Diluvio
+// ════════════════════════════════════════════════════════
+function startRainGame() {
+  const area = document.getElementById('img-game-area');
+  const SAFE_MIN = 45;
+  const SAFE_MAX = 70;
+  const TOO_WET  = 92;
+  let rainLevel = 0;
+  let done = false;
+  let animId = null;
+  let lastTs = null;
+  let speed = 0.18;
+  let spikeTimer = 30;
+
+  area.innerHTML = `
+    <div style="font-size:36px;margin-bottom:6px">🌧️</div>
+    <div class="heading" style="font-size:20px;margin-bottom:4px">EL DILUVIO</div>
+    <div class="label" style="color:var(--muted);margin-bottom:14px">Entrá a boxes en el momento justo — ni seco ni inundado</div>
+    <div style="position:relative;width:100%;height:44px;background:#1a1a2e;border-radius:22px;overflow:hidden;margin-bottom:6px;border:1px solid rgba(255,255,255,0.1)">
+      <div style="position:absolute;left:0;top:0;height:100%;width:${SAFE_MIN}%;background:rgba(250,204,21,0.12);border-right:2px solid #facc15"></div>
+      <div style="position:absolute;left:${SAFE_MIN}%;width:${SAFE_MAX - SAFE_MIN}%;top:0;height:100%;background:rgba(74,222,128,0.18);border-right:2px solid #4ade80"></div>
+      <div style="position:absolute;left:${SAFE_MAX}%;width:${100 - SAFE_MAX}%;top:0;height:100%;background:rgba(248,113,113,0.12);"></div>
+      <div id="img-rain-fill" style="position:absolute;left:0;top:0;height:100%;width:0%;background:linear-gradient(90deg,#facc15,#4ade80);border-radius:22px"></div>
+      <div id="img-rain-cursor" style="position:absolute;top:10%;left:0%;width:3px;height:80%;background:white;border-radius:2px;box-shadow:0 0 6px white"></div>
+    </div>
+    <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:14px;padding:0 4px">
+      <span style="color:#facc15">🌦 Muy seco</span>
+      <span style="color:#4ade80">✅ Zona ideal</span>
+      <span style="color:#f87171">🌊 Trompo</span>
+    </div>
+    <div id="img-rain-status" style="font-size:15px;color:var(--accent);margin-bottom:20px;text-align:center;min-height:20px">La lluvia empieza a caer...</div>
+    <button id="img-rain-btn" class="btn btn-primary" style="font-size:17px;padding:20px 0;width:100%;background:linear-gradient(135deg,#60a5fa,#3b82f6)">🔧 ENTRAR A BOXES — PONER INTERMEDIAS</button>
+  `;
+
+  document.getElementById('img-rain-btn').onclick = () => {
+    if (done) return;
+    done = true;
+    cancelAnimationFrame(animId);
+    const lvl = rainLevel;
+    if (lvl < SAFE_MIN) {
+      showIMGResult(false, '¡Demasiado Pronto!', 'La pista todavía estaba seca',
+        'Entraste cuando apenas llovizneaba. Las Intermedias en asfalto seco se degradaron al instante. Perdiste 4 posiciones.', false);
+    } else if (lvl <= SAFE_MAX) {
+      showIMGResult(true, '¡Timing Perfecto!', 'Las Intermedias en el momento justo',
+        'Leíste la pista como un maestro. Saliste de boxes en el momento exacto y ganaste tres posiciones sobre los que entraron tarde.', false);
+    } else {
+      showIMGResult(false, '¡Demasiado Tarde!', 'La pista ya estaba inundada',
+        'Aguantaste demasiado. En la última curva antes del pit lane el auto sobregiró y tocaste el muro de boxes. Posición arruinada.', false);
+    }
+  };
+
+  const loop = (ts) => {
+    if (!lastTs) lastTs = ts;
+    const dt = (ts - lastTs) / 16.67;
+    lastTs = ts;
+    if (done) return;
+
+    spikeTimer -= dt;
+    const spike = spikeTimer <= 0 && Math.random() < 0.4;
+    if (spikeTimer <= 0) spikeTimer = 40 + Math.random() * 70;
+
+    rainLevel = Math.min(100, rainLevel + speed * (spike ? 3.8 : 1) * dt);
+
+    const fill   = document.getElementById('img-rain-fill');
+    const cursor = document.getElementById('img-rain-cursor');
+    const status = document.getElementById('img-rain-status');
+    if (!fill) return;
+
+    fill.style.width = rainLevel + '%';
+    fill.style.background = rainLevel < SAFE_MIN
+      ? 'linear-gradient(90deg,#facc15,#fbbf24)'
+      : rainLevel <= SAFE_MAX
+        ? 'linear-gradient(90deg,#4ade80,#22c55e)'
+        : 'linear-gradient(90deg,#f87171,#ef4444)';
+    if (cursor) cursor.style.left = rainLevel + '%';
+    if (status) {
+      if (rainLevel < SAFE_MIN) { status.textContent = spike ? '⚡ ¡Aguacero repentino!' : 'Llovizna leve...'; status.style.color = '#facc15'; }
+      else if (rainLevel <= SAFE_MAX) { status.textContent = '🟢 ¡ZONA IDEAL! ¡Entrá ahora!'; status.style.color = '#4ade80'; }
+      else { status.textContent = '🔴 ¡PISTA INUNDADA!'; status.style.color = '#f87171'; }
+    }
+
+    if (rainLevel >= TOO_WET) {
+      done = true;
+      showIMGResult(false, 'Trompo en la Recta', 'Aguantaste demasiado en pista',
+        'El agua superó el límite. Acuaplaning en la recta principal. Tres vueltas en la grava.', false);
+      return;
+    }
+    animId = requestAnimationFrame(loop);
+  };
+  animId = requestAnimationFrame(loop);
+}
+
+// ════════════════════════════════════════════════════════
+//  11. TYRES — Cuidar el Caucho
+// ════════════════════════════════════════════════════════
+function startTyresGame() {
+  const area = document.getElementById('img-game-area');
+  const TOTAL_LAPS  = 3;
+  const LAP_MS      = 2500;
+  const DECAY_PRESS = 0.55;   // tyre wear per frame when pressing
+  const DECAY_SAVE  = 0.09;  // tyre wear per frame when not pressing
+  const RIVAL_CLOSE = 0.35;  // gap closed per frame when saving
+  const RIVAL_OPEN  = 0.5;   // gap opened per frame when pressing
+  let tyreWear = 100;
+  let gap = 100;             // px rival is behind
+  const GAP_MAX = 150;
+  let lap = 1;
+  let lapStart = null;
+  let pressing = false;
+  let done = false;
+  let lastTs = null;
+  let animId = null;
+
+  area.innerHTML = `
+    <div style="font-size:36px;margin-bottom:4px">🛞</div>
+    <div class="heading" style="font-size:20px;margin-bottom:4px">CUIDAR EL CAUCHO</div>
+    <div class="label" style="color:var(--muted);margin-bottom:10px">Mantené al rival atrás sin fundir las gomas</div>
+
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
+      <span class="label" style="font-size:13px">Desgaste de gomas:</span>
+      <span id="img-tyr-wear-val" style="color:#4ade80;font-weight:bold">100%</span>
+    </div>
+    <div style="width:100%;height:20px;background:#1a1a2e;border-radius:10px;overflow:hidden;margin-bottom:10px;border:1px solid rgba(255,255,255,0.1)">
+      <div id="img-tyr-wear-bar" style="height:100%;width:100%;background:linear-gradient(90deg,#4ade80,#22c55e);border-radius:10px;transition:width 0.05s"></div>
+    </div>
+
+    <div style="position:relative;width:100%;height:52px;background:#1a1a2e;border-radius:10px;overflow:hidden;margin-bottom:8px;border:1px solid rgba(255,255,255,0.12)">
+      <div style="position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--muted);letter-spacing:1px">RIVAL</div>
+      <div id="img-tyr-rival" style="position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:26px;transition:right 0.08s">🏎️</div>
+      <div id="img-tyr-player" style="position:absolute;right:16px;top:50%;transform:translateY(-50%);font-size:26px;opacity:0.4">🏎️</div>
+    </div>
+
+    <div style="display:flex;justify-content:space-between;font-size:13px;color:var(--muted);margin-bottom:14px">
+      <span>Vuelta <span id="img-tyr-lap" style="color:white;font-weight:bold">1</span>/${TOTAL_LAPS}</span>
+      <span id="img-tyr-status" style="color:var(--accent)">Gestioná el ritmo</span>
+    </div>
+
+    <button id="img-tyr-btn" class="btn btn-primary" style="font-size:17px;padding:20px 0;width:100%">🔥 APRETAR (mantener pulsado para ir más rápido)</button>
+  `;
+
+  const btn = document.getElementById('img-tyr-btn');
+  btn.addEventListener('pointerdown', () => { pressing = true; });
+  btn.addEventListener('pointerup',   () => { pressing = false; });
+  btn.addEventListener('pointerleave',() => { pressing = false; });
+
+  const loop = (ts) => {
+    if (!lastTs) { lastTs = ts; lapStart = ts; }
+    const dt = (ts - lastTs) / 16.67;
+    lastTs = ts;
+    if (done) return;
+
+    if (pressing) {
+      tyreWear = Math.max(0, tyreWear - DECAY_PRESS * dt);
+      gap      = Math.min(GAP_MAX, gap + RIVAL_OPEN  * dt);
+    } else {
+      tyreWear = Math.max(0, tyreWear - DECAY_SAVE * dt);
+      gap      = Math.max(0, gap - RIVAL_CLOSE * dt);
+    }
+
+    // Lap counter
+    if (ts - lapStart >= LAP_MS) {
+      lapStart = ts;
+      lap++;
+      if (lap > TOTAL_LAPS) {
+        done = true;
+        showIMGResult(true, '¡Gomas Vivas al Final!', `${TOTAL_LAPS}/${TOTAL_LAPS} vueltas completadas`,
+          'Cada vuelta fue un duelo de ajedrez. Las gomas llegaron al límite pero todavía había agarre. Bandera a cuadros en primer lugar.', false);
+        return;
+      }
+    }
+
+    const wEl  = document.getElementById('img-tyr-wear-bar');
+    const wvEl = document.getElementById('img-tyr-wear-val');
+    const rEl  = document.getElementById('img-tyr-rival');
+    const sEl  = document.getElementById('img-tyr-status');
+    const lEl  = document.getElementById('img-tyr-lap');
+    if (!wEl) return;
+
+    const pct = Math.round(tyreWear);
+    wEl.style.width      = pct + '%';
+    wEl.style.background = pct > 50 ? 'linear-gradient(90deg,#4ade80,#22c55e)'
+                         : pct > 20 ? 'linear-gradient(90deg,#facc15,#f59e0b)'
+                         :            'linear-gradient(90deg,#f87171,#ef4444)';
+    if (wvEl) { wvEl.textContent = pct + '%'; wvEl.style.color = pct > 50 ? '#4ade80' : pct > 20 ? '#facc15' : '#f87171'; }
+    if (rEl)  rEl.style.right = (16 + gap) + 'px';
+    if (lEl)  lEl.textContent = Math.min(lap, TOTAL_LAPS);
+    if (sEl)  sEl.textContent = pressing ? '🔥 A fondo...' : gap < 20 ? '⚠️ ¡Rival encima!' : '💨 Gestionando';
+
+    if (tyreWear <= 0) {
+      done = true;
+      showIMGResult(false, '¡Reventón!', 'Las gomas no aguantaron',
+        'El compuesto cedió en la frenada más dura. El auto se fue de cola y terminaste en la grava.', false);
+      return;
+    }
+    if (gap <= 0) {
+      done = true;
+      showIMGResult(false, '¡Te Pasaron!', 'El rival aprovechó las gomas frescas',
+        'Aflojaste un segundo en la última curva y fue suficiente para que se colara por el interior.', false);
+      return;
+    }
+
+    animId = requestAnimationFrame(loop);
+  };
+  animId = requestAnimationFrame(loop);
+}
+
+// ════════════════════════════════════════════════════════
+//  12. REBOOT — Falla Electrónica
+// ════════════════════════════════════════════════════════
+function startRebootGame() {
+  const area = document.getElementById('img-game-area');
+  const BTNS = [
+    { id: 'A', bg: '#f87171', color: '#000' },
+    { id: 'B', bg: '#60a5fa', color: '#000' },
+    { id: 'C', bg: '#4ade80', color: '#000' },
+    { id: 'D', bg: '#facc15', color: '#000' },
+    { id: 'E', bg: '#c084fc', color: '#000' },
+    { id: 'F', bg: '#fb923c', color: '#000' },
+  ];
+  const SEQ_LEN    = 5;
+  const TIME_LIMIT = 7000;
+  const sequence   = Array.from({ length: SEQ_LEN }, () => BTNS[Math.floor(Math.random() * BTNS.length)].id);
+  let playerSeq    = [];
+  let phase        = 'show';
+  let done         = false;
+  let startTime    = null;
+  let timerIv      = null;
+
+  const slotHtml = (id) => {
+    const b = BTNS.find(x => x.id === id);
+    return `<div style="width:46px;height:46px;border-radius:10px;background:${b.bg};display:flex;align-items:center;justify-content:center;font-weight:900;color:${b.color};font-size:20px">${b.id}</div>`;
+  };
+  const emptySlot = `<div style="width:46px;height:46px;border-radius:10px;background:rgba(255,255,255,0.06);border:2px dashed rgba(255,255,255,0.18)"></div>`;
+
+  const render = () => {
+    const isInput = phase === 'input';
+    area.innerHTML = `
+      <div style="font-size:36px;margin-bottom:4px">⚙️</div>
+      <div class="heading" style="font-size:20px;margin-bottom:4px">FALLA ELECTRÓNICA</div>
+      <div class="label" style="color:var(--muted);margin-bottom:12px">${isInput ? 'Repetí la secuencia exacta — sin errores' : 'Memorizá la secuencia del MGU-K'}</div>
+
+      <div style="display:flex;gap:10px;justify-content:center;margin-bottom:16px;min-height:56px;align-items:center" id="img-rb-display">
+        ${isInput
+          ? playerSeq.map(slotHtml).join('') + emptySlot.repeat(SEQ_LEN - playerSeq.length)
+          : sequence.map(slotHtml).join('')
+        }
+      </div>
+
+      ${isInput ? `
+        <div style="margin-bottom:12px">
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:4px">
+            <span>Tiempo restante</span>
+            <span id="img-rb-timer" style="color:var(--accent);font-weight:bold">6.0s</span>
+          </div>
+          <div style="width:100%;height:8px;background:#1a1a2e;border-radius:4px;overflow:hidden">
+            <div id="img-rb-bar" style="height:100%;width:100%;background:var(--accent);border-radius:4px;transition:width 0.1s"></div>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          ${BTNS.map(b => `<button onclick="window._rebootPress('${b.id}')" class="btn" style="padding:22px 0;font-size:22px;font-weight:900;background:${b.bg};color:${b.color};border:none;border-radius:12px">${b.id}</button>`).join('')}
+        </div>
+      ` : `
+        <div class="label" style="color:var(--muted);margin-bottom:18px;text-align:center">Tomá tu tiempo. Cuando estés listo, empezá el reboot.</div>
+        <button id="img-rb-ready" class="btn btn-primary" style="width:100%;padding:18px 0;font-size:16px">✅ YA LO TENGO — INICIAR REBOOT</button>
+      `}
+    `;
+
+    if (!isInput) {
+      document.getElementById('img-rb-ready').onclick = () => {
+        phase = 'input';
+        render();
+        startTime = performance.now();
+        timerIv = setInterval(() => {
+          if (done) { clearInterval(timerIv); return; }
+          const rem = Math.max(0, (TIME_LIMIT - (performance.now() - startTime)) / 1000);
+          const pct = rem / (TIME_LIMIT / 1000) * 100;
+          const tEl = document.getElementById('img-rb-timer');
+          const bEl = document.getElementById('img-rb-bar');
+          if (tEl) tEl.textContent = rem.toFixed(1) + 's';
+          if (bEl) { bEl.style.width = pct + '%'; bEl.style.background = rem > 3 ? 'var(--accent)' : rem > 1.5 ? '#facc15' : '#f87171'; }
+          if (rem <= 0) {
+            clearInterval(timerIv);
+            if (!done) { done = true; showIMGResult(false, '¡Tiempo Agotado!', 'El motor se apagó definitivamente', 'La cuenta regresiva llegó a cero. El auto se detuvo en plena recta. Abandono.', false); }
+          }
+        }, 100);
+      };
+    }
+  };
+
+  window._rebootPress = (id) => {
+    if (done || phase !== 'input') return;
+    playerSeq.push(id);
+    const pos = playerSeq.length - 1;
+    if (playerSeq[pos] !== sequence[pos]) {
+      done = true;
+      clearInterval(timerIv);
+      showIMGResult(false, 'Secuencia Incorrecta', 'El motor no arrancó',
+        'Botón equivocado. El reinicio falló y el motor se apagó definitivamente. Abandonaste en plena recta.', false);
+      return;
+    }
+    if (playerSeq.length >= SEQ_LEN) {
+      done = true;
+      clearInterval(timerIv);
+      showIMGResult(true, '¡Sistema Reiniciado!', 'El MGU-K volvió a la vida',
+        'Secuencia perfecta. El volante se iluminó y el motor rugió de vuelta. Perdiste solo 2 segundos y mantuviste tu posición en carrera.', false);
+      return;
+    }
+    render();
+  };
+
+  render();
 }
 
 function showFlash(text) {

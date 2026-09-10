@@ -314,6 +314,24 @@ const RANDOM_EVENTS = [
       { text: 'Denunciar favoritismo a la prensa', stat: 'speed', delta: 1, money: 0, repDelta: -20, peerRelDelta: -30, hint: 'Resultado fijo: presionás y conseguís el setup (+1 Vel), pero quedás como un llorón y la relación no tiene retorno.', fixedDesc: 'Hiciste un escándalo. La presión mediática obligó al jefe de equipo a pasarte la telemetría. Volaste en pista, pero el ambiente en el garaje es súper tóxico.' },
       { text: 'Descifrarlo con tus propios ingenieros', stat: 'quali', delta: 0, money: 0, peerRelDelta: +5, skillStat: 'quali', skillBonus: 2, skillFail: -2, hint: '🏎 Clasificación: depende de tu capacidad analítica. Si fallás, perdés rendimiento.', successDesc: 'Te encerraste con tus mecánicos y lograron replicar el setup sin ayuda. Clasificaste por delante de él y bajaste del auto pidiéndole silencio a la cámara. Magia pura.', failDesc: 'Trabajar a ciegas fue un error. El auto quedó inmanejable y clasificaste lejísimos. Tu lado del garaje quedó en ridículo.' }
     ]
+  },
+  {
+    icon: '📊', title: 'El dato que nadie vio', desc: 'Durante el análisis del viernes encontrás una anomalía en la telemetría. Es apenas una diferencia de temperatura en una curva, pero podría explicar por qué el auto pierde rendimiento al final de las vueltas.', choices: [
+      { text: 'Investigar el dato a fondo', stat: 'quali', delta: 0, money: 0, skillStat: 'quali', skillBonus: 3, skillFail: -1, hint: '🏎️ Clasificación: si sabés interpretar los datos, podés encontrar una ventaja escondida.', successDesc: 'Te quedaste hasta entrada la madrugada revisando vuelta por vuelta. Encontraste que el diferencial estaba trabajando fuera de su ventana ideal en una curva específica. El equipo corrigió el problema y el auto ganó unas décimas que nadie esperaba.', failDesc: 'El dato terminó siendo ruido. Pasaste horas buscando una explicación que no existía y llegaste al sábado agotado. El equipo perdió tiempo y no consiguió ninguna mejora real.' },
+      { text: 'Ignorarlo y seguir el plan', stat: 'tyres', delta: 1, money: 0, hint: '🛞 Resultado fijo: mantenés el plan conocido y mejorás tu consistencia.', fixedDesc: 'Decidiste no perseguir fantasmas. El equipo siguió con el programa habitual y vos te concentrás en cuidar el auto. No descubriste una revolución, pero completaste el fin de semana sin cometer errores.' }
+    ]
+  },
+  {
+    icon: '🌡️', title: 'El calor inesperado', desc: 'La temperatura del asfalto sube muchísimo respecto a lo previsto. Los neumáticos comienzan a degradarse más rápido de lo esperado.', choices: [
+      { text: 'Adaptar tu estilo de conducción', stat: 'tyres', delta: 0, money: 0, skillStat: 'tyres', skillBonus: 3, skillFail: -1, hint: '🛞 Gestión: cuanto mejor controles el desgaste, más rápido podrás mantenerte.', successDesc: 'Cambiaste tu estilo curva por curva. Frenadas más suaves, menos deslizamiento y mucha más paciencia en las salidas. Tus neumáticos sobrevivieron varias vueltas más que los de tus rivales.', failDesc: 'Intentaste cambiar tu estilo pero no encontraste el equilibrio. Frenabas demasiado pronto en unas curvas y deslizabas demasiado en otras. Las gomas se destruyeron igualmente.' },
+      { text: 'Buscar tiempo a pesar de la degradación', stat: 'speed', delta: 0, money: 0, skillStat: 'speed', skillBonus: 3, skillFail: -1, hint: '🚀 Velocidad: mantener el auto al límite con neumáticos degradados requiere mucho control.', successDesc: 'Encontraste el límite exacto entre atacar y destruir las gomas. El auto parecía moverse debajo tuyo, pero conseguías mantener el ritmo. El equipo quedó impresionado con la velocidad que conservaste.', failDesc: 'Intentaste llevar el auto como si los neumáticos estuvieran nuevos. Varias correcciones violentas terminaron sobrecalentando todavía más las gomas y tu ritmo cayó rápidamente.' }
+    ]
+  },
+  {
+    icon: '📈', title: 'El último intento', desc: 'Queda una sola vuelta de clasificación. El equipo te pide encontrar al menos dos décimas para entrar en la siguiente sesión.', choices: [
+      { text: 'Buscar tiempo en las curvas rápidas', stat: 'speed', delta: 0, money: 0, skillStat: 'speed', skillBonus: 3, skillFail: -1, hint: '🚀 Velocidad: las curvas rápidas son donde más tiempo podés encontrar, pero también donde más fácil es equivocarse.', successDesc: 'Te animaste a llevar el auto un poco más allá. Cada curva fue perfecta y encontraste casi cuatro décimas. El equipo pasó a la siguiente sesión gracias a esa vuelta.', failDesc: 'El límite estaba demasiado cerca. Una corrección mínima en una curva rápida te hizo perder toda la vuelta. No hubo segunda oportunidad.' },
+      { text: 'Buscar tiempo en las frenadas', stat: 'quali', delta: 0, money: 0, skillStat: 'quali', skillBonus: 3, skillFail: -1, hint: '🏎️ Clasificación: frenar exactamente en el límite puede darte las décimas que necesitás.', successDesc: 'Clavaste cada referencia. No parecías estar haciendo nada espectacular, pero frenaste medio metro más tarde en cada curva y la suma fue suficiente para avanzar.', failDesc: 'Una frenada demasiado tardía arruinó la vuelta. Bloqueaste los neumáticos y perdiste más tiempo del que intentabas recuperar.' }
+    ]
   }
 ];
 
@@ -443,7 +461,16 @@ const MINIGAMES = [
       { text: 'Defender como un león', skillStat: 'tyres', statBonus: 0.8, baseBonus: 0.1, noWinOnSuccess: true, repDelta: +20, peerRelDelta: +30, onFailDnf: 0.3, successDesc: 'Te convertiste en una muralla. Aguantaste los ataques arruinando tus propias gomas. Tu compañero termino mas adelante de lo esperado y te lo agradeció por radio. Héroe del equipo.', failDesc: 'Intentaste defender pero te quedaste sin gomas. Te pasaron a vos y terminaron cazando a tu compañero también. Un desastre para el equipo.' },
       { text: 'Ignorar y atacar a tu compañero', skillStat: 'overtake', statBonus: 0.8, baseBonus: 0.1, noWinOnSuccess: true, repDelta: -15, peerRelDelta: -30, successDesc: 'Respondiste "No soy el guardaespaldas de nadie". Pasaste a tu compañero y terminaste por delante de él. {{PEER_NAME}} termino siendo rebazado por los demas y la escuderia sumó menos puntos de los que deberia.', failDesc: 'Intentaste atacar a tu compañero pero perdiste tracción. Te pasaron los de atrás y perdiste varias posiciones. El equipo te soltó la mano.' }
     ]
-  }
+  },
+  {
+    icon: '💥',
+    title: 'Contacto peleando la victoria',
+    desc: 'Tu rival te tocó en la curva anterior. El auto parece seguir entero, pero algo no se siente igual.',
+    choices: [
+      { text: 'Seguir atacando como si nada', skillStat: 'speed', baseBonus: 0.15, statBonus: 0.55, desc: 'Velocidad: ignorar el daño y mantener el ritmo.', successDesc: 'El auto estaba mucho mejor de lo que parecía. Seguiste atacando y ganaste la carrera.', failDesc: 'El daño era peor de lo que pensabas. En la siguiente curva el auto se volvió impredecible y perdiste varias posiciones.' },
+      { text: 'Adaptar la conducción al comportamiento del auto', skillStat: 'tyres', baseBonus: 0.25, statBonus: 0.45,desc: 'Gestión: adaptarte a un auto que ya no responde igual.', successDesc: 'Entendiste inmediatamente qué había cambiado. Modificaste tus trazadas y llevaste el auto al limite para ganar.', failDesc: 'Intentaste adaptarte pero nunca encontraste el nuevo límite. Cada curva era una lucha.' }
+    ]
+  },
 ];
 
 
@@ -816,6 +843,8 @@ function showInterview(postSeasonId = null) {
 
     if (iv.id === 'first_win') {
       if (!G.lastResult || G.lastResult.cat !== 'F1' || G.lastResult.wins === 0) return false;
+      const totalF1Wins = G.seasons.filter(s => s.cat === 'F1').reduce((a, b) => a + (b.wins || 0), 0);
+      if (totalF1Wins > G.lastResult.wins) return false; // not their first F1 win season
       return true; // Must trigger if conditions met
     }
     
@@ -1677,7 +1706,8 @@ function runSimulation() {
     if (hasEvent) G._seasonSteps.push('event');
     if (hasMini) G._seasonSteps.push('minigame');
     if (hasInteractiveMini) G._seasonSteps.push('interactive_minigame');
-    const hasInterview = Math.random() < 0.3 || (G.catIndex === 5 && G.wins > 0 && !G.storyFlags.firstWinDone);
+    const totalF1Wins = (G.seasons || []).filter(s => s.cat === 'F1').reduce((a, b) => a + (b.wins || 0), 0);
+    const hasInterview = Math.random() < 0.3 || (G.catIndex === 5 && G.lastResult && G.lastResult.cat === 'F1' && G.lastResult.wins > 0 && totalF1Wins === G.lastResult.wins && !G.storyFlags['interview_first_win']);
     if (hasInterview) G._seasonSteps.push('interview');
 
     processSeasonStep();
@@ -1933,6 +1963,11 @@ function computeSeasonResult() {
     });
     const constructorRows = Object.values(teamMap).sort((a, b) => b.points - a.points).map((t, i) => ({ ...t, rank: i + 1 }));
     _lastStandings = { rows: standingsRows, constructors: constructorRows, cat: result.cat, year: result.year, view: 'drivers' };
+
+    const _myTeamRow = constructorRows.find(c => c.team === result.teamName);
+    result.constructorRank = _myTeamRow ? _myTeamRow.rank : null;
+    const _peerRow = standingsRows.find(s => s.isPeer);
+    result.peerRank = _peerRow ? _peerRow.rank : null;
 
     // 2. Peer Logic and H2H
     if (G.peer) {
@@ -3513,6 +3548,7 @@ function showIMGResult(success, title, detail, narrative, givesWin = true) {
   `;
 
   if (success) {
+    G._minigamesWon = (G._minigamesWon || 0) + 1;
     if (givesWin) {
       G.lastResult.wins = Math.min((G.lastResult.wins || 0) + 1, 99);
       G.wins++;
@@ -4626,7 +4662,7 @@ function startTyresGame() {
       if (lap > TOTAL_LAPS) {
         done = true;
         showIMGResult(true, '¡Gomas Vivas al Final!', `${TOTAL_LAPS}/${TOTAL_LAPS} vueltas completadas`,
-          'Cada vuelta fue un duelo de ajedrez. Las gomas llegaron al límite pero todavía había agarre. Bandera a cuadros en primer lugar.', false);
+          'Cada vuelta fue un duelo de ajedrez. Las gomas llegaron al límite pero todavía había agarre. Bandera a cuadros superando al rival.', false);
         return;
       }
     }
@@ -5597,6 +5633,8 @@ const ACHIEVEMENTS = [
   }},
 
   // Oro
+  { id: 'double_champ', name: 'Doble Corona', desc: 'Ganaste el Campeonato de Pilotos y el de Constructores en la misma temporada.', icon: '🏆', tier: 'gold', condition: () => G.seasons.some(s => s.cat === 'F1' && s.champ === 1 && s.constructorRank === 1) },
+  { id: 'team_dominance', name: 'Equipo Dominador', desc: 'Tu compañero y vos terminaron 1.º y 2.º en el mundial de pilotos.', icon: '🏎️', tier: 'gold', condition: () => G.seasons.some(s => s.cat === 'F1' && ((s.champ === 1 && s.peerRank === 2) || (s.champ === 2 && s.peerRank === 1))) },
   { id: 'wonderboy', name: 'El Niño Maravilla', desc: 'Llegaste a la cima rápido. Ganaste tu primer campeonato de F1 con 24 años o menos.', icon: '🌟', tier: 'gold', condition: () => G.seasons.some(s => s.cat === 'F1' && s.champ === 1 && s.age <= 24) },
   { id: 'veteran', name: 'Campeón Veterano', desc: 'Ganaste el campeonato de F1 con 36 años o más.', icon: '🧓', tier: 'gold', condition: () => G.seasons.some(s => s.cat === 'F1' && s.champ === 1 && s.age >= 36) },
   { id: 'historic', name: 'Campeón Histórico', desc: 'Ganaste al menos el 75% de las carreras de una temporada.', icon: '🦁', tier: 'gold', condition: () => G.seasons.some(s => s.cat === 'F1' && s.wins / (s.races || 24) >= 0.75) },
@@ -5642,6 +5680,9 @@ const ACHIEVEMENTS = [
     const wonAfter = f1s.some(s => s.year === G.lastRegChangeYear + 1 && s.champ === 1);
     return wonBefore && wonAfter;
     }},
+
+    // Minijuegos
+    { id: 'minigame_first', name: '¡Hay piloto!', desc: 'Demostraste tu destreza ganando un minijuego interactivo.', icon: '🎮', tier: 'bronze', condition: () => (G._minigamesWon || 0) > 0 },
 
     // Compras
     { id: 'first_spend', name: 'Primer Gasto', desc: 'El dinero está para gastarlo. Compraste tu primera mejora.', icon: '🛍️', tier: 'bronze', condition: () => G.upgrades && G.upgrades.length >= 1 },

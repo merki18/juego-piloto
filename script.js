@@ -1336,9 +1336,11 @@ function updateTopBar() {
   const nickLine = G.nickname ? `"${G.nickname}" · ` : '';
   document.getElementById('tb-cat').textContent = `${nickLine}${CATEGORIES[G.catIndex]}`;
   
-  if (G.academy) {
+  if (G.catIndex === 5 && G.team && G.team.logo) {
+    document.getElementById('tb-academy').innerHTML = `<img src="${G.team.logo}" width="16" height="16" style="vertical-align:middle;object-fit:contain" title="${G.team.name}">`;
+  } else if (G.academy) {
     const ac = ACADEMIES.find(a => a.id === G.academy);
-    document.getElementById('tb-academy').innerHTML = `<img src="${ac.icon}" width="16" height="16" style="vertical-align:middle;object-fit:contain">`;
+    document.getElementById('tb-academy').innerHTML = `<img src="${ac.icon}" width="16" height="16" style="vertical-align:middle;object-fit:contain" title="${ac.name}">`;
   } else {
     document.getElementById('tb-academy').innerHTML = '';
   }
@@ -2861,6 +2863,135 @@ function showAcademyF2BlockEvent(pendingSteps = []) {
   goto('screen-event');
 }
 
+function showAcademyDropEvent(pendingSteps) {
+  resetEventChrome();
+  const academy = ACADEMIES.find(a => a.id === G.academy);
+  
+  document.getElementById('ev-icon').innerHTML = `<img src="${academy.icon}" width="40" style="object-fit:contain">`;
+  document.getElementById('ev-title').textContent = `Fin de Ciclo`;
+  document.getElementById('ev-desc').textContent = `Tu contrato con el equipo ha terminado. Al no lograr dominar internamente a tu compañero, los directivos de la ${academy.name} sienten que tu techo de desarrollo no cumple con las expectativas para subirte al asiento. Han decidido no renovarte el apoyo, por lo que a partir de ahora eres agente libre. Podrás negociar con cualquier equipo de la parrilla.`;
+
+  const ch = document.getElementById('ev-choices');
+  ch.innerHTML = '';
+
+  const b1 = document.createElement('div');
+  b1.className = 'minigame-choice';
+  b1.innerHTML = `<h3>Explorar el mercado</h3><p style="margin-bottom:6px">Eres libre de fichar por quien quieras sin restricciones.</p>`;
+  b1.onclick = () => {
+    G._seasonEventLogs.push(`Dejaste de pertenecer a la ${academy.name} tras finalizar tu contrato.`);
+    G.academy = null;
+    updateTopBar();
+    G._nextSteps = [...pendingSteps];
+    processNextStep();
+  };
+  ch.appendChild(b1);
+
+  goto('screen-event');
+}
+
+function showAcademyMainTeamPromotionEvent(pendingSteps, promisedTeamName) {
+  resetEventChrome();
+  const academy = ACADEMIES.find(a => a.id === G.academy);
+  
+  document.getElementById('ev-icon').innerHTML = `<img src="${academy.icon}" width="40" style="object-fit:contain">`;
+  document.getElementById('ev-title').textContent = `Llamada del Primer Equipo`;
+  document.getElementById('ev-desc').textContent = `Has dominado a tu compañero durante todo tu contrato en el equipo. Los directivos de la ${academy.name} han quedado impresionados con tu rendimiento constante y han decidido que es momento de dar el salto. ¡Te ofrecen un asiento en el equipo!`;
+
+  const ch = document.getElementById('ev-choices');
+  ch.innerHTML = '';
+
+  const b1 = document.createElement('div');
+  b1.className = 'minigame-choice';
+  b1.innerHTML = `<h3>Aceptar el ascenso</h3><p style="margin-bottom:6px">Firma con el equipo principal y gradúate de la academia.</p>`;
+  b1.onclick = () => {
+    const offerTeam = TEAMS['F1'].find(t => t.name === promisedTeamName);
+    G.team = offerTeam;
+    G.f1ContractYearsLeft = 2; // Un contrato de 2 años
+    if (G.catIndex === 5) refreshTeammate();
+    
+    // Displace AI teammate if needed
+    if (G.aiRoster && offerTeam.name) {
+      const newTeamDrivers = G.aiRoster.filter(d => d.cat === 'F1' && d.team === offerTeam.name);
+      if (newTeamDrivers.length > 1) {
+        const displaced = newTeamDrivers.find(d => !G.peer || d.id !== G.peer.id);
+        if (displaced) {
+          G.aiRoster = G.aiRoster.filter(d => d.id !== displaced.id);
+        }
+      }
+    }
+
+    const salary = offerTeam.stars >= 4 ? 2000000 : 1000000;
+    G.money += salary; G.totalMoney += salary;
+    
+    // Graduation
+    G._seasonEventLogs.push(`🎓 ¡Te has graduado de la ${academy.name}! Al llegar al equipo principal, ya no eres un piloto junior, sino una estrella consagrada de la Fórmula 1.`);
+    G.academy = null;
+    
+    G._nextSteps = [...pendingSteps];
+    processNextStep();
+  };
+  ch.appendChild(b1);
+
+  goto('screen-event');
+}
+
+function showAcademyPromisedSeatEvent(pendingSteps, promisedTeamName, champ) {
+  resetEventChrome();
+  const academy = ACADEMIES.find(a => a.id === G.academy);
+  
+  let desc = '';
+  if (champ === 1) {
+    desc = `¡Felicidades Campeón! Cumpliste con todo lo que te pedimos al repetir tu temporada en F2. Como recompensa a tu dedicación y talento, hemos decidido subirte directamente al primer equipo. ¡Tienes un asiento garantizado en ${promisedTeamName} para esta temporada!`;
+  } else {
+    desc = `Tu rendimiento durante la temporada ha convencido a los directivos. estan convencidos de que estás listo para dar el siguiente paso y, aunque aun no hay lugar en el equipo, gracias a los lazos que mantenemos dentro de la Fórmula 1, hemos conseguido asegurarte un asiento en ${promisedTeamName}. Si lo haces bien, tendras prioridad para ocupar un asiento en nuestro equipo principal cuando se presente la oportunidad`;
+  }
+
+  document.getElementById('ev-icon').innerHTML = `<img src="${academy.icon}" width="40" style="object-fit:contain">`;
+  document.getElementById('ev-title').textContent = `El Ascenso Prometido`;
+  document.getElementById('ev-desc').textContent = desc;
+
+  const ch = document.getElementById('ev-choices');
+  ch.innerHTML = '';
+
+  const b1 = document.createElement('div');
+  b1.className = 'minigame-choice';
+  b1.innerHTML = `<h3>¡Firmar el contrato!</h3><p style="margin-bottom:6px">Ir a firmar tu nuevo contrato en F1.</p>`;
+  b1.onclick = () => {
+    const offerTeam = TEAMS['F1'].find(t => t.name === promisedTeamName);
+    G.team = offerTeam;
+    G.academyPromisedTeam = null;
+    
+    // Graduation check
+    if (academy.f1Teams[0] === promisedTeamName) {
+      G._seasonEventLogs.push(`🎓 ¡Te has graduado de la ${academy.name}! Al llegar al equipo principal, ya no eres un piloto junior, sino una estrella consagrada de la Fórmula 1.`);
+      G.academy = null;
+    }
+    G.f1ContractYearsLeft = 1;
+    if (G.catIndex === 5) refreshTeammate();
+    
+    // Displace AI teammate if needed
+    if (G.aiRoster && offerTeam.name) {
+      const newTeamDrivers = G.aiRoster.filter(d => d.cat === 'F1' && d.team === offerTeam.name);
+      if (newTeamDrivers.length > 1) {
+        const displaced = newTeamDrivers.find(d => !G.peer || d.id !== G.peer.id);
+        if (displaced) {
+          G.aiRoster = G.aiRoster.filter(d => d.id !== displaced.id);
+        }
+      }
+    }
+
+    const salary = offerTeam.stars >= 4 ? 1500000 : 500000;
+    G.money += salary; G.totalMoney += salary;
+    G._prevCatIdx = 4;
+
+    G._nextSteps = [...pendingSteps];
+    processNextStep();
+  };
+  ch.appendChild(b1);
+
+  goto('screen-event');
+}
+
 function showAcademyMutualTerminationEvent(pendingSteps = []) {
   resetEventChrome();
   const academy = ACADEMIES.find(a => a.id === G.academy);
@@ -3037,6 +3168,25 @@ function goToContracts(oldCatIdx, repeatCat = false, skipContracts = false) {
     refreshTeammate();
   }
 
+  // Academy Main Team Promotion (End of filial contract)
+  if (oldCatIdx === 5 && G.catIndex === 5 && G.academy && !skipContracts) {
+     const academy = ACADEMIES.find(a => a.id === G.academy);
+     if (academy && academy.f1Teams.length > 1) {
+       // if we are currently in a B-team
+       const isBTeam = academy.f1Teams.slice(1).includes(G.team.name);
+       if (isBTeam) {
+         // G.peer.h2hWins are player losses, G.peer.h2hLosses are player wins
+         if (G.peer && (G.peer.h2hWins || 0) === 0 && (G.peer.h2hLosses || 0) > 0) {
+            showAcademyMainTeamPromotionEvent(steps.filter(s => s !== 'contracts'), academy.f1Teams[0]);
+            return;
+         } else {
+            showAcademyDropEvent(steps);
+            return;
+         }
+       }
+     }
+  }
+
   // F2 -> F1 Academy logic
   if (oldCatIdx === 4 && G.catIndex === 5 && G.academy && !skipContracts) {
     const ovr = Math.round(Object.values(G.stats).reduce((a, b) => a + b) / 5);
@@ -3070,6 +3220,8 @@ function goToContracts(oldCatIdx, repeatCat = false, skipContracts = false) {
         } else if (f1TeamsPool.length > 0) {
           G.academyPromisedTeam = f1TeamsPool[f1TeamsPool.length - 1].name; // Team B
         }
+        showAcademyPromisedSeatEvent(steps.filter(s => s !== 'contracts'), G.academyPromisedTeam, champ);
+        return;
       } else {
         showAcademyMutualTerminationEvent(steps);
         return;
@@ -4988,7 +5140,7 @@ function startRebootGame() {
         <div style="margin-bottom:12px">
           <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-bottom:4px">
             <span>Tiempo restante</span>
-            <span id="img-rb-timer" style="color:var(--accent);font-weight:bold">6.0s</span>
+            <span id="img-rb-timer" style="color:var(--accent);font-weight:bold">7.0s</span>
           </div>
           <div style="width:100%;height:8px;background:#1a1a2e;border-radius:4px;overflow:hidden">
             <div id="img-rb-bar" style="height:100%;width:100%;background:var(--accent);border-radius:4px;transition:width 0.1s"></div>
@@ -5064,6 +5216,8 @@ function showFlash(text) {
 
 // Check if player meets at least one team's requirements in a given category index
 function canMeetNextCatReqs(nextCatIdx) {
+  if (nextCatIdx === 5 && G.academy && G.academyF2Repeated && G.lastResult && G.lastResult.champ <= 5) return true;
+  
   const ovr = Math.round(Object.values(G.stats).reduce((a, b) => a + b) / 5);
   const nextCatTeams = TEAMS[CATEGORIES[nextCatIdx]] || [];
   const agentModOvr = G.upgrades.includes('agent') ? -2 : 0;
@@ -5356,6 +5510,16 @@ function showContracts() {
       const oldTeamName = G.team ? G.team.name : null;
       G.team = team;
       G.academyPromisedTeam = null;
+      
+      if (G.academy) {
+        const academyObj = ACADEMIES.find(a => a.id === G.academy);
+        if (academyObj && academyObj.f1Teams[0] === team.name) {
+          G._seasonEventLogs = G._seasonEventLogs || [];
+          G._seasonEventLogs.push(`🎓 ¡Te has graduado de la ${academyObj.name}! Al firmar con el equipo principal, ya no eres un piloto junior, sino una estrella consagrada de la Fórmula 1.`);
+          G.academy = null;
+          updateTopBar();
+        }
+      }
       G.money += Math.round(salarySpin * 0.1);
       G.totalMoney += Math.round(salarySpin * 0.1);
       if (isF1) G.f1ContractYearsLeft = contractYears - 1;

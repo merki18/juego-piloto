@@ -29,6 +29,12 @@ const TALENTS = [
   { id: 'overtake', name: 'Adelantador', desc: 'Maestro de los duelos rueda a rueda', bonus: 'adelantamientos +8', stats: { overtake: 8 } },
 ];
 
+const ACADEMIES = [
+  { id: 'ferrari', name: 'Academia Ferrari', icon: 'assets/images/logos/logo Ferrari.png', f1Teams: ['Ferrari', 'Haas F1'] },
+  { id: 'redbull', name: 'Programa Red Bull', icon: 'assets/images/logos/logo red bull.png', f1Teams: ['Red Bull', 'Racing Bulls'] },
+  { id: 'mercedes', name: 'Jóvenes de Mercedes', icon: 'assets/images/logos/logo mercedes.png', f1Teams: ['Mercedes', 'Williams'] },
+];
+
 // focus: 'desarrollo' = more stat growth, worse results | 'ganar' = less growth, better results | 'equilibrado' = balanced
 const TEAMS = {
   'Karting': [
@@ -469,6 +475,15 @@ const MINIGAMES = [
     choices: [
       { text: 'Seguir atacando como si nada', skillStat: 'speed', baseBonus: 0.15, statBonus: 0.55, desc: 'Velocidad: ignorar el daño y mantener el ritmo.', successDesc: 'El auto estaba mucho mejor de lo que parecía. Seguiste atacando y ganaste la carrera.', failDesc: 'El daño era peor de lo que pensabas. En la siguiente curva el auto se volvió impredecible y perdiste varias posiciones.' },
       { text: 'Adaptar la conducción al comportamiento del auto', skillStat: 'tyres', baseBonus: 0.25, statBonus: 0.45,desc: 'Gestión: adaptarte a un auto que ya no responde igual.', successDesc: 'Entendiste inmediatamente qué había cambiado. Modificaste tus trazadas y llevaste el auto al limite para ganar.', failDesc: 'Intentaste adaptarte pero nunca encontraste el nuevo límite. Cada curva era una lucha.' }
+    ]
+  },
+    {
+    icon: '🏎️',
+    title: 'Tráfico en Clasificación',
+    desc: 'Estás en tu vuelta rápida y encontrás tres autos lentos en el último sector.',
+    choices: [
+      { text: 'Pasarlos todos sin levantar', skillStat: 'quali', baseBonus: 0.1, noWinOnSuccess: true, statBonus: 0.65, desc: 'Clasificación: encontrar espacio sin perder la vuelta.', successDesc: 'Pasaste a los tres sin perder prácticamente nada. La vuelta quedó viva hasta la bandera.', failDesc: 'Uno de los autos se movió justo cuando pasabas. Tuviste que levantar y perdiste la vuelta.' },
+      { text: 'Abortar la vuelta y preparar otra', pureLuck: true, baseBonus: 0.75, noWinOnSuccess: true, desc: 'Suerte: esperar que exista espacio en el siguiente intento.', successDesc: 'La siguiente vuelta estuvo completamente limpia. Pudiste atacar sin tráfico.', failDesc: 'Volviste a encontrarte tráfico. La clasificación terminó siendo una frustración.' }
     ]
   },
 ];
@@ -1064,7 +1079,11 @@ const UPGRADES = [
 let G = {};
 
 function resetGame() {
-  G = {};
+  G = {
+    academy: null,
+    academyWarnings: 0,
+    academyBans: [] // Array of academy IDs that banned the player
+  };
   document.getElementById('topbar').style.display = 'none';
   document.getElementById('path-bar').style.display = 'none';
 }
@@ -1316,6 +1335,14 @@ function updateTopBar() {
   document.getElementById('tb-name').textContent = `${G.flag} ${G.name} #${G.number}`;
   const nickLine = G.nickname ? `"${G.nickname}" · ` : '';
   document.getElementById('tb-cat').textContent = `${nickLine}${CATEGORIES[G.catIndex]}`;
+  
+  if (G.academy) {
+    const ac = ACADEMIES.find(a => a.id === G.academy);
+    document.getElementById('tb-academy').innerHTML = `<img src="${ac.icon}" width="16" height="16" style="vertical-align:middle;object-fit:contain">`;
+  } else {
+    document.getElementById('tb-academy').innerHTML = '';
+  }
+
   document.getElementById('tb-ovr').textContent = ovr;
   document.getElementById('tb-rep').textContent = G.reputation;
   document.getElementById('tb-money').textContent = fmt$(G.money);
@@ -1791,6 +1818,27 @@ function computeSeasonResult() {
     : (G.team && G.team.focus === 'desarrollo') ? -5
       : 0;
   eff += focusRatingBonus;
+
+  // Make formative categories slightly easier
+  if (cat !== 'F1') {
+    eff += 6;
+    if (G.academy) {
+      eff += 4; // Bonus extra por apoyo y recursos de la academia
+    }
+    
+    // Bonus por experiencia en la categoría
+    let repeatedYears = 0;
+    if (G.seasons && G.seasons.length > 0) {
+      for (let i = G.seasons.length - 1; i >= 0; i--) {
+        if (G.seasons[i].cat === cat) {
+          repeatedYears++;
+        } else {
+          break;
+        }
+      }
+    }
+    eff += repeatedYears;
+  }
 
   // 4. Reduced luck factor
   const luck = rand(-8, 8);
@@ -2686,6 +2734,8 @@ function afterSummary() {
   const r = G.lastResult;
   const careerLen = G.seasons.length;
 
+  G.academyTempBans = []; // Clear 1-year bans
+
   // Advance Age & Year
   G.year++;
   G.age++;
@@ -2706,6 +2756,27 @@ function afterSummary() {
     return;
   }
 
+  // Academy warnings logic
+  if (G.academy) {
+    if (r.champ > 8) {
+      G.academyWarnings = (G.academyWarnings || 0) + 1;
+    } else {
+      G.academyWarnings = 0;
+    }
+    
+    if (G.academyWarnings >= 3) {
+      const academy = ACADEMIES.find(a => a.id === G.academy);
+      G.academy = null;
+      G.academyWarnings = 0;
+      updateTopBar();
+      G._pendingFiredMsg = {
+        type: 'message',
+        title: 'Despido de la Academia',
+        desc: `Tras sumar tres temporadas consecutivas fuera del Top 8 en la misma categoría, la ${academy.name} ha decidido rescindir tu contrato de desarrollo. Tendrás que buscarte tu propio camino.`
+      };
+    }
+  }
+
   // If in F1 with contract years remaining, skip market entirely
   if (catIdx === 5 && G.f1ContractYearsLeft > 0) {
     G.f1ContractYearsLeft--;
@@ -2715,7 +2786,7 @@ function afterSummary() {
   }
 
   // Check if player can advance by position AND meets requirements in next category
-  const posCanAdvance = r.champ <= 12 && G.catIndex < 5;
+  const posCanAdvance = r.champ <= 10 && G.catIndex < 5;
   const meetsNextReqs = posCanAdvance ? canMeetNextCatReqs(G.catIndex + 1) : false;
   const canAdvance = posCanAdvance && meetsNextReqs;
   const isFormative = G.catIndex < 5;
@@ -2751,6 +2822,111 @@ function afterSummary() {
   goToContracts(catIdx);
 }
 
+function showAcademyF2BlockEvent(pendingSteps = []) {
+  resetEventChrome();
+  const academy = ACADEMIES.find(a => a.id === G.academy);
+
+  document.getElementById('ev-icon').innerHTML = `<img src="${academy.icon}" width="40" style="object-fit:contain">`;
+  document.getElementById('ev-title').textContent = `Reunión con ${academy.name}`;
+  document.getElementById('ev-desc').textContent = `Aunque tienes los puntos para subir a F1, los directivos de la academia te piden que hagas un año más en F2 para "terminar de desarrollarte", ya que no tienen asientos disponibles en F1 para ti en este momento.`;
+
+  const ch = document.getElementById('ev-choices');
+  ch.innerHTML = '';
+
+  const b1 = document.createElement('div');
+  b1.className = 'minigame-choice';
+  b1.innerHTML = `<h3>Hacerles caso y seguir en F2</h3><p style="margin-bottom:6px">Mantienes el favor de la academia, repitiendo categoría.</p>`;
+  b1.onclick = () => {
+    G.catIndex = 4; // Stay in F2
+    G.academyF2Repeated = true;
+    G._nextSteps = [...pendingSteps];
+    processNextStep();
+  };
+  ch.appendChild(b1);
+
+  const b2 = document.createElement('div');
+  b2.className = 'minigame-choice';
+  b2.innerHTML = `<h3>Romper el contrato y buscar asiento en F1</h3><p style="margin-bottom:6px">Renuncias a la academia para subir a la F1 por tu cuenta. Te vetarán de sus equipos.</p>`;
+  b2.onclick = () => {
+    G.academyBans = G.academyBans || [];
+    G.academyBans.push(G.academy);
+    G.academy = null;
+    G.academyWarnings = 0;
+    updateTopBar();
+    G._nextSteps = [...pendingSteps];
+    processNextStep();
+  };
+  ch.appendChild(b2);
+
+  goto('screen-event');
+}
+
+function showAcademyMutualTerminationEvent(pendingSteps = []) {
+  resetEventChrome();
+  const academy = ACADEMIES.find(a => a.id === G.academy);
+
+  document.getElementById('ev-icon').innerHTML = `<img src="${academy.icon}" width="40" style="object-fit:contain">`;
+  document.getElementById('ev-title').textContent = `Rescisión de Mutuo Acuerdo`;
+  document.getElementById('ev-desc').textContent = `La ${academy.name} reconoce que tienes nivel para subir a F1, pero lamentablemente siguen sin tener un asiento disponible para ti. Han decidido liberarte de tu contrato en buenos términos para que busques tu oportunidad. No podrán ficharte este año, pero las puertas quedan abiertas para el futuro.`;
+
+  const ch = document.getElementById('ev-choices');
+  ch.innerHTML = '';
+
+  const b1 = document.createElement('div');
+  b1.className = 'minigame-choice';
+  b1.innerHTML = `<h3>Agradecer y ser libre</h3><p style="margin-bottom:6px">Te conviertes en agente libre. La academia no te hará ofertas esta temporada.</p>`;
+  b1.onclick = () => {
+    G.academyTempBans = G.academyTempBans || [];
+    G.academyTempBans.push(G.academy);
+    G.academy = null;
+    G.academyWarnings = 0;
+    updateTopBar();
+    G._nextSteps = [...pendingSteps];
+    processNextStep();
+  };
+  ch.appendChild(b1);
+
+  goto('screen-event');
+}
+
+function showAcademyEvent(pendingSteps = []) {
+  resetEventChrome();
+  // Filter out academies that banned the player
+  let available = ACADEMIES.filter(a => !(G.academyBans || []).includes(a.id));
+  if (available.length === 0) available = ACADEMIES; // Fallback
+  const academy = randFrom(available);
+
+  document.getElementById('ev-icon').innerHTML = `<img src="${academy.icon}" width="40" style="object-fit:contain">`;
+  document.getElementById('ev-title').textContent = `Invitación: ${academy.name}`;
+  document.getElementById('ev-desc').textContent = `Tus grandes actuaciones te metieron en el radar de la ${academy.name}. Te ofrecen unirte a su programa de jóvenes pilotos, con grandes beneficios pero también obligaciones.`;
+
+  const ch = document.getElementById('ev-choices');
+  ch.innerHTML = '';
+
+  const b1 = document.createElement('div');
+  b1.className = 'minigame-choice';
+  b1.innerHTML = `<h3>Unirse a la ${academy.name}</h3><p style="margin-bottom:6px">Te facilitará el camino y los contratos, pero estarás atado a ellos.</p>`;
+  b1.onclick = () => {
+    G.academy = academy.id;
+    G.academyWarnings = 0;
+    updateTopBar();
+    G._nextSteps = [...pendingSteps];
+    processNextStep();
+  };
+  ch.appendChild(b1);
+
+  const b2 = document.createElement('div');
+  b2.className = 'minigame-choice';
+  b2.innerHTML = `<h3>Rechazar</h3><p style="margin-bottom:6px">Prefiero mantener mi independencia.</p>`;
+  b2.onclick = () => {
+    G._nextSteps = [...pendingSteps];
+    processNextStep();
+  };
+  ch.appendChild(b2);
+
+  goto('screen-event');
+}
+
 function showGoldenBoyEvent(pendingSteps = []) {
   resetEventChrome();
   const topTeams = TEAMS['F1'].filter(t => t.stars >= 4);
@@ -2774,17 +2950,17 @@ function showGoldenBoyEvent(pendingSteps = []) {
     G.money += salary; G.totalMoney += salary;
 
     G._prevCatIdx = 4;
-    G._nextSteps = [...pendingSteps, 'preseason'];
+    G._nextSteps = [...pendingSteps];
     processNextStep();
   };
   ch.appendChild(b1);
 
   const b2 = document.createElement('div');
   b2.className = 'minigame-choice';
-  b2.innerHTML = `<h3>Rechazar y ver el mercado</h3><p style="margin-bottom:6px">Prefiero explorar otras opciones y contratos menores primero.</p>`;
+  b2.innerHTML = `<h3>Rechazar y ver el mercado</h3><p style="margin-bottom:6px">Gracias, pero prefiero elegir yo mismo.</p>`;
   b2.onclick = () => {
-    G._prevCatIdx = 4;
-    G._nextSteps = [...pendingSteps, 'contracts', 'preseason'];
+    // If they reject, we must inject 'contracts' back since we filtered it out in goToContracts
+    G._nextSteps = ['contracts', ...pendingSteps];
     processNextStep();
   };
   ch.appendChild(b2);
@@ -2849,26 +3025,90 @@ function goToContracts(oldCatIdx, repeatCat = false, skipContracts = false) {
   }
 
   const steps = [];
+  if (!skipContracts) steps.push('contracts');
+  steps.push('preseason');
+  if (G._pendingFiredMsg) {
+    steps.unshift(G._pendingFiredMsg);
+    G._pendingFiredMsg = null;
+  }
 
   // Refresh teammate every F1 season from aiRoster
-  // If not skipping contracts, refreshTeammate is handled after contract selection
   if (G.catIndex === 5 && skipContracts) {
     refreshTeammate();
   }
 
+  // F2 -> F1 Academy logic
+  if (oldCatIdx === 4 && G.catIndex === 5 && G.academy && !skipContracts) {
+    const ovr = Math.round(Object.values(G.stats).reduce((a, b) => a + b) / 5);
+    const getReqs = (stars) => {
+      const baseRep = 1200;
+      const baseOvr = 75;
+      const repStep = 200;
+      const ovrStep = 5;
+      const agentModOvr = G.upgrades.includes('agent') ? -2 : 0;
+      const agentModRep = G.upgrades.includes('agent') ? 0.9 : 1;
+      const academyModOvr = -3;
+      const academyModRep = 0.8;
+      
+      if (stars === 5) return { rep: (baseRep + repStep * 2) * agentModRep * academyModRep, ovr: baseOvr + ovrStep * 2 + agentModOvr + academyModOvr };
+      if (stars === 4) return { rep: (baseRep + repStep) * agentModRep * academyModRep, ovr: baseOvr + ovrStep + agentModOvr + academyModOvr };
+      if (stars === 3) return { rep: baseRep * agentModRep * academyModRep, ovr: baseOvr + agentModOvr + academyModOvr };
+      if (stars === 2) return { rep: Math.max(0, baseRep - repStep) * agentModRep * academyModRep, ovr: Math.max(0, baseOvr - ovrStep) + agentModOvr + academyModOvr };
+      return { rep: Math.max(0, baseRep - repStep * 2) * agentModRep * academyModRep, ovr: Math.max(0, baseOvr - ovrStep * 2) + agentModOvr + academyModOvr };
+    };
+
+    const academy = ACADEMIES.find(a => a.id === G.academy);
+    const f1TeamsPool = TEAMS['F1'].filter(t => academy.f1Teams.includes(t.name));
+    f1TeamsPool.sort((a,b) => b.stars - a.stars); // Sort highest stars first
+    
+    if (G.academyF2Repeated) {
+      G.academyF2Repeated = false;
+      const champ = G.lastResult.champ;
+      if (champ <= 5) {
+        if (champ === 1 && f1TeamsPool.length > 0) {
+          G.academyPromisedTeam = f1TeamsPool[0].name; // Team A
+        } else if (f1TeamsPool.length > 0) {
+          G.academyPromisedTeam = f1TeamsPool[f1TeamsPool.length - 1].name; // Team B
+        }
+      } else {
+        showAcademyMutualTerminationEvent(steps);
+        return;
+      }
+    } else {
+      const validAcademyOffers = f1TeamsPool.filter(t => {
+        const reqs = getReqs(t.stars);
+        return G.reputation >= reqs.rep && ovr >= reqs.ovr;
+      });
+
+      if (validAcademyOffers.length === 0) {
+        showAcademyF2BlockEvent(steps);
+        return;
+      }
+    }
+  }
+
   // Golden Boy: check when entering F1 from F2
-  if (oldCatIdx === 4 && G.catIndex === 5 && !G._goldenBoyChecked) {
+  if (oldCatIdx === 4 && G.catIndex === 5 && !G._goldenBoyChecked && !G.academy) {
     G._goldenBoyChecked = true;
     const formativeWins = G.seasons.filter(s => s.cat !== 'F1').reduce((acc, s) => acc + s.wins, 0);
     const top5F2 = G.lastResult && G.lastResult.champ <= 5;
     if (top5F2 && formativeWins >= 5 && Math.random() < 0.5) {
-      showGoldenBoyEvent(steps);
+      // Golden Boy event ignores 'contracts' step since it handles signing internally
+      showGoldenBoyEvent(steps.filter(s => s !== 'contracts'));
       return;
     }
   }
 
-  if (!skipContracts) steps.push('contracts');
-  steps.push('preseason');
+  // Academy Offer: check when in Karting, F4, or FR
+  if (!G.academy && !G.academyOffered && [0, 1, 2].includes(oldCatIdx)) {
+    const top3 = G.lastResult && G.lastResult.champ <= 3;
+    if (top3 && Math.random() < 0.25) {
+      G.academyOffered = true;
+      showAcademyEvent(steps);
+      return;
+    }
+  }
+
   G._nextSteps = steps;
   processNextStep();
 }
@@ -4834,12 +5074,14 @@ function canMeetNextCatReqs(nextCatIdx) {
     const baseOvr = [40, 45, 50, 55, 65, 75][catIdx];
     const repStep = [40, 80, 100, 150, 200, 200][catIdx];
     const ovrStep = [3, 4, 4, 5, 5, 5][catIdx];
+    const academyModOvr = G.academy ? -3 : 0;
+    const academyModRep = G.academy ? 0.8 : 1;
 
-    if (stars === 5) return { rep: (baseRep + repStep * 2)*agentModRep, ovr: baseOvr + ovrStep * 2 + agentModOvr };
-    if (stars === 4) return { rep: (baseRep + repStep)*agentModRep, ovr: baseOvr + ovrStep + agentModOvr };
-    if (stars === 3) return { rep: baseRep*agentModRep, ovr: baseOvr + agentModOvr };
-    if (stars === 2) return { rep: Math.max(0, (baseRep - repStep)*agentModRep), ovr: Math.max(0, baseOvr - ovrStep) + agentModOvr };
-    return { rep: Math.max(0, (baseRep - repStep * 2)*agentModRep), ovr: Math.max(0, baseOvr - ovrStep * 2) + agentModOvr };
+    if (stars === 5) return { rep: (baseRep + repStep * 2)*agentModRep*academyModRep, ovr: baseOvr + ovrStep * 2 + agentModOvr + academyModOvr };
+    if (stars === 4) return { rep: (baseRep + repStep)*agentModRep*academyModRep, ovr: baseOvr + ovrStep + agentModOvr + academyModOvr };
+    if (stars === 3) return { rep: baseRep*agentModRep*academyModRep, ovr: baseOvr + agentModOvr + academyModOvr };
+    if (stars === 2) return { rep: Math.max(0, (baseRep - repStep)*agentModRep*academyModRep), ovr: Math.max(0, baseOvr - ovrStep) + agentModOvr + academyModOvr };
+    return { rep: Math.max(0, (baseRep - repStep * 2)*agentModRep*academyModRep), ovr: Math.max(0, baseOvr - ovrStep * 2) + agentModOvr + academyModOvr };
   };
 
   return nextCatTeams.some(t => {
@@ -4868,18 +5110,33 @@ function showContracts() {
       const repStep = [40, 80, 100, 150, 200, 200][G.catIndex];
       const agentModOvr = G.upgrades.includes('agent') ? -2 : 0;
       const agentModRep = G.upgrades.includes('agent') ? 0.9 : 1;
+      
+      const academyModOvr = G.academy ? -3 : 0;
+      const academyModRep = G.academy ? 0.8 : 1;
     
     const ovrStep = [3, 4, 4, 5, 5, 5][G.catIndex];
 
-    if (stars === 5) return { rep: (baseRep + repStep * 2) * agentModRep, ovr: baseOvr + ovrStep * 2 + agentModOvr };
-    if (stars === 4) return { rep: (baseRep + repStep) * agentModRep, ovr: baseOvr + ovrStep + agentModOvr };
-    if (stars === 3) return { rep: baseRep * agentModRep, ovr: baseOvr + agentModOvr };
-    if (stars === 2) return { rep: Math.max(0, baseRep - repStep) * agentModRep, ovr: Math.max(0, baseOvr - ovrStep) + agentModOvr };
-    return { rep: Math.max(0, baseRep - repStep * 2) * agentModRep, ovr: Math.max(0, baseOvr - ovrStep * 2) + agentModOvr };
+    if (stars === 5) return { rep: (baseRep + repStep * 2) * agentModRep * academyModRep, ovr: baseOvr + ovrStep * 2 + agentModOvr + academyModOvr };
+    if (stars === 4) return { rep: (baseRep + repStep) * agentModRep * academyModRep, ovr: baseOvr + ovrStep + agentModOvr + academyModOvr };
+    if (stars === 3) return { rep: baseRep * agentModRep * academyModRep, ovr: baseOvr + agentModOvr + academyModOvr };
+    if (stars === 2) return { rep: Math.max(0, baseRep - repStep) * agentModRep * academyModRep, ovr: Math.max(0, baseOvr - ovrStep) + agentModOvr + academyModOvr };
+    return { rep: Math.max(0, baseRep - repStep * 2) * agentModRep * academyModRep, ovr: Math.max(0, baseOvr - ovrStep * 2) + agentModOvr + academyModOvr };
   };
 
   // Filter out teams that require more rep or ovr than you have
   let offerPool = allTeams.filter(t => {
+    // Check if the team is promised by the academy (bypasses requirements)
+    if (G.academyPromisedTeam === t.name) return true;
+
+    if (cat === 'F1') {
+      const allBans = [...(G.academyBans || []), ...(G.academyTempBans || [])];
+      if (allBans.length > 0) {
+        for (const banId of allBans) {
+          const bannedAc = ACADEMIES.find(a => a.id === banId);
+          if (bannedAc && bannedAc.f1Teams.includes(t.name)) return false;
+        }
+      }
+    }
     const reqs = getReqs(t.stars);
     return G.reputation >= reqs.rep && ovr >= reqs.ovr;
   });
@@ -4902,6 +5159,15 @@ function showContracts() {
   }
 
   // F1 logic: limit offers based on previous performance and add renewals
+  let isAcademyLocked = false;
+  if (!isLockedShadowMarket && cat === 'F1' && G.academy) {
+    const academy = ACADEMIES.find(a => a.id === G.academy);
+    if (academy) {
+      offerPool = offerPool.filter(t => academy.f1Teams.includes(t.name));
+      isAcademyLocked = true;
+    }
+  }
+
   if (!isLockedShadowMarket && cat === 'F1') {
     const prevChamp = (G.lastResult && G.lastResult.cat === 'F1') ? G.lastResult.champ : 20;
 
@@ -5089,6 +5355,7 @@ function showContracts() {
       }
       const oldTeamName = G.team ? G.team.name : null;
       G.team = team;
+      G.academyPromisedTeam = null;
       G.money += Math.round(salarySpin * 0.1);
       G.totalMoney += Math.round(salarySpin * 0.1);
       if (isF1) G.f1ContractYearsLeft = contractYears - 1;
@@ -5127,6 +5394,34 @@ function showContracts() {
     };
     list.appendChild(c);
   });
+
+  if (isAcademyLocked) {
+    const academy = ACADEMIES.find(a => a.id === G.academy);
+    const breakBtn = document.createElement('div');
+    breakBtn.className = 'card offer-card selectable';
+    breakBtn.style.border = '1px solid #ef4444';
+    breakBtn.innerHTML = `
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div style="width:56px;height:48px;border-radius:8px;background:rgba(239,68,68,0.1);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">✂️</div>
+          <div>
+            <div class="heading" style="font-size:18px;color:#ef4444">Romper contrato con la ${academy.name}</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:2px">Ver ofertas de TODOS los equipos</div>
+          </div>
+        </div>
+      </div>
+    `;
+    breakBtn.onclick = () => {
+      G.academyBans = G.academyBans || [];
+      G.academyBans.push(G.academy);
+      G.academy = null;
+      G.academyWarnings = 0;
+      updateTopBar();
+      // Reload contracts screen without academy restriction
+      showContracts();
+    };
+    list.appendChild(breakBtn);
+  }
 
   if (G.age >= 34) {
     const retBtn = document.createElement('button');

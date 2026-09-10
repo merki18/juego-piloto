@@ -36,6 +36,19 @@ const ACADEMIES = [
 ];
 
 // focus: 'desarrollo' = more stat growth, worse results | 'ganar' = less growth, better results | 'equilibrado' = balanced
+const TEAM_COLORS = {
+  'Cadillac': '#f0f0f0',
+  'Audi': '#830404ff',
+  'Haas F1': '#e8002d',
+  'Williams': '#00a3e0',
+  'Racing Bulls': '#1b3fa0',
+  'Alpine': '#0093cc',
+  'Aston Martin': '#00665e',
+  'McLaren': '#ff8000',
+  'Mercedes': '#00d2be',
+  'Ferrari': '#dc0000',
+  'Red Bull': '#3671c6'
+};
 const TEAMS = {
   'Karting': [
     { name: 'KartMaster', stars: 3, logo: null, focus: 'desarrollo' },
@@ -1343,6 +1356,20 @@ function updateTopBar() {
     document.getElementById('tb-academy').innerHTML = `<img src="${ac.icon}" width="16" height="16" style="vertical-align:middle;object-fit:contain" title="${ac.name}">`;
   } else {
     document.getElementById('tb-academy').innerHTML = '';
+  }
+
+  const topbarEl = document.getElementById('topbar');
+  if (G.catIndex === 5 && G.team && G.team.name) {
+    const color = TEAM_COLORS[G.team.name] || 'transparent';
+    topbarEl.style.setProperty('--team-color', color);
+    
+    // Create a shadow color with opacity by converting hex to rgba if needed, 
+    // but a simple shadow using the same color usually works if we don't mind it being strong.
+    // Let's just use the color directly.
+    topbarEl.style.setProperty('--team-color-shadow', color === 'transparent' ? 'transparent' : color);
+  } else {
+    topbarEl.style.setProperty('--team-color', 'transparent');
+    topbarEl.style.setProperty('--team-color-shadow', 'transparent');
   }
 
   document.getElementById('tb-ovr').textContent = ovr;
@@ -5423,20 +5450,8 @@ function showContracts() {
     if (isF1) {
       // ── F1: Holographic premium card ──
       c.className = 'card offer-card selectable holo-card' + (isOpportunity ? ' opportunity' : '');
-      const teamColors = {
-        'Cadillac': '#f0f0f0',
-        'Audi': '#830404ff',
-        'Haas F1': '#e8002d',
-        'Williams': '#00a3e0',
-        'Racing Bulls': '#1b3fa0',
-        'Alpine': '#0093cc',
-        'Aston Martin': '#00665e',
-        'McLaren': '#ff8000',
-        'Mercedes': '#00d2be',
-        'Ferrari': '#dc0000',
-        'Red Bull': '#3671c6'
-      };
-      c.style.setProperty('--team-color', teamColors[team.name] || 'var(--accent)');
+      const color = TEAM_COLORS[team.name] || 'var(--accent)';
+      c.style.setProperty('--team-color', color);
 
       const logoHtml = team.logo
         ? `<div style="width:56px;height:48px;background:rgba(255,255,255,0.06);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:4px;box-shadow:inset 0 0 5px rgba(0,0,0,0.3)"><img src="${team.logo}" alt="${team.name}" style="max-width:48px;max-height:38px;object-fit:contain"></div>`

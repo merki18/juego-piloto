@@ -537,7 +537,7 @@ const INTERVIEWS = [
     },
     {
       id: 'f1_academy_sign_main',
-      title: 'Llegada directa al primer equipo',
+      title: 'Llegada directa a un equipo grande',
       desc: '"Tu salto a la F1 ha sido impresionante, debutando directamente en el equipo principal de tu academia. ¿Sentís la presión?"',
       choices: [
         { text: '"La academia sabe lo que hace"', pers: 'aggressiveness', delta: 15, repDelta: 15, hint: 'Demostrás personalidad.', fixedDesc: '"No hay presión. Si me pusieron acá directamente es porque saben lo que valgo y estoy listo para ganar", respondiste con total seguridad.' },
@@ -1850,6 +1850,10 @@ function processSeasonStep() {
   if (!G.aiRoster) G.aiRoster = generateInitialRoster();
   if (!G._seasonSteps || G._seasonSteps.length === 0) {
     checkNicknames();
+    if (!G.lastResult) {
+      goto('screen-preseason');
+      return;
+    }
     buildSummary();
     goto('screen-summary');
     return;
@@ -2695,7 +2699,7 @@ function buildSummary() {
   checkAchievements('season_end');
   const r = G.lastResult;
   if (!r) {
-    goto('screen-main');
+    goto('screen-preseason');
     return;
   }
 
@@ -3016,8 +3020,8 @@ function showAcademyMainTeamPromotionEvent(pendingSteps, promisedTeamName) {
   const academy = ACADEMIES.find(a => a.id === G.academy);
   
   document.getElementById('ev-icon').innerHTML = `<img src="${academy.icon}" width="40" style="object-fit:contain">`;
-  document.getElementById('ev-title').textContent = `Llamada del Primer Equipo`;
-  document.getElementById('ev-desc').textContent = `Has dominado a tu compañero durante todo tu contrato en el equipo. Los directivos de la ${academy.name} han quedado impresionados con tu rendimiento constante y han decidido que es momento de dar el salto. ¡Te ofrecen un asiento en el equipo!`;
+  document.getElementById('ev-title').textContent = `Llamada de ${academy.name}`;
+  document.getElementById('ev-desc').textContent = `Has dominado a tu compañero durante todo tu contrato en el equipo. Los directivos de ${academy.name} han quedado impresionados con tu rendimiento constante y han decidido que es momento de dar el salto. ¡Te ofrecen un asiento en el equipo!`;
 
   const ch = document.getElementById('ev-choices');
   ch.innerHTML = '';
@@ -3398,7 +3402,7 @@ function goToContracts(oldCatIdx, repeatCat = false, skipContracts = false) {
   // Academy Offer: check when in Karting, F4, FR, or F3
   if (!G.academy && !G.academyOffered && [0, 1, 2, 3].includes(oldCatIdx)) {
     const top5 = G.lastResult && G.lastResult.champ <= 5;
-    if (top5 && Math.random() < 0.5) {
+    if (top5 && Math.random() < 0.25) {
       G.academyOffered = true;
       showAcademyEvent(steps);
       return;
@@ -3945,6 +3949,33 @@ function showMinigame(forcedId = null) {
 
 const INTERACTIVE_MINIGAMES = [
   {
+    id: 'img_traffic',
+    label: '⚠️ Tráfico',
+    icon: '⚠️',
+    title: 'EVITA LOS AUTOS',
+    situation: 'Hay tráfico lento en clasificación. Encontrá un hueco limpio para no arruinar tu vuelta.',
+    instructions: 'Usá los botones para esquivar los autos lentos. Aguantá 10 segundos sin chocar.',
+    minCat: 0, 
+  },
+  {
+    id: 'img_strategy',
+    label: '📊 Estrategia',
+    icon: '📊',
+    title: 'CÓDIGO DE LA ESTRATEGIA',
+    situation: 'El equipo ideó una estrategia de paradas secreta para vencer a tus rivales, pero la encriptó en un código de 4 símbolos. Tenés que descifrarlo rápido antes de volver a pista.',
+    instructions: 'Elegí 4 símbolos e intentá descifrar el código.<br>🟢 = Correcto<br>🟡 = Posición incorrecta<br>⚫ = Incorrecto<br>Tenés 5 intentos.',
+    minCat: 1, 
+  },
+  {
+    id: 'img_recon',
+    label: '🎲 Reconocimiento',
+    icon: '🎲',
+    title: 'RECONOCIMIENTO DEL CIRCUITO',
+    situation: 'Tu ingeniero te muestra rápidamente el mapa del circuito con las referencias clave (curvas, frenadas, marchas) y luego las oculta.',
+    instructions: 'Memorizá la ubicación de cada referencia al inicio (3 segundos). Luego, encontrá todos los pares ocultos. Si te equivocás 5 veces, perdés el minijuego.',
+    minCat: 0,
+  },
+  {
     id: 'img_reaction',
     label: '🚦 Largada',
     icon: '🚦',
@@ -4060,7 +4091,7 @@ function showInteractiveMinigame(forcedId = null) {
   const eligible = INTERACTIVE_MINIGAMES.filter(mg => {
     if (mg.requireAcademy && !G.academy) return false;
     if (G.catIndex < mg.minCat) return false;
-    const winGames = ['img_reaction', 'img_pitstop', 'img_timing', 'img_defense', 'img_slipstream'];
+    const winGames = ['img_reaction', 'img_pitstop', 'img_timing', 'img_defense', 'img_slipstream', 'img_strategy'];
     if (winGames.includes(mg.id) && (G.team.stars || 0) < 3) return false;
     if (mg.id === 'img_rain') return false; // temporarily disabled
     return true;
@@ -4083,6 +4114,9 @@ function showInteractiveMinigame(forcedId = null) {
     document.getElementById('img-play-label').textContent = mg.label;
     // Launch the specific minigame
     switch (mg.id) {
+      case 'img_traffic':     startTrafficGame();     break;
+      case 'img_strategy':    startStrategyGame();    break;
+      case 'img_recon':       startReconGame();       break;
       case 'img_reaction':    startReactionGame();    break;
       case 'img_pitstop':     startPitstopGame();     break;
       case 'img_timing':      startTimingGame();      break;
@@ -4129,6 +4163,425 @@ function showIMGResult(success, title, detail, narrative, givesWin = true) {
   } else {
     G._seasonEventLogs.push(`💥 Minijuego interactivo: Fallaste`);
   }
+}
+
+// 📊
+//  STRATEGY - Mastermind
+// 📊
+// 🚦
+//  TRAFFIC - Esquivar autos
+// 🚦
+function startTrafficGame() {
+  const area = document.getElementById('img-game-area');
+  
+  area.innerHTML = `
+    <div style="font-size:36px;margin-bottom:6px">🚦</div>
+    <div class="heading" style="font-size:20px;margin-bottom:4px">TRÁFICO LENTO</div>
+    <div class="label" style="color:var(--muted);margin-bottom:16px" id="img-traffic-timer">Quedan 10.0s</div>
+    
+    <div id="img-traffic-box" style="position:relative; width:240px; height:300px; background:#1a1c23; border:2px solid #363a45; border-radius:12px; margin: 0 auto 24px; overflow:hidden;">
+      <!-- Lane dividers -->
+      <div style="position:absolute; width:2px; height:300px; left:80px; top:0; background:rgba(255,255,255,0.1); border-left: 2px dashed rgba(255,255,255,0.2);"></div>
+      <div style="position:absolute; width:2px; height:300px; left:160px; top:0; background:rgba(255,255,255,0.1); border-left: 2px dashed rgba(255,255,255,0.2);"></div>
+      
+      <!-- Player -->
+      <div id="img-traffic-player" style="position:absolute; width:40px; height:40px; font-size:32px; left:100px; top:250px; display:flex; align-items:center; justify-content:center; transition: left 0.1s ease; transform: rotate(90deg);">🏎️</div>
+    </div>
+
+    <div style="display:flex; gap:12px; justify-content:center;">
+      <button class="btn btn-secondary" style="font-size:24px; padding: 12px 24px;" onclick="window._imgTrafficMove(0)">⬅️</button>
+      <button class="btn btn-secondary" style="font-size:24px; padding: 12px 24px;" onclick="window._imgTrafficMove(1)">⏺️</button>
+      <button class="btn btn-secondary" style="font-size:24px; padding: 12px 24px;" onclick="window._imgTrafficMove(2)">➡️</button>
+    </div>
+  `;
+  
+  let playerLane = 1;
+  let done = false;
+  const pEl = document.getElementById('img-traffic-player');
+  
+  window._imgTrafficMove = (lane) => {
+    if (done) return;
+    playerLane = lane;
+    pEl.style.left = (lane * 80 + 20) + 'px';
+  };
+
+  const keyHandler = (e) => {
+    if (done) return;
+    if (e.key === 'ArrowLeft' && playerLane > 0) window._imgTrafficMove(playerLane - 1);
+    if (e.key === 'ArrowRight' && playerLane < 2) window._imgTrafficMove(playerLane + 1);
+  };
+  document.addEventListener('keydown', keyHandler);
+
+  let enemies = [];
+  const box = document.getElementById('img-traffic-box');
+  let startTime = Date.now();
+  let lastSpawn = startTime;
+  let animId;
+
+  const cleanup = () => {
+    done = true;
+    document.removeEventListener('keydown', keyHandler);
+    cancelAnimationFrame(animId);
+  };
+
+  const tick = () => {
+    if (done) return;
+    const now = Date.now();
+    const elapsed = now - startTime;
+    const remaining = Math.max(0, 10000 - elapsed);
+    
+    document.getElementById('img-traffic-timer').textContent = `Quedan ${(remaining/1000).toFixed(1)}s`;
+
+    if (remaining === 0) {
+      cleanup();
+      setTimeout(() => {
+        let statGains = '';
+        if (G.stats) {
+          G.stats.quali = clamp(G.stats.quali + 1, 0, 99);
+          statGains = 'Clasificación +1';
+        }
+        showIMGResult(true, '¡Hueco Encontrado!', `Esquivaste todo el tráfico. (${statGains})`, 'Conseguiste una vuelta limpia y tu tiempo fue inmejorable.', false);
+      }, 300);
+      return;
+    }
+
+    if (now - lastSpawn > 1100) {
+      lastSpawn = now;
+      const numCars = Math.random() < 0.4 ? 2 : 1;
+      const shuffledLanes = shuffle([0, 1, 2]);
+      for (let i = 0; i < numCars; i++) {
+        const lane = shuffledLanes[i];
+        const el = document.createElement('div');
+        el.style.position = 'absolute';
+        el.style.width = '40px';
+        el.style.height = '40px';
+        el.style.fontSize = '32px';
+        el.style.left = (lane * 80 + 20) + 'px';
+        el.style.top = '-40px';
+        el.style.display = 'flex';
+        el.style.alignItems = 'center';
+        el.style.justifyContent = 'center';
+        el.style.transform = 'rotate(-90deg)';
+        el.textContent = '🚙'; 
+        box.appendChild(el);
+        enemies.push({ el, lane, y: -40 });
+      }
+    }
+
+    const speed = 4; 
+    for (let i = enemies.length - 1; i >= 0; i--) {
+      const en = enemies[i];
+      en.y += speed;
+      en.el.style.top = en.y + 'px';
+      
+      if (en.lane === playerLane && en.y > 210 && en.y < 290) {
+        cleanup();
+        en.el.style.transform = 'none';
+        pEl.style.transform = 'none';
+        en.el.textContent = '💥';
+        pEl.textContent = '💥';
+        setTimeout(() => {
+          showIMGResult(false, '¡Choque!', 'Te llevaste puesto a un rezagado.', 'El auto quedó dañado y tuviste que abortar la vuelta rápida.', false);
+        }, 800);
+        return;
+      }
+
+      if (en.y > 300) {
+        en.el.remove();
+        enemies.splice(i, 1);
+      }
+    }
+
+    animId = requestAnimationFrame(tick);
+  };
+
+  animId = requestAnimationFrame(tick);
+}
+
+function startStrategyGame() {
+  const area = document.getElementById('img-game-area');
+  const SYMBOLS = ['🛞', '⚡', '⛽', '🌧️', '🏎️', '🔧'];
+  const MAX_ATTEMPTS = 5;
+  const CODE_LEN = 4;
+  
+  const secret = [];
+  for (let i = 0; i < CODE_LEN; i++) secret.push(randFrom(SYMBOLS));
+
+  let attempts = 0;
+  let currentGuess = [];
+  let pastGuesses = [];
+  let done = false;
+
+  const render = () => {
+    let rowsHtml = '';
+    for (let i = 0; i < MAX_ATTEMPTS; i++) {
+      const isActive = (i === attempts && !done);
+      const isPast = i < attempts;
+      
+      let slots = '';
+      for (let j = 0; j < CODE_LEN; j++) {
+        const val = isPast ? pastGuesses[i].guess[j] : (isActive && j < currentGuess.length ? currentGuess[j] : '');
+        let bg = '#252830';
+        let border = isActive ? '#e8c84a' : '#363a45';
+        
+        if (isPast) {
+          const fb = pastGuesses[i].feedback[j];
+          if (fb === '🟢') { bg = '#10b981'; border = '#047857'; }
+          else if (fb === '🟡') { bg = '#f59e0b'; border = '#b45309'; }
+          else if (fb === '⚫') { bg = '#1e2025'; border = '#111827'; }
+        }
+        
+        slots += `<div style="width:64px;height:64px;border-radius:12px;background:${bg};border:3px solid ${border};display:flex;align-items:center;justify-content:center;font-size:36px;transition:all 0.3s;">${val}</div>`;
+      }
+
+      rowsHtml += `
+        <div style="display:flex; gap: 12px; align-items:center; justify-content:center; margin-bottom: 12px; opacity: ${isPast || isActive ? 1 : 0.4}">
+          ${slots}
+        </div>
+      `;
+    }
+
+    let buttonsHtml = '';
+    SYMBOLS.forEach(sym => {
+      buttonsHtml += `<button class="btn btn-secondary img-strat-sym" data-sym="${sym}" style="font-size:32px; padding: 0; width:72px; height:64px; display:flex; align-items:center; justify-content:center; border-radius:12px;">${sym}</button>`;
+    });
+
+    area.innerHTML = `
+      <div style="font-size:42px;margin-bottom:6px">📊</div>
+      <div class="heading" style="font-size:24px;margin-bottom:4px">CÓDIGO DE LA ESTRATEGIA</div>
+      <div class="label" style="color:var(--muted);margin-bottom:24px">Intento ${Math.min(attempts + 1, MAX_ATTEMPTS)} de ${MAX_ATTEMPTS}</div>
+      
+      <div style="margin-bottom: 32px;">
+        ${rowsHtml}
+      </div>
+
+      <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:12px; max-width: 260px; margin: 0 auto 24px;">
+        ${buttonsHtml}
+      </div>
+      
+      <div style="display:flex; gap:12px; justify-content:center;">
+        <button class="btn btn-secondary" id="img-strat-undo" ${currentGuess.length === 0 || done ? 'disabled' : ''}>🔙 Borrar</button>
+        <button class="btn btn-primary" id="img-strat-submit" ${currentGuess.length < CODE_LEN || done ? 'disabled' : ''}>Validar</button>
+      </div>
+    `;
+
+    document.querySelectorAll('.img-strat-sym').forEach(btn => {
+      btn.onclick = () => {
+        if (done || currentGuess.length >= CODE_LEN) return;
+        currentGuess.push(btn.dataset.sym);
+        render();
+      };
+    });
+    
+    const undoBtn = document.getElementById('img-strat-undo');
+    if (undoBtn) undoBtn.onclick = () => {
+      if (done || currentGuess.length === 0) return;
+      currentGuess.pop();
+      render();
+    };
+    
+    const submitBtn = document.getElementById('img-strat-submit');
+    if (submitBtn) submitBtn.onclick = () => {
+      if (done || currentGuess.length < CODE_LEN) return;
+      
+      const feedback = new Array(CODE_LEN).fill('⚫');
+      const secCopy = [...secret];
+      const guessCopy = [...currentGuess];
+      
+      // Exact matches
+      for (let i = 0; i < CODE_LEN; i++) {
+        if (guessCopy[i] === secCopy[i]) {
+          feedback[i] = '🟢';
+          secCopy[i] = null;
+          guessCopy[i] = null; // Mark as handled
+        }
+      }
+      
+      // Wrong positions
+      for (let i = 0; i < CODE_LEN; i++) {
+        if (guessCopy[i] !== null) {
+          const idx = secCopy.indexOf(guessCopy[i]);
+          if (idx !== -1) {
+            feedback[i] = '🟡';
+            secCopy[idx] = null;
+          }
+        }
+      }
+
+      pastGuesses.push({ guess: [...currentGuess], feedback });
+      const isWin = feedback.every(f => f === '🟢');
+      
+      attempts++;
+      currentGuess = [];
+      render();
+
+      if (isWin) {
+        done = true;
+        setTimeout(() => {
+          showIMGResult(true, '¡Código Descifrado!', 'Estrategia alternativa activada', 'El plan funcionó a la perfección y tomaste la punta de la carrera por sorpresa.', true);
+        }, 600);
+      } else if (attempts >= MAX_ATTEMPTS) {
+        done = true;
+        setTimeout(() => {
+          showIMGResult(false, 'Código Incorrecto', 'El equipo se confundió en los boxes', `La estrategia fue un desastre. El código era ${secret.join('')}`, false);
+        }, 600);
+      }
+    };
+  };
+
+  render();
+}
+
+// ══════════════════════════════════════════════════════════// 🧠
+//  0. RECON - Memotest del circuito
+// 🎲
+function startReconGame() {
+  const area = document.getElementById('img-game-area');
+  const ICONS = ['⤴️', '⚠️', '⚙️', '⚡', '🏎️', '🏁', '🛞', '🟢'];
+  let deck = [...ICONS, ...ICONS];
+  deck = shuffle(deck);
+
+  let firstSelection = null;
+  let secondSelection = null;
+  let matches = 0;
+  let mistakes = 0;
+  const MAX_MISTAKES = 5;
+  let locked = true; 
+  let done = false;
+
+  area.innerHTML = `
+    <style>
+      .recon-card {
+        aspect-ratio: 1;
+        background: #252830;
+        border: 2px solid #363a45;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 32px;
+        cursor: pointer;
+        user-select: none;
+        transition: transform 0.3s, background 0.3s;
+      }
+      .recon-card.revealed {
+        background: #28506B;
+        transform: rotateY(180deg);
+      }
+      .recon-card.matched {
+        background: #10b981;
+        border-color: #047857;
+        transform: rotateY(180deg);
+      }
+      .recon-card .icon {
+        display: none;
+      }
+      .recon-card.revealed .icon, .recon-card.matched .icon {
+        display: block;
+        transform: rotateY(180deg);
+      }
+    </style>
+    <div style="font-size:36px;margin-bottom:6px">🎲</div>
+    <div class="heading" style="font-size:20px;margin-bottom:4px">RECONOCIMIENTO DEL CIRCUITO</div>
+    <div class="label" style="color:var(--muted);margin-bottom:16px" id="img-recon-msg">Memorizá las posiciones...</div>
+    <div style="font-size:20px; font-weight:bold; color:var(--accent); margin-bottom:12px" id="img-recon-mistakes">Errores: 0 / 5</div>
+    
+    <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:8px; max-width: 320px; margin: 0 auto; perspective: 1000px;" id="img-recon-grid">
+    </div>
+  `;
+
+  const grid = document.getElementById('img-recon-grid');
+  
+  const cards = [];
+  deck.forEach((icon, i) => {
+    const card = document.createElement('div');
+    card.className = 'recon-card revealed';
+    card.innerHTML = `<div class="icon">${icon}</div>`;
+    card.dataset.icon = icon;
+    card.dataset.index = i;
+    
+    card.onclick = () => handleCardClick(card);
+    cards.push(card);
+    grid.appendChild(card);
+  });
+
+  setTimeout(() => {
+    if (done) return;
+    cards.forEach(c => c.className = 'recon-card');
+    locked = false;
+    const msg = document.getElementById('img-recon-msg');
+    if(msg) msg.textContent = '¡Encontrá los pares!';
+  }, 3000);
+
+  const handleCardClick = (card) => {
+    if (locked || done) return;
+    if (card.classList.contains('revealed') || card.classList.contains('matched')) return;
+
+    card.classList.add('revealed');
+
+    if (!firstSelection) {
+      firstSelection = card;
+    } else {
+      secondSelection = card;
+      locked = true;
+
+      if (firstSelection.dataset.icon === secondSelection.dataset.icon) {
+        setTimeout(() => {
+          if (done) return;
+          firstSelection.classList.remove('revealed');
+          firstSelection.classList.add('matched');
+          secondSelection.classList.remove('revealed');
+          secondSelection.classList.add('matched');
+          matches++;
+          firstSelection = null;
+          secondSelection = null;
+          locked = false;
+          
+          if (matches === 8) {
+            endGame(true);
+          }
+        }, 300);
+      } else {
+        mistakes++;
+        const el = document.getElementById('img-recon-mistakes');
+        if (el) el.textContent = `Errores: ${mistakes} / ${MAX_MISTAKES}`;
+        
+        setTimeout(() => {
+          if (done) return;
+          firstSelection.classList.remove('revealed');
+          secondSelection.classList.remove('revealed');
+          firstSelection = null;
+          secondSelection = null;
+          
+          if (mistakes >= MAX_MISTAKES) {
+            endGame(false);
+          } else {
+            locked = false;
+          }
+        }, 700);
+      }
+    }
+  };
+
+  const endGame = (win) => {
+    done = true;
+    locked = true;
+    
+    if (win) {
+      G._minigamesWon = (G._minigamesWon || 0) + 1;
+      let statGains = '';
+      if (Math.random() < 0.5) {
+        G.stats.speed = clamp(G.stats.speed + 1, 0, 99);
+        statGains = 'Velocidad +1';
+      } else {
+        G.stats.quali = clamp(G.stats.quali + 1, 0, 99);
+        statGains = 'Clasificación +1';
+      }
+      showIMGResult(true, '¡Memoria perfecta!', `Reconociste todo el circuito. (${statGains})`, 'Te sentís con mucha confianza y encontrás el límite de la pista más rápido que el resto.', false);
+    } else {
+      showIMGResult(false, 'Demasiados errores', 'Se te mezclaron las referencias.', 'Saliste a la pista sin tener claros los puntos de frenada y te costó encontrar el ritmo en las primeras vueltas.', false);
+    }
+  };
 }
 
 // ══════════════════════════════════════════════════════════

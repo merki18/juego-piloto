@@ -30,9 +30,9 @@ const TALENTS = [
 ];
 
 const ACADEMIES = [
-  { id: 'ferrari', name: 'Academia Ferrari', icon: 'assets/images/logos/logo Ferrari.png', f1Teams: ['Ferrari', 'Haas F1'] },
-  { id: 'redbull', name: 'Programa Red Bull', icon: 'assets/images/logos/logo red bull.png', f1Teams: ['Red Bull', 'Racing Bulls'] },
-  { id: 'mercedes', name: 'Jóvenes de Mercedes', icon: 'assets/images/logos/logo mercedes.png', f1Teams: ['Mercedes', 'Williams'] },
+  { id: 'ferrari', name: 'Ferrari', icon: 'assets/images/logos/logo Ferrari.png', f1Teams: ['Ferrari', 'Haas F1'] },
+  { id: 'redbull', name: 'Red Bull', icon: 'assets/images/logos/logo red bull.png', f1Teams: ['Red Bull', 'Racing Bulls'] },
+  { id: 'mercedes', name: 'Mercedes', icon: 'assets/images/logos/logo mercedes.png', f1Teams: ['Mercedes', 'Williams'] },
 ];
 
 // focus: 'desarrollo' = more stat growth, worse results | 'ganar' = less growth, better results | 'equilibrado' = balanced
@@ -163,6 +163,26 @@ const ACTIVITIES_LEGENDARY = [
 ];
 
 const RANDOM_EVENTS = [
+  {
+    id: 'f2_academy_fp1',
+    requireAcademy: true,
+    minCat: 4,
+    maxCat: 4,
+    icon: '🏎️', title: 'Oportunidad de Oro', desc: '{{ACADEMY_NAME}} te ha ofrecido subirte a su coche de Fórmula 1 durante una sesión de Entrenamientos Libres 1 (FP1). Es tu primera vez en la máxima categoría frente a los jefes.', choices: [
+      { text: 'Apretar al máximo', skillStat: 'speed', skillBonus: 2, skillFail: -2, repDelta: 30, repFailDelta: -20, hint: '🚀 Velocidad: Si sos rápido, deslumbrás.', successDesc: 'Sorprendiste a todos marcando tiempos increíbles para un novato. Los jefes de {{ACADEMY_NAME}} tomaron nota de tu talento puro.', failDesc: 'Te pasaste del límite y terminaste contra el muro. Destruiste el coche y los ingenieros de {{ACADEMY_NAME}} quedaron furiosos.' },
+      { text: 'Dar buen feedback', skillStat: 'quali', skillBonus: 1, skillFail: -1, repDelta: 15, repFailDelta: -10, hint: '⏱️ Clasificación: Si entendés el coche, aportás datos útiles.', successDesc: 'Diste 30 vueltas impecables aportando datos clave para configurar el coche. Agradecieron tu madurez y frialdad.', failDesc: 'El salto a la F1 fue demasiado para vos. Te mareaste con los botones del volante y los datos que diste fueron inútiles.' }
+    ]
+  },
+  {
+    id: 'f2_academy_tpc',
+    requireAcademy: true,
+    minCat: 4,
+    maxCat: 4,
+    icon: '🏁', title: 'Test Privado (TPC)', desc: '{{ACADEMY_NAME}} organizó un test privado en un Fórmula 1 de hace dos años. Estás compitiendo directamente contra los otros jóvenes talentos del programa.', choices: [
+      { text: 'Trabajar ritmo de carrera', skillStat: 'tyres', skillBonus: 2, skillFail: -2, repDelta: 20, repFailDelta: -15, hint: '🛞 Gestión: Si sos constante, demostras madurez.', successDesc: 'Fuiste el más constante en las tandas largas. Los ingenieros de {{ACADEMY_NAME}} aplaudieron tu gestión de los neumáticos.', failDesc: 'Destrozaste las gomas en pocas vueltas. Tus tiempos cayeron en picada y quedaste último entre los jóvenes de la academia.' },
+      { text: 'Buscar la vuelta rápida', skillStat: 'quali', skillBonus: 2, skillFail: -2, repDelta: 25, repFailDelta: -15, hint: '⏱️ Clasificación: Encontrar el limite del coche.', successDesc: 'Destrozaste el cronómetro y le ganaste al resto de los jóvenes de {{ACADEMY_NAME}}. Dejaste claro quién es el líder.', failDesc: 'Quisiste ir tan rápido que cometiste errores en todas tus vueltas lanzadas. Los otros pilotos de {{ACADEMY_NAME}} marcaron mejores tiempos.' }
+    ]
+  },
   {
     icon: '🤕', title: 'Lesión en entrenamiento', desc: 'Te lastimaste la muñeca. La temporada arranca complicada.', choices: [
       { text: 'Pagar la mejor operación (-$50,000)', stat: 'tyres', delta: 1, money: -50000, hint: 'Te recuperás impecable y volvés con más resistencia (+1 Gestión).', fixedDesc: 'El cirujano hizo un trabajo impecable. Semanas de rehabilitación intensa, pero volviste a la pista más fuerte que antes. Los meses de recuperación te hicieron entender tu cuerpo de otra manera.' },
@@ -315,8 +335,8 @@ const RANDOM_EVENTS = [
   },
   {
     id: 'peer_amigo',
-    icon: '🤝', title: 'Alianza Estratégica con {{PEER_NAME}}', desc: 'En la Q3, en un circuito rapidísimo, vos y {{PEER_NAME}} salen juntos a la pista. Él te ofrece darse rebufo mutuamente para bajar los tiempos y arruinarle la pole a los favoritos.', choices: [
-      { text: 'Aceptar el trato y coordinar en pista', stat: 'quali', delta: 0, money: 0, peerRelDelta: +15, peerRelFailDelta: -15, skillStat: 'quali', skillBonus: 4, skillFail: -2, hint: '🏎 Clasificación: depende de tu capacidad técnica clavar los tiempos con el rebufo.', successDesc: 'Coordinación perfecta. Ambos bajaron tres décimas y clasificaron en primera fila. Al bajarse de los autos, chocaron los puños. Esto es respeto puro.', failDesc: 'Trataste de aprovechar el rebufo, pero frenaste tarde y bloqueaste los neumáticos. Le arruinaste la vuelta a él y perdiste la tuya. La tensión en boxes se corta con un cuchillo.' },
+    icon: '🤝', title: 'Alianza Estratégica con {{PEER_NAME}}', desc: 'En la Q3, en un circuito rapidísimo, vos y {{PEER_NAME}} salen juntos a la pista. Él te ofrece darse rebufo mutuamente para bajar los tiempos y clasificar mas adelante.', choices: [
+      { text: 'Aceptar el trato y coordinar en pista', stat: 'quali', delta: 0, money: 0, peerRelDelta: +15, peerRelFailDelta: -15, skillStat: 'quali', skillBonus: 4, skillFail: -2, hint: '🏎 Clasificación: depende de tu capacidad técnica clavar los tiempos con el rebufo.', successDesc: 'Coordinación perfecta. Ambos bajaron tres décimas y clasificaron 3 puestos mas arriba. Al bajarse de los autos, chocaron los puños. Esto es respeto puro.', failDesc: 'Trataste de aprovechar el rebufo, pero frenaste tarde y bloqueaste los neumáticos. Le arruinaste la vuelta a él y perdiste la tuya. La tensión en boxes se corta con un cuchillo.' },
       { text: 'Declinar y enfocarte en tu propia vuelta', stat: 'speed', delta: 1, money: 0, peerRelDelta: -5, hint: 'Resultado fijo: preferís no arriesgar y competir solo (+1 Velocidad).', fixedDesc: 'Le respondiste que preferías aire limpio. La vuelta fue buena pero sin el extra del rebufo. Él se quedó un poco decepcionado.' },
     ]
   },
@@ -505,6 +525,54 @@ const MINIGAMES = [
 
 
 const INTERVIEWS = [
+    {
+      id: 'f1_academy_sign_filial',
+      title: 'Llegada a la F1 de la mano de la academia',
+      desc: '"Acabás de subir a la F1 gracias a tu academia, pero no te han puesto en su equipo principal. ¿Cómo te sentís al respecto?"',
+      choices: [
+        { text: '"Tengo que demostrar que merezco estar acá"', pers: 'team', delta: 15, hint: 'Agradecés la oportunidad.', fixedDesc: 'Aclaraste que estás muy agradecido con la academia por la confianza y que vas a darlo todo en este equipo para demostrar que estás listo.' },
+        { text: '"Mi objetivo es llegar al equipo principal"', pers: 'aggressiveness', delta: 15, repDelta: 10, hint: 'Dejás claro que querés subir.', fixedDesc: 'Es un buen paso, pero no vine a la Fórmula 1 para conformarme. Quiero llegar al equipo principal.' },
+        { text: '"Primero quiero aprender y disfrutar"', pers: 'media', delta: 15, hint: 'Mostrás una actitud tranquila.', fixedDesc: '"Es mi primera temporada en F1. Quiero aprender todo lo posible y aprovechar cada vuelta." Una respuesta prudente para un debutante.' }
+      ]
+    },
+    {
+      id: 'f1_academy_sign_main',
+      title: 'Llegada directa al primer equipo',
+      desc: '"Tu salto a la F1 ha sido impresionante, debutando directamente en el equipo principal de tu academia. ¿Sentís la presión?"',
+      choices: [
+        { text: '"La academia sabe lo que hace"', pers: 'aggressiveness', delta: 15, repDelta: 15, hint: 'Demostrás personalidad.', fixedDesc: '"No hay presión. Si me pusieron acá directamente es porque saben lo que valgo y estoy listo para ganar", respondiste con total seguridad.' },
+        { text: '"Es un desafío enorme"', pers: 'team', delta: 15, hint: 'Mostrás madurez.', fixedDesc: 'Explicaste que sentís una gran responsabilidad y respeto por la historia del equipo, pero que vas a trabajar duro para estar a la altura.' }
+      ]
+    },
+    {
+      id: 'f1_academy_leave',
+      title: 'Ruptura con la academia',
+      desc: '"Sorprendiste a todos al rechazar la vía de tu academia para subir a F1 y firmar por otro equipo. ¿Por qué tomaste esa decisión?"',
+      choices: [
+        { text: 'Buscaba mi propio camino', pers: 'media', delta: 20, repDelta: 15, hint: 'Sos dueño de tu destino.', fixedDesc: 'Aclaraste que querías ser dueño de tu propio destino y no depender de las decisiones de otros directivos para armar tu carrera.' },
+        { text: 'Falta de oportunidades', pers: 'aggressiveness', delta: 15, hint: 'Criticás a tu antigua academia.', fixedDesc: 'Fuiste tajante: "Ellos no parecían tener apuro en darme un asiento, así que fui a donde sí valoran mi talento".' }
+      ]
+    },
+    {
+      id: 'f1_academy_dropped',
+      title: 'La puerta que se cerró',
+      desc: 'Después de llegar a la Fórmula 1 con el respaldo de la academia, tu contrato no fue renovado. Ahora continuarás tu carrera sin el apoyo del programa y la prensa quiere saber qué pasó.',
+      choices: [
+        { text: '"Les deseo lo mejor"', pers: 'team', delta: 15, hint: 'Te vas sin atacar a quienes te ayudaron.', fixedDesc: '"Me dieron una oportunidad que siempre voy a valorar. Ahora nuestros caminos se separan y les deseo lo mejor." Te despediste sin generar conflictos.' },
+        { text: '"Ahora voy a demostrarles que se equivocaron"', pers: 'aggressiveness', delta: 25, hint: 'Convertís el rechazo en motivación.', fixedDesc: '"Tomaron su decisión. Yo voy a tomar la mía: demostrar en pista que se equivocaron." Tus declaraciones alimentaron una nueva narrativa alrededor de tu carrera.' },
+        { text: '"Prefiero no hablar del tema"', pers: 'media', delta: 15, hint: 'Evitás hablar públicamente del conflicto.', fixedDesc: '"No quiero entrar en detalles. Estoy concentrado en lo que viene." Mantuviste silencio y evitaste una guerra pública.' }
+      ]
+    },
+    {
+      id: 'f1_academy_promoted_main',
+      title: 'El esperado ascenso',
+      desc: '"Después de unos años en la zona media, finalmente la academia te asciende al equipo principal. ¿Valió la pena la espera?"',
+      choices: [
+        { text: '"Esto es un sueño hecho realidad"', pers: 'team', delta: 20, hint: 'Mostrás gratitud hacia la academia.', fixedDesc: '"Cuando entré en la academia soñaba con este momento. Ellos confiaron en mí desde el principio y quiero devolverles esa confianza." Celebraste el ascenso junto al equipo.' },
+        { text: '"Sabía que este momento iba a llegar"', pers: 'aggressiveness', delta: 20, hint: 'Mostrás confianza en tu propio talento.', fixedDesc: '"Siempre creí que tenía el nivel para estar acá. Ahora tengo la oportunidad de demostrarlo contra los mejores." Tu confianza generó titulares.' },
+        { text: '"Me gané esta oportunidad"', pers: 'media', delta: 15, hint: 'Mostrás seguridad sin excederte.', fixedDesc: '"No fue un regalo. Trabajé mucho durante estos años y creo que mis resultados hablan por mí." Una respuesta firme y medida.' }
+      ]
+    },
     {
       id: 'f1_reg_change_better',
       title: 'El nuevo reglamento funcionó',
@@ -863,8 +931,9 @@ const INTERVIEWS = [
 function showInterview(postSeasonId = null) {
   // Select an interview
   let pool = INTERVIEWS.filter(iv => {
+    if (iv.requireAcademy && !G.academy) return false;
     if (postSeasonId) return iv.id === postSeasonId;
-    const psIds = ['f1_overpaid', 'f1_fallen_champion', 'f1_carried_by_car', 'f1_shadow_contract_good', 'f1_shadow_contract_bad', 'f1_beaten_by_young_peer', 'f1_epic_champion', 'f1_championship_contender', 'f1_retirement_talk', 'f1_win_record', 'f1_teammate_destroyed', 'f1_first_title', 'f1_title_lost', 'f1_title_record_broken', 'f1_constructors_champ', 'f1_teammate_champ', 'f1_reg_change_better', 'f1_reg_change_worse', 'f1_underperform', 'f1_regulations_criticism'];
+    const psIds = ['f1_overpaid', 'f1_fallen_champion', 'f1_carried_by_car', 'f1_shadow_contract_good', 'f1_shadow_contract_bad', 'f1_beaten_by_young_peer', 'f1_epic_champion', 'f1_championship_contender', 'f1_retirement_talk', 'f1_win_record', 'f1_teammate_destroyed', 'f1_first_title', 'f1_title_lost', 'f1_title_record_broken', 'f1_constructors_champ', 'f1_teammate_champ', 'f1_reg_change_better', 'f1_reg_change_worse', 'f1_underperform', 'f1_regulations_criticism', 'f1_academy_sign_filial', 'f1_academy_sign_main', 'f1_academy_leave', 'f1_academy_dropped', 'f1_academy_promoted_main'];
     if (!postSeasonId && (psIds.includes(iv.id) || iv.id.startsWith('ev_'))) return false; // Hide post-season interviews from mid-season
     if (G.catIndex < 5) return false; // ONLY IN F1
     if (G.storyFlags['interview_' + iv.id]) return false; // NO REPEATS
@@ -1045,11 +1114,11 @@ function showInterview(postSeasonId = null) {
         G._seasonEventLogs.push(logText);
       
       ch.innerHTML = `
-        <div class="card" style="padding: 24px; border-color: ${iv.id.startsWith('ev_') ? 'var(--accent)' : 'var(--blue)'}">
-          <div style="font-size:32px;margin-bottom:8px;text-align:center">${iv.id.startsWith('ev_') ? '✨' : '📸'}</div>
-          <div class="heading" style="font-size:18px;margin-bottom:12px;text-align:center">${iv.id.startsWith('ev_') ? 'Resolución del evento' : 'Declaraciones publicadas'}</div>
-          <div style="font-size:14px;line-height:1.6;color:var(--text);background:rgba(255,255,255,0.04);border-radius:10px;padding:14px 16px;margin-bottom:16px;text-align:left;border-left:3px solid ${iv.id.startsWith('ev_') ? 'var(--accent)' : 'var(--blue)'}">${c.fixedDesc}</div>
-          <button class="btn btn-primary" style="width:100%" onclick="processSeasonStep()">Continuar</button>
+        <div class="card" style="padding: 24px; border-color: ${isEvent ? 'var(--accent)' : 'var(--blue)'}">
+          <div style="font-size:32px;margin-bottom:8px;text-align:center">${isEvent ? '✨' : '📸'}</div>
+          <div class="heading" style="font-size:18px;margin-bottom:12px;text-align:center">${isEvent ? 'Resolución del evento' : 'Declaraciones publicadas'}</div>
+          <div style="font-size:14px;line-height:1.6;color:var(--text);background:rgba(255,255,255,0.04);border-radius:10px;padding:14px 16px;margin-bottom:16px;text-align:left;border-left:3px solid ${isEvent ? 'var(--accent)' : 'var(--blue)'}">${c.fixedDesc}</div>
+          <button class="btn btn-primary" style="width:100%" onclick="window._activeStepCallback ? window._activeStepCallback() : processSeasonStep()">Continuar</button>
         </div>
       `;
     };
@@ -1287,6 +1356,7 @@ function initState(name, number, nat, talent) {
 function goto(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -1490,10 +1560,15 @@ function renderStatsDisplay() {
 
 function buildActivities() {
   // Pick 5 activities: 3 common + chance of rare/legendary
-  const pool = [...ACTIVITIES_COMMON];
+  const filterAct = act => !act.requireAcademy || G.academy;
+  const pool = [...ACTIVITIES_COMMON].filter(filterAct);
   const picked = shuffle(pool).slice(0, 3);
-  if (Math.random() < 0.15) picked.push(randFrom(ACTIVITIES_RARE));
-  if (Math.random() < 0.03) picked.push(randFrom(ACTIVITIES_LEGENDARY));
+  
+  const rarePool = ACTIVITIES_RARE.filter(filterAct);
+  if (Math.random() < 0.15 && rarePool.length > 0) picked.push(randFrom(rarePool));
+  
+  const legPool = ACTIVITIES_LEGENDARY.filter(filterAct);
+  if (Math.random() < 0.03 && legPool.length > 0) picked.push(randFrom(legPool));
 
   const el = document.getElementById('preseason-activities');
   el.innerHTML = '';
@@ -1693,8 +1768,8 @@ function runSimulation() {
     // Team focus growth multiplier (only formative categories)
     // desarrollo = old baseline, equilibrado = slightly less, ganar = much less
     const focusGrowthMult = (G.team && G.team.focus === 'desarrollo') ? 1.0
-      : (G.team && G.team.focus === 'ganar') ? 0.5
-        : 0.75; // equilibrado or F1
+      : (G.team && G.team.focus === 'ganar') ? 0.55
+        : 0.8; // equilibrado or F1
 
     const tb = G.upgrades.includes('track') ? 0.75 : 0;
       if (age < 18) {
@@ -1771,6 +1846,7 @@ function runSimulation() {
 }
 
 function processSeasonStep() {
+  window._activeStepCallback = processSeasonStep;
   if (!G.aiRoster) G.aiRoster = generateInitialRoster();
   if (!G._seasonSteps || G._seasonSteps.length === 0) {
     checkNicknames();
@@ -1843,16 +1919,16 @@ function computeSeasonResult() {
   }
 
   // Team focus: 'ganar' teams boost effective rating in formative categories
-  const focusRatingBonus = (G.team && G.team.focus === 'ganar') ? 8
-    : (G.team && G.team.focus === 'desarrollo') ? -5
+  const focusRatingBonus = (G.team && G.team.focus === 'ganar') ? 10
+    : (G.team && G.team.focus === 'desarrollo') ? -2
       : 0;
   eff += focusRatingBonus;
 
   // Make formative categories slightly easier
   if (cat !== 'F1') {
-    eff += 6;
+    eff += 8;
     if (G.academy) {
-      eff += 4; // Bonus extra por apoyo y recursos de la academia
+      eff += 5; // Bonus extra por apoyo y recursos de la academia
     }
     
     // Bonus por experiencia en la categoría
@@ -1870,7 +1946,7 @@ function computeSeasonResult() {
   }
 
   // 4. Reduced luck factor
-  const luck = rand(-8, 8);
+  const luck = rand(-8, 10);
   const rating = clamp(eff + luck, 1, 99);
 
   // Races per category
@@ -2014,6 +2090,11 @@ function computeSeasonResult() {
   if (result.champ === 1 && result.cat === 'F1') {
     G.f1Titles++;
     G.f1ConsecutiveTitles++;
+    G.achievementsProgress = G.achievementsProgress || {};
+    G.achievementsProgress['reg_changes_won'] = G.achievementsProgress['reg_changes_won'] || [];
+    if (!G.achievementsProgress['reg_changes_won'].includes(G.lastRegChangeYear)) {
+      G.achievementsProgress['reg_changes_won'].push(G.lastRegChangeYear);
+    }
     if (G.team.stars <= 4) G.epicTitles++;
   } else if (result.cat === 'F1') {
     G.f1ConsecutiveTitles = 0;
@@ -2123,7 +2204,7 @@ function computeSeasonResult() {
     if (G.age >= 34 && peerPos < champ && !G.storyFlags['interview_f1_beaten_by_young_peer']) {
       G._seasonSteps.push('event:f1_beaten_by_young_peer');
     }
-    if (G.lastRegChangeYear === G.year && G._shadowOldTeam && G.f1ContractYearsLeft >= 0) {
+    if (G.lastRegChangeYear === (G.year - 1) && G._shadowOldTeam && G.f1ContractYearsLeft >= 0) {
       if (G.team.stars >= 4 && !G.storyFlags['interview_f1_shadow_contract_good']) G._seasonSteps.push('event:f1_shadow_contract_good');
       else if (G.team.stars < 4 && !G.storyFlags['interview_f1_shadow_contract_bad']) G._seasonSteps.push('event:f1_shadow_contract_bad');
     }
@@ -2135,6 +2216,12 @@ function computeSeasonResult() {
         if (G.team.stars > G._regChangeOldStars) G._seasonSteps.push('event:f1_reg_change_better');
         else if (G.team.stars < G._regChangeOldStars) G._seasonSteps.push('event:f1_reg_change_worse');
       }
+    }
+    
+    // Cola de entrevista pendiente por traspasos de academia
+    if (G.pendingAcademyInterview) {
+      G._seasonSteps.push('event:' + G.pendingAcademyInterview);
+      G.pendingAcademyInterview = null;
     }
     // NOTE: standings-dependent interviews (teammate_destroyed, underperform, constructors_champ,
     // teammate_champ) are pushed in buildSummary() where _lastStandings is available.
@@ -2241,6 +2328,8 @@ function resetEventChrome() {
   if (card) { card.style.borderColor = ''; card.style.boxShadow = ''; }
   const titleEl = document.getElementById('ev-title');
   if (titleEl) titleEl.style.color = '';
+  const radio = document.getElementById('ev-radio-block');
+  if (radio) radio.remove();
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -2488,7 +2577,7 @@ function checkNicknames() {
     newDesc = 'Cuando el cielo se oscurece y la pista se moja, encontrás un agarre que nadie más puede ver.';
   } else if (G.stats.tyres >= 90 && G.stats.quali >= 90 && totalF1Wins >= 5 && currentNick !== 'El Profesor' && !has('El Profesor')) {
     newNick = 'El Profesor';
-    newDesc = 'Frío, calculador y estratégico. Cuidás las gomas como nadie y ganás carreras usando la cabeza.';
+    newDesc = 'Frío, calculador y estratégico. Cuidás los neumaticos como nadie y ganás carreras usando la cabeza.';
   } else if (G.stats.speed >= 85 && G.stats.overtake >= 85 && G.stats.tyres <= 60 && currentNick !== 'El Kamikaze' && !has('El Kamikaze')) {
     newNick = 'El Kamikaze';
     newDesc = 'Espectáculo garantizado. Ataques al límite y velocidad pura, a costa de devorar los neumáticos.';
@@ -2786,7 +2875,7 @@ function afterSummary() {
   }
 
   // Academy warnings logic
-  if (G.academy) {
+  if (G.academy && catIdx < 5) {
     if (r.champ > 8) {
       G.academyWarnings = (G.academyWarnings || 0) + 1;
     } else {
@@ -2797,6 +2886,8 @@ function afterSummary() {
       const academy = ACADEMIES.find(a => a.id === G.academy);
       G.academy = null;
       G.academyWarnings = 0;
+      G.achievementsProgress = G.achievementsProgress || {};
+      G.achievementsProgress['dropped_from_academy'] = true;
       updateTopBar();
       G._pendingFiredMsg = {
         type: 'message',
@@ -2907,7 +2998,11 @@ function showAcademyDropEvent(pendingSteps) {
   b1.onclick = () => {
     G._seasonEventLogs.push(`Dejaste de pertenecer a la ${academy.name} tras finalizar tu contrato.`);
     G.academy = null;
+    G.academyPromisedTeam = null;
+    G.achievementsProgress = G.achievementsProgress || {};
+    G.achievementsProgress['dropped_from_academy'] = true;
     updateTopBar();
+    G.pendingAcademyInterview = 'f1_academy_dropped';
     G._nextSteps = [...pendingSteps];
     processNextStep();
   };
@@ -2953,7 +3048,12 @@ function showAcademyMainTeamPromotionEvent(pendingSteps, promisedTeamName) {
     // Graduation
     G._seasonEventLogs.push(`🎓 ¡Te has graduado de la ${academy.name}! Al llegar al equipo principal, ya no eres un piloto junior, sino una estrella consagrada de la Fórmula 1.`);
     G.academy = null;
+    updateTopBar();
+
+    G.f1ContractYearsLeft = 1;
+    if (G.catIndex === 5) refreshTeammate();
     
+    G.pendingAcademyInterview = 'f1_academy_promoted_main';
     G._nextSteps = [...pendingSteps];
     processNextStep();
   };
@@ -2988,10 +3088,21 @@ function showAcademyPromisedSeatEvent(pendingSteps, promisedTeamName, champ) {
     G.team = offerTeam;
     G.academyPromisedTeam = null;
     
-    // Graduation check
-    if (academy.f1Teams[0] === promisedTeamName) {
-      G._seasonEventLogs.push(`🎓 ¡Te has graduado de la ${academy.name}! Al llegar al equipo principal, ya no eres un piloto junior, sino una estrella consagrada de la Fórmula 1.`);
+    // Add post-season interview based on team
+    if (champ === 1) {
+      G.pendingAcademyInterview = 'f1_academy_sign_main';
+      G.achievementsProgress = G.achievementsProgress || {};
+      G.achievementsProgress['academy_straight_to_main'] = true;
+    } else {
+      G.pendingAcademyInterview = 'f1_academy_sign_filial';
+    }
+    
+    // Graduarse si asciende directo al principal
+    if (academy && academy.f1Teams[0] === offerTeam.name) {
+      G._seasonEventLogs = G._seasonEventLogs || [];
+      G._seasonEventLogs.push(`🎓 ¡Te has graduado de la ${academy.name}! Al firmar con el equipo principal, ya no eres un piloto junior, sino una estrella consagrada.`);
       G.academy = null;
+      updateTopBar();
     }
     G.f1ContractYearsLeft = 1;
     if (G.catIndex === 5) refreshTeammate();
@@ -3025,19 +3136,21 @@ function showAcademyMutualTerminationEvent(pendingSteps = []) {
 
   document.getElementById('ev-icon').innerHTML = `<img src="${academy.icon}" width="40" style="object-fit:contain">`;
   document.getElementById('ev-title').textContent = `Rescisión de Mutuo Acuerdo`;
-  document.getElementById('ev-desc').textContent = `La ${academy.name} reconoce que tienes nivel para subir a F1, pero lamentablemente siguen sin tener un asiento disponible para ti. Han decidido liberarte de tu contrato en buenos términos para que busques tu oportunidad. No podrán ficharte este año, pero las puertas quedan abiertas para el futuro.`;
+  document.getElementById('ev-desc').textContent = `${academy.name} reconoce que tienes nivel para subir a F1, pero lamentablemente siguen sin tener un asiento disponible para ti. Han decidido liberarte de tu contrato en buenos términos para que busques tu oportunidad. No podrán ficharte este año, pero las puertas quedan abiertas para el futuro.`;
 
   const ch = document.getElementById('ev-choices');
   ch.innerHTML = '';
 
   const b1 = document.createElement('div');
   b1.className = 'minigame-choice';
-  b1.innerHTML = `<h3>Agradecer y ser libre</h3><p style="margin-bottom:6px">Te conviertes en agente libre. La academia no te hará ofertas esta temporada.</p>`;
+  b1.innerHTML = `<h3>Agradecer y ser libre</h3><p style="margin-bottom:6px">Te conviertes en agente libre.</p>`;
   b1.onclick = () => {
     G.academyTempBans = G.academyTempBans || [];
     G.academyTempBans.push(G.academy);
     G.academy = null;
     G.academyWarnings = 0;
+    G.achievementsProgress = G.achievementsProgress || {};
+    G.achievementsProgress['dropped_from_academy'] = true;
     updateTopBar();
     G._nextSteps = [...pendingSteps];
     processNextStep();
@@ -3056,14 +3169,14 @@ function showAcademyEvent(pendingSteps = []) {
 
   document.getElementById('ev-icon').innerHTML = `<img src="${academy.icon}" width="40" style="object-fit:contain">`;
   document.getElementById('ev-title').textContent = `Invitación: ${academy.name}`;
-  document.getElementById('ev-desc').textContent = `Tus grandes actuaciones te metieron en el radar de la ${academy.name}. Te ofrecen unirte a su programa de jóvenes pilotos, con grandes beneficios pero también obligaciones.`;
+  document.getElementById('ev-desc').textContent = `Tus grandes actuaciones te metieron en el radar de la academia de ${academy.name}. Te ofrecen unirte a su programa de jóvenes pilotos, con grandes beneficios pero también obligaciones.`;
 
   const ch = document.getElementById('ev-choices');
   ch.innerHTML = '';
 
   const b1 = document.createElement('div');
   b1.className = 'minigame-choice';
-  b1.innerHTML = `<h3>Unirse a la ${academy.name}</h3><p style="margin-bottom:6px">Te facilitará el camino y los contratos, pero estarás atado a ellos.</p>`;
+  b1.innerHTML = `<h3>Unirse a la academia de ${academy.name}</h3><p style="margin-bottom:6px">Te facilitará el camino y los contratos, pero estarás atado a ellos.</p>`;
   b1.onclick = () => {
     G.academy = academy.id;
     G.academyWarnings = 0;
@@ -3077,6 +3190,8 @@ function showAcademyEvent(pendingSteps = []) {
   b2.className = 'minigame-choice';
   b2.innerHTML = `<h3>Rechazar</h3><p style="margin-bottom:6px">Prefiero mantener mi independencia.</p>`;
   b2.onclick = () => {
+    G.achievementsProgress = G.achievementsProgress || {};
+    G.achievementsProgress['rejected_academy'] = true;
     G._nextSteps = [...pendingSteps];
     processNextStep();
   };
@@ -3101,6 +3216,8 @@ function showGoldenBoyEvent(pendingSteps = []) {
   b1.className = 'minigame-choice';
   b1.innerHTML = `<h3>Aceptar oferta de ${offerTeam.name}</h3><p style="margin-bottom:6px">Firma con un equipo Top inmediatamente.</p>`;
   b1.onclick = () => {
+    G.achievementsProgress = G.achievementsProgress || {};
+    G.achievementsProgress['golden_boy_offer'] = true;
     G.team = offerTeam;
     G.f1ContractYearsLeft = Math.random() < 0.5 ? 1 : 2;
     if (G.catIndex === 5) refreshTeammate();
@@ -3278,10 +3395,10 @@ function goToContracts(oldCatIdx, repeatCat = false, skipContracts = false) {
     }
   }
 
-  // Academy Offer: check when in Karting, F4, or FR
-  if (!G.academy && !G.academyOffered && [0, 1, 2].includes(oldCatIdx)) {
-    const top3 = G.lastResult && G.lastResult.champ <= 3;
-    if (top3 && Math.random() < 0.25) {
+  // Academy Offer: check when in Karting, F4, FR, or F3
+  if (!G.academy && !G.academyOffered && [0, 1, 2, 3].includes(oldCatIdx)) {
+    const top5 = G.lastResult && G.lastResult.champ <= 5;
+    if (top5 && Math.random() < 0.5) {
       G.academyOffered = true;
       showAcademyEvent(steps);
       return;
@@ -3351,9 +3468,12 @@ function showMessageScreen(title, desc) {
 function processNextStep() {
   if (!G._nextSteps || G._nextSteps.length === 0) return;
   const step = G._nextSteps.shift();
+  window._activeStepCallback = processNextStep;
 
   if (typeof step === 'object' && step.type === 'message') {
     showMessageScreen(step.title, step.desc);
+  } else if (typeof step === 'string' && step.startsWith('event:')) {
+    showInterview(step.split(':')[1]);
   } else if (step === 'contracts') {
     showContracts();
   } else if (step === 'preseason') {
@@ -3381,12 +3501,22 @@ function processNextStep() {
         G._shadowVerdictPending = false;
         const stars = G.team.stars;
         let verdictLine;
-        if (stars === 5) verdictLine = '¡Cumplieron lo prometido! Tenés un cohete entre las manos.';
+        G.achievementsProgress = G.achievementsProgress || {};
+        if (stars === 5) {
+          verdictLine = '¡Cumplieron lo prometido! Tenés un cohete entre las manos.';
+          G.achievementsProgress['shadow_success'] = true;
+        }
         else if (stars === 4) verdictLine = 'No es el auto dominante que prometieron, pero vas a pelear arriba.';
-        else if (stars === 3) verdictLine = 'Te vendieron humo. El auto está en la mitad de la tabla.';
-        else verdictLine = '¡Te estafaron! El auto es una carreta. No vas a pelear por nada.';
+        else if (stars === 3) {
+          verdictLine = 'Te vendieron humo. El auto está en la mitad de la tabla.';
+          G.achievementsProgress['shadow_scam'] = true;
+        }
+        else {
+          verdictLine = '¡Te estafaron! El auto es una carreta. No vas a pelear por nada.';
+          G.achievementsProgress['shadow_scam'] = true;
+        }
         const oldTeamName = G._shadowOldTeam || 'tu antiguo equipo';
-        msgTitle = '🕵️ La Verdad del Pre-Contrato';
+        msgTitle = '🚨 La Verdad del Pre-Contrato';
         msgDesc = `Se revelan los autos de la nueva era. Tu auto de <strong>${G.team.name}</strong> rinde al nivel de <strong>${stars} estrella${stars === 1 ? '' : 's'}</strong>.<br><br>${verdictLine}<br><br><span style="color:var(--accent2)">Tu antiguo equipo, ${oldTeamName}, te cerró las puertas para siempre.</span>`;
       } else if (isRegChange) {
         msgTitle = '⚠️ Nuevo Reglamento';
@@ -3458,6 +3588,10 @@ function showRandomEvent(forcedId = null) {
 
   // Build candidate event pool — filter out special one-time or conditional events
   let pool = RANDOM_EVENTS.filter(ev => {
+    if (ev.requireAcademy && !G.academy) return false;
+    if (ev.minCat !== undefined && G.catIndex < ev.minCat) return false;
+    if (ev.maxCat !== undefined && G.catIndex > ev.maxCat) return false;
+    
     if (ev.id === 'pendrive') {
       // Only show if: player is in F1, on a 5-star team, and hasn't seen it this career
       if (G._pendriveUsed) return false;
@@ -3520,8 +3654,22 @@ function showRandomEvent(forcedId = null) {
   const ev = JSON.parse(JSON.stringify(evTemplate));
 
   if (G.peer) {
-    ev.title = ev.title.replace('{{PEER_NAME}}', G.peer.name);
-    ev.desc = ev.desc.replace('{{PEER_NAME}}', G.peer.name);
+    ev.title = ev.title.replace(/\{\{PEER_NAME\}\}/g, G.peer.name);
+    ev.desc = ev.desc.replace(/\{\{PEER_NAME\}\}/g, G.peer.name);
+  }
+
+  if (G.academy) {
+    const ac = ACADEMIES.find(a => a.id === G.academy);
+    if (ac) {
+      ev.title = ev.title.replace(/\{\{ACADEMY_NAME\}\}/g, ac.name);
+      ev.desc = ev.desc.replace(/\{\{ACADEMY_NAME\}\}/g, ac.name);
+      ev.choices.forEach(ch => {
+        ch.text = ch.text.replace(/\{\{ACADEMY_NAME\}\}/g, ac.name);
+        if (ch.successDesc) ch.successDesc = ch.successDesc.replace(/\{\{ACADEMY_NAME\}\}/g, ac.name);
+        if (ch.failDesc) ch.failDesc = ch.failDesc.replace(/\{\{ACADEMY_NAME\}\}/g, ac.name);
+        if (ch.fixedDesc) ch.fixedDesc = ch.fixedDesc.replace(/\{\{ACADEMY_NAME\}\}/g, ac.name);
+      });
+    }
   }
 
   if (ev.id === 'pendrive') {
@@ -3723,8 +3871,8 @@ function showMinigame(forcedId = null) {
       const logName = c.pureLuck ? "Suerte" : STAT_LABELS[c.skillStat];
       const logStat = c.pureLuck ? "" : ` ${Math.round(G.stats[c.skillStat] || 50)}`;
 
-      let repDelta = c.repDelta || 0;
-      let peerRelDelta = c.peerRelDelta || 0;
+      let repDelta = success ? (c.repDelta || 0) : (c.repFailDelta !== undefined ? c.repFailDelta : (c.repDelta || 0));
+      let peerRelDelta = success ? (c.peerRelDelta || 0) : (c.peerRelFailDelta !== undefined ? c.peerRelFailDelta : (c.peerRelDelta || 0));
       let narrative = success ? (c.successDesc || '') : (c.failDesc || '');
       const isNeutralFail = !success && c.neutralFail;
 
@@ -3811,7 +3959,7 @@ const INTERACTIVE_MINIGAMES = [
     icon: '🔧',
     title: 'PARADA EN BOXES',
     situation: 'Tu ingeniero grita por la radio: "¡BOX BOX BOX!" Entrás al pit lane a toda velocidad. El equipo está listo, pero las cuatro ruedas necesitan cambiarse cuanto antes.',
-    instructions: 'Tocá cada rueda del auto 3 veces para cambiar las gomas. Completá las 4 ruedas lo más rápido que puedas. El tiempo corre desde que empezás.',
+    instructions: 'Tocá cada rueda del auto 3 veces para cambiar los neumaticos. Completá las 4 ruedas lo más rápido que puedas. El tiempo corre desde que empezás.',
     minCat: 1, // F4 onwards
   },
   {
@@ -3883,7 +4031,7 @@ const INTERACTIVE_MINIGAMES = [
     icon: '🌧️',
     title: 'EL DILUVIO',
     situation: 'En plena carrera empieza a llover. Tu ingeniero grita: "¿Aguantamos en pista o entramos a poner Intermedias?" La decisión correcta puede ganarte posiciones. La equivocada, arruinarte la carrera.',
-    instructions: 'El nivel de lluvia sube impredeciblemente. Presioná ENTRAR A BOXES en el momento justo: ni muy seco (destrozás las gomas) ni demasiado tarde (trompo). Tenés una sola oportunidad.',
+    instructions: 'El nivel de lluvia sube impredeciblemente. Presioná ENTRAR A BOXES en el momento justo: ni muy seco (destrozás los neumaticos) ni demasiado tarde (trompo). Tenés una sola oportunidad.',
     minCat: 1,
   },
   {
@@ -3891,7 +4039,7 @@ const INTERACTIVE_MINIGAMES = [
     label: '🛞 Neumáticos',
     icon: '🛞',
     title: 'CUIDAR EL CAUCHO',
-    situation: 'Faltan 3 vueltas, tus gomas están al límite. El que viene atrás tiene gomas nuevas y acorta distancia. Si apretás a fondo, las gomas se funden. Si aflojás demasiado, te adelanta.',
+    situation: 'Faltan 3 vueltas, tus neumaticos están al límite. El que viene atrás tiene gomas nuevas y acorta distancia. Si apretás a fondo, las gomas se funden. Si aflojás demasiado, te adelanta.',
     instructions: 'Presioná y soltá el botón de forma intermitente para gestionar el ritmo. Si el desgaste llega a 0, reventón. Si el rival te recorta toda la distancia, te pasa.',
     minCat: 1,
   },
@@ -3910,6 +4058,7 @@ const INTERACTIVE_MINIGAMES = [
 function showInteractiveMinigame(forcedId = null) {
   // Filter by category
   const eligible = INTERACTIVE_MINIGAMES.filter(mg => {
+    if (mg.requireAcademy && !G.academy) return false;
     if (G.catIndex < mg.minCat) return false;
     const winGames = ['img_reaction', 'img_pitstop', 'img_timing', 'img_defense', 'img_slipstream'];
     if (winGames.includes(mg.id) && (G.team.stars || 0) < 3) return false;
@@ -4406,8 +4555,8 @@ function startTempGame() {
 
   area.innerHTML = `
     <div style="font-size:36px;margin-bottom:8px">🌡️</div>
-    <div class="heading" style="font-size:20px;margin-bottom:4px">TEMPERATURA DE GOMAS</div>
-    <div class="label" style="color:var(--muted);margin-bottom:14px">Mantené las gomas en la zona verde</div>
+    <div class="heading" style="font-size:20px;margin-bottom:4px">TEMPERATURA DE NEUMATICOS</div>
+    <div class="label" style="color:var(--muted);margin-bottom:14px">Mantené los neumaticos en la zona verde</div>
     <div id="img-temp-bar-wrap" style="position:relative;width:100%;height:38px;background:#1a1a2e;border-radius:20px;overflow:hidden;margin-bottom:12px;border:1px solid rgba(255,255,255,0.1)">
       <div id="img-temp-zone" style="position:absolute;left:${ZONE_MIN}%;width:${ZONE_MAX-ZONE_MIN}%;top:0;height:100%;background:rgba(74,222,128,0.25);border-left:2px solid #4ade80;border-right:2px solid #4ade80"></div>
       <div id="img-temp-fill" style="position:absolute;left:0;top:0;height:100%;width:${temp}%;background:linear-gradient(90deg,#60a5fa,#4ade80);border-radius:20px;transition:width 0.05s"></div>
@@ -4454,22 +4603,22 @@ function startTempGame() {
 
     if (timeInZone >= GOAL_DURATION) {
       done = true;
-      showIMGResult(true, '¡Gomas a Temperatura!', 'Gomas listas para atacar',
-        'Las gomas están perfectamente calientes. Cuando el Safety Car se fue, tenés agarre total y atacás la primera curva con confianza.', false);
+      showIMGResult(true, '¡Neumaticos a Temperatura!', 'Neumaticos listas para atacar',
+        'Los neumaticos están perfectamente calientes. Cuando el Safety Car se fue, tenés agarre total y atacás la primera curva con confianza.', false);
       return;
     }
     
     if (elapsedTime >= TOTAL_TIME) {
       done = true;
-      showIMGResult(false, 'Se Acabó el Tiempo', 'No lograste calentar las gomas a tiempo',
-        'El Safety Car se fue y tus gomas seguían frías. Perdiste todo el agarre y un par de posiciones en la relargada.');
+      showIMGResult(false, 'Se Acabó el Tiempo', 'No lograste calentar los neumaticos a tiempo',
+        'El Safety Car se fue y tus neumaticos seguían fríos. Perdiste todo el agarre y un par de posiciones en la relargada.');
       return;
     }
 
     if (temp <= 0) {
       done = true;
-      showIMGResult(false, 'Gomas Frías', 'Las gomas se enfriaron demasiado',
-        'Sin calor en las gomas, perdés grip instantáneamente al reiniciarse la carrera. Dos autos te adelantan antes de la primera curva.');
+      showIMGResult(false, 'neumaticos Fríos', 'Los neumaticos se enfriaron demasiado',
+        'Sin calor en los neumaticos, perdés grip instantáneamente al reiniciarse la carrera. Dos autos te adelantan antes de la primera curva.');
       return;
     }
     animId = requestAnimationFrame(loop);
@@ -5349,7 +5498,8 @@ function showContracts() {
     }
   }
 
-  if (!isLockedShadowMarket && cat === 'F1') {
+  const wasInF1 = G.lastResult && G.lastResult.cat === 'F1';
+  if (!isLockedShadowMarket && cat === 'F1' && wasInF1) {
     const prevChamp = (G.lastResult && G.lastResult.cat === 'F1') ? G.lastResult.champ : 20;
 
     // Current team always gets to offer renewal if player met the position requirement for their team's stars
@@ -5526,19 +5676,35 @@ function showContracts() {
       G.team = team;
       G.academyPromisedTeam = null;
       
-      if (G.academy) {
+      const wasInF1 = G.seasons.length > 0 && G.seasons[G.seasons.length - 1].cat === 'F1';
+      
+      if (isF1 && G.academy) {
         const academyObj = ACADEMIES.find(a => a.id === G.academy);
-        if (academyObj && academyObj.f1Teams[0] === team.name) {
-          G._seasonEventLogs = G._seasonEventLogs || [];
-          G._seasonEventLogs.push(`🎓 ¡Te has graduado de la ${academyObj.name}! Al firmar con el equipo principal, ya no eres un piloto junior, sino una estrella consagrada de la Fórmula 1.`);
-          G.academy = null;
-          updateTopBar();
+        if (academyObj) {
+          if (academyObj.f1Teams[0] === team.name) {
+            G._seasonEventLogs = G._seasonEventLogs || [];
+            G._seasonEventLogs.push(`🎓 ¡Te has graduado de la ${academyObj.name}! Al firmar con el equipo principal, ya no eres un piloto junior, sino una estrella consagrada de la Fórmula 1.`);
+            G.academy = null;
+            if (!wasInF1) {
+              G.pendingAcademyInterview = 'f1_academy_sign_main';
+              G.achievementsProgress = G.achievementsProgress || {};
+              G.achievementsProgress['academy_straight_to_main'] = true;
+            }
+            updateTopBar();
+          } else if (academyObj.f1Teams.slice(1).includes(team.name)) {
+            // Firmó con el equipo filial
+            if (!wasInF1) G.pendingAcademyInterview = 'f1_academy_sign_filial';
+          } else {
+            // Firmó con otro equipo de F1 por fuera de la academia
+            if (!wasInF1) G.pendingAcademyInterview = 'f1_academy_leave';
+            G.academy = null;
+            updateTopBar();
+          }
         }
       }
       G.money += Math.round(salarySpin * 0.1);
       G.totalMoney += Math.round(salarySpin * 0.1);
       if (isF1) G.f1ContractYearsLeft = contractYears - 1;
-      const wasInF1 = G.seasons.length > 0 && G.seasons[G.seasons.length - 1].cat === 'F1';
       
       if (isF1) {
         refreshTeammate();
@@ -5584,8 +5750,8 @@ function showContracts() {
         <div style="display:flex;align-items:center;gap:12px">
           <div style="width:56px;height:48px;border-radius:8px;background:rgba(239,68,68,0.1);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">✂️</div>
           <div>
-            <div class="heading" style="font-size:18px;color:#ef4444">Romper contrato con la ${academy.name}</div>
-            <div style="font-size:12px;color:var(--muted);margin-top:2px">Ver ofertas de TODOS los equipos</div>
+            <div class="heading" style="font-size:18px;color:#ef4444">Romper contrato con la academia ${academy.name}</div>
+            <div style="font-size:12px;color:var(--muted);margin-top:2px">Ver ofertas de TODOS los equipos (${academy.name} no se lo va a tomar bien)</div>
           </div>
         </div>
       </div>
@@ -6074,8 +6240,16 @@ const TIER_ORDER = ['platinum', 'gold', 'silver', 'bronze'];
 const TIER_LABELS = { platinum: 'Platino', gold: 'Oro', silver: 'Plata', bronze: 'Bronce' };
 
 const ACHIEVEMENTS = [
+  // Nuevos logros agregados
+  { id: 'golden_boy_f1', name: 'La Gran Apuesta', desc: 'Llegaste a la Fórmula 1 a través de una oferta unica de un equipo top.', icon: '⭐', tier: 'gold', condition: () => (G.achievementsProgress || {})['golden_boy_offer'] },
+  { id: 'academy_straight_to_main', name: 'El Elegido', desc: 'Subiste al equipo principal de la academia directamente desde la F2.', icon: '🪄', tier: 'gold', condition: () => (G.achievementsProgress || {})['academy_straight_to_main'] },
+  { id: 'no_help_needed', name: 'No necesito ayuda', desc: 'Ganaste el campeonato del mundo tras haber rechazado la oferta de una academia.', icon: '🦾', tier: 'platinum', condition: () => G.f1Titles > 0 && (G.achievementsProgress || {})['rejected_academy'] },
+  { id: 'shadow_scam', name: 'La Estafa', desc: 'Aceptaste un pre contrato y el auto resultó ser poco competitivo.', icon: '🤡', tier: 'silver', condition: () => (G.achievementsProgress || {})['shadow_scam'] },
+  { id: 'shadow_success', name: 'La Decisión Correcta', desc: 'Aceptaste un pre contrato y el auto resultó ser un misil.', icon: '🔮', tier: 'silver', condition: () => (G.achievementsProgress || {})['shadow_success'] },
+  { id: 'king_of_eras', name: 'El Rey de Cada Era', desc: 'Ganaste campeonatos bajo 3 reglamentos diferentes.', icon: '📜', tier: 'gold', condition: () => ((G.achievementsProgress || {})['reg_changes_won'] || []).length >= 3 },
+  { id: 'look_at_me_now', name: 'Ahora Mírame', desc: 'Ganaste el campeonato mundial de F1 después de haber sido expulsado de una academia.', icon: '🔥', tier: 'gold', condition: () => G.f1Titles > 0 && (G.achievementsProgress || {})['dropped_from_academy'] },
   // Platino
-  { id: 'undefeated_h2h', name: 'Imbatible en el equipo', desc: 'Terminaste tu carrera deportiva sin haber perdido nunca un duelo de compañeros.', icon: '🛡️', tier: 'platinum', condition: () => G.isRetired && G.seasons.length > 0 && (G.careerH2HLosses || 0) === 0 },
+  { id: 'undefeated_h2h', name: 'Imbatible en el equipo', desc: 'Terminaste tu carrera deportiva sin haber perdido nunca un duelo de compañeros.', icon: '🤝', tier: 'platinum', condition: () => G.isRetired && G.seasons.length > 0 && (G.careerH2HLosses || 0) === 0 },
   { id: 'fangio', name: 'Como Fangio!', desc: 'Ganaste el campeonato del mundo con cuatro equipos diferentes.', icon: '🏆', tier: 'platinum', condition: () => new Set(G.seasons.filter(s => s.champ === 1 && s.cat === 'F1').map(s => s.teamName)).size >= 4 },
   { id: 'goat', name: 'Máxima Gloria', desc: 'El mejor de todos los tiempos. Ganaste 8 campeonatos mundiales.', icon: '🐐', tier: 'platinum', condition: () => G.f1Titles >= 8 },
   { id: 'most_wins', name: 'El Más Ganador', desc: 'Nadie ganó más carreras que vos. Superaste las 105 victorias en F1.', icon: '🥇', tier: 'platinum', condition: () => G.seasons.filter(s => s.cat === 'F1').reduce((a, b) => a + b.wins, 0) > 105 },

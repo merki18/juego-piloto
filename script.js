@@ -1909,12 +1909,12 @@ function computeSeasonResult() {
   }
 
   // 3. Effective rating (incorporates car performance for F1)
-  // In F1: car is 85%, driver is 15%. Top cars nerfed to keep it competitive.
+  // In F1: car is 80%, driver is 20%. Top cars nerfed to keep it competitive.
   let eff = weightedBase + rainBonus;
   if (cat === 'F1') {
     const effectiveStars = clamp(G.team.stars + (G._tempStarBonus || 0), 1, 5);
     const carRating = effectiveStars === 1 ? 15 : effectiveStars === 2 ? 30 : effectiveStars === 3 ? 55 : effectiveStars === 4 ? 78 : 92;
-    eff = (weightedBase * 0.15) + (carRating * 0.85) + rainBonus;
+    eff = (weightedBase * 0.20) + (carRating * 0.80) + rainBonus;
     // Apply regulation bonus if player chose to focus on current season
     if (G.regulationBonus > 0) {
       eff += G.regulationBonus;
@@ -1950,14 +1950,37 @@ function computeSeasonResult() {
   }
 
   // 4. Reduced luck factor
-  const luck = rand(-8, 10);
+  const luck = rand(-10, 10);
   const rating = clamp(eff + luck, 1, 99);
+  const playerPower = rating; // the unified power value
 
   // Races per category
   const races = [12, 14, 14, 16, 14, 24][G.catIndex];
 
   // 5. Calculate results with specific stat impacts
-  const champ = calcChampPosition(rating);
+  let champ = 1;
+  if (cat === 'Karting') {
+    champ = calcChampPosition(rating);
+  } else {
+    const catDrivers = G.aiRoster.filter(d => d.cat === cat);
+    let rank = 1;
+    catDrivers.forEach(ai => {
+      let aiPower = ai.skill;
+      const tObj = TEAMS[cat].find(t => t.name === ai.team);
+      const aiStars = tObj ? tObj.stars : 3;
+      
+      if (cat === 'F1') {
+        const aiCarRating = aiStars === 1 ? 15 : aiStars === 2 ? 30 : aiStars === 3 ? 55 : aiStars === 4 ? 78 : 92;
+        aiPower = (ai.skill * 0.20) + (aiCarRating * 0.80);
+      } else {
+        aiPower = ai.skill + (aiStars * 3);
+      }
+      
+      aiPower += rand(-10, 10);
+      if (aiPower > playerPower) rank++;
+    });
+    champ = rank;
+  }
 
   // Base stat modifiers (0 to 1) to influence where in the range they land
   const overtakeFactor = (effStats.overtake - 1) / 98;
@@ -2299,7 +2322,9 @@ function simulateShadowF1Season() {
   const scored = f1Drivers.map(d => {
     const team = (TEAMS['F1'] || []).find(t => t.name === d.team);
     const stars = team ? team.stars : 3;
-    return { name: d.name, team: d.team, power: (stars * 12) + d.skill + (Math.random() * 20) };
+    const carRating = stars === 1 ? 15 : stars === 2 ? 30 : stars === 3 ? 55 : stars === 4 ? 78 : 92;
+    const power = (d.skill * 0.20) + (carRating * 0.80) + rand(-10, 10);
+    return { name: d.name, team: d.team, power };
   });
   scored.sort((a, b) => b.power - a.power);
 
@@ -2826,7 +2851,7 @@ function buildSummary() {
               <img src="assets/images/caras/cara ${G.peer.name.split(' ').pop().toLowerCase()}.png" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'" style="width:100%; height:100%; object-fit:cover; position:absolute; top:0; left:0; z-index:2;" />
             </div>
             <div>
-              <div style="font-weight:bold">${G.peer.name} <span style="font-size:12px; color:var(--muted); font-weight:normal">(${G.peer.nat.flag} ${G.peer.team})</span></div>
+              <div style="font-weight:bold">${G.peer.name} <span style="font-size:12px; color:var(--muted); font-weight:normal">(${G.peer.nat.flag} OVR ${Math.round(G.peer.skill || 50)})</span></div>
               <div style="font-size:12px; color:var(--muted); font-weight:normal">${G.peer.h2hLosses} victorias, ${G.peer.h2hWins} derrotas</div>
             </div>
           </div>
@@ -6035,17 +6060,19 @@ function showContracts() {
     if (isOpportunity) badges += '<span class="badge" style="background-color:#fbbf24;color:#000;font-size:10px;margin-left:6px;vertical-align:middle;padding:2px 6px;border-radius:4px;font-weight:bold">OPORTUNIDAD</span>';
     
     let prospectiveTeammate = null;
+    let prospectiveSkill = null;
     if (isF1 && G.aiRoster) {
       const teamDrivers = G.aiRoster.filter(d => d.cat === 'F1' && d.team === team.name);
       if (teamDrivers.length > 0) {
         // Sort highest skill first
         teamDrivers.sort((a,b) => b.skill - a.skill);
         prospectiveTeammate = teamDrivers[0].name;
+        prospectiveSkill = Math.round(teamDrivers[0].skill);
       }
     }
 
     if (prospectiveTeammate) {
-      badges += `<span class="badge" style="background-color:#6366f1;color:#fff;font-size:10px;margin-left:6px;vertical-align:middle;padding:2px 6px;border-radius:4px;font-weight:bold">Compañero: ${prospectiveTeammate}</span>`;
+      badges += `<span class="badge" style="background-color:#6366f1;color:#fff;font-size:10px;margin-left:6px;vertical-align:middle;padding:2px 6px;border-radius:4px;font-weight:bold;text-transform:uppercase;">Compañero: ${prospectiveTeammate} (${prospectiveSkill})</span>`;
     }
 
     const c = document.createElement('div');
@@ -6444,7 +6471,12 @@ function showRetirement() {
     const champMap = Object.assign({}, G.aiChampions || {});
     if (G.f1Titles > 0) champMap[G.name] = G.f1Titles;
     const champList = Object.entries(champMap)
-      .sort((a, b) => b[1] - a[1])
+      .sort((a, b) => {
+        if (b[1] !== a[1]) return b[1] - a[1];
+        if (a[0] === G.name) return -1;
+        if (b[0] === G.name) return 1;
+        return 0;
+      })
       .slice(0, 6);
     const maxTitles = champList[0] ? champList[0][1] : 1;
     const champRows = champList.map(([name, titles], i) => {
@@ -6616,6 +6648,7 @@ function refreshTeammate() {
   if (currentPeerStillInTeam) {
     newTm = currentPeerStillInTeam;
     G.peer.skill = currentPeerStillInTeam.skill;
+    G.peer.age = currentPeerStillInTeam.age;
     G.peer.team = G.team.name;
     return;
   }
@@ -6629,6 +6662,9 @@ function refreshTeammate() {
      if (oldPeerInRoster) {
          if (oldPeerInRoster.cat === 'F1') destination = `fichó por ${oldPeerInRoster.team}`;
          else destination = `quedó fuera de la F1 (ahora corre en ${oldPeerInRoster.cat})`;
+     } else if (G.peer.age && G.peer.age <= 37) {
+         const otherSeries = ['el WEC (Campeonato Mundial de Resistencia)', 'IMSA', 'el RALLY', 'la Fórmula E', 'NASCAR', 'la IndyCar'];
+         destination = `dejo la F1 y se fue a competir en ${otherSeries[Math.floor(Math.random() * otherSeries.length)]}`;
      }
      
      G._pendingTeammateChangeMsg = {
@@ -6652,6 +6688,7 @@ function refreshTeammate() {
     h2hLosses: 0,
     yearsAsTeammate: 0,
     skill: newTm.skill || 50,
+    age: newTm.age || 20,
     avatar: newTm.avatar || EMOJI_AVATARS[Math.floor(Math.random() * EMOJI_AVATARS.length)]
   };
   G._lastTeammateLeft = prevName;
@@ -6915,10 +6952,17 @@ function generateStandingsTable(r) {
       }
     }
 
-        aiPool = catDrivers.map(d => {
+    aiPool = catDrivers.map(d => {
       const tObj = catTeams.find(t => t.name === d.team);
       const stars = tObj ? tObj.stars : 3;
-      const power = (stars * 10) + d.skill + (Math.random() * 15);
+      let power = d.skill;
+      if (r.cat === 'F1') {
+        const carRating = stars === 1 ? 15 : stars === 2 ? 30 : stars === 3 ? 55 : stars === 4 ? 78 : 92;
+        power = (d.skill * 0.20) + (carRating * 0.80);
+      } else {
+        power = d.skill + (stars * 3);
+      }
+      power += rand(-10, 10);
       return { 
         name: d.flag + ' ' + d.name, 
         team: d.team, 

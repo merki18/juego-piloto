@@ -1210,7 +1210,7 @@ function generateInitialRoster() {
   generateDriver('Rafael Câmara', 'Invicta', 21, 'Brasil', 'F2', 78);
   generateDriver('Joshua Dürksen', 'Invicta', 22, 'Paraguay', 'F2', 76);
   generateDriver('Ritomo Miyata', 'Hitech Pulse-Eight', 26, 'Japón', 'F2', 75);
-  generateDriver('Colton Herta', 'Hitech Pulse-Eight', 26, 'Estados Unidos', 'F2', 82);
+  generateDriver('Colton Herta', 'Hitech Pulse-Eight', 26, 'Estados Unidos', 'F2', 80);
   generateDriver('Noel León', 'Campos', 21, 'México', 'F2', 73);
   generateDriver('Nikola Tsolov', 'Campos', 19, 'Bulgaria', 'F2', 74);
   generateDriver('Dino Beganovic', 'DAMS', 22, 'Suecia', 'F2', 76);
@@ -1238,7 +1238,7 @@ function generateInitialRoster() {
   generateDriver('Freddie Slater', 'Trident', 18, 'Reino Unido', 'F3', 72);
   generateDriver('Matteo De Palo', 'Trident', 18, 'Italia', 'F3', 67);
   generateDriver('Mattia Colnaghi', 'MP Motorsport', 18, 'Argentina', 'F3', 68);
-  generateDriver('Tuukka Taponen', 'MP Motorsport', 19, 'Finlandia', 'F3', 71);
+  generateDriver('Tuukka Taponen', 'MP Motorsport', 19, 'Finlandia', 'F3', 70);
   generateDriver('Alessandro Giusti', 'MP Motorsport', 19, 'Francia', 'F3', 69);
   generateDriver('Taito Kato', 'ART Grand Prix', 18, 'Japón', 'F3', 65);
   generateDriver('Maciej Gładysz', 'ART Grand Prix', 18, 'Polonia', 'F3', 67);
@@ -2890,7 +2890,17 @@ function afterSummary() {
   if (G.aiRoster) {
     G.aiRoster.forEach(d => {
       d.age++;
-      if (d.age < 28) d.skill += Math.floor(Math.random() * 3);
+      if (d.age < 28) {
+        let maxLimit = 99;
+        if (d.cat === 'F2') maxLimit = 80;
+        else if (d.cat !== 'F1') maxLimit = 75; // F3 and below
+        
+        if (d.skill < maxLimit) {
+          let growth = Math.floor(Math.random() * 3) + 1; // 1 to 3 points
+          if (d.skill < 85 && Math.random() < 0.5 && d.cat === 'F1') growth += 1; // F1 gets extra boost
+          d.skill = Math.min(d.skill + growth, maxLimit);
+        }
+      }
       else if (d.age > 33) d.skill -= Math.floor(Math.random() * 3);
     });
     simulateDriverMarket();
@@ -2962,8 +2972,7 @@ function afterSummary() {
 
   // Auto-advance
   if (canAdvance) {
-    const skip = isChampion && Math.random() < 0.3 && G.catIndex < 3;
-    G.catIndex += skip ? 2 : 1;
+    G.catIndex += 1;
     G.catIndex = Math.min(G.catIndex, 5);
   }
 
@@ -3016,7 +3025,7 @@ function showAcademyDropEvent(pendingSteps) {
   
   document.getElementById('ev-icon').innerHTML = `<img src="${academy.icon}" width="40" style="object-fit:contain">`;
   document.getElementById('ev-title').textContent = `Fin de Ciclo`;
-  document.getElementById('ev-desc').textContent = `Tu contrato con el equipo ha terminado. Al no lograr dominar internamente a tu compañero, los directivos de la ${academy.name} sienten que tu techo de desarrollo no cumple con las expectativas para subirte al asiento. Han decidido no renovarte el apoyo, por lo que a partir de ahora eres agente libre. Podrás negociar con cualquier equipo de la parrilla.`;
+  document.getElementById('ev-desc').textContent = `Tu contrato con el equipo ha terminado. Al no lograr dominar internamente a tu compañero, los directivos de ${academy.name} sienten que tu techo de desarrollo no cumple con las expectativas para subirte al asiento. Han decidido no renovarte el apoyo, por lo que a partir de ahora eres agente libre. Podrás negociar con cualquier equipo de la parrilla.`;
 
   const ch = document.getElementById('ev-choices');
   ch.innerHTML = '';
@@ -3055,6 +3064,9 @@ function showAcademyMainTeamPromotionEvent(pendingSteps, promisedTeamName) {
   b1.className = 'minigame-choice';
   b1.innerHTML = `<h3>Aceptar el ascenso</h3><p style="margin-bottom:6px">Firma con el equipo principal y gradúate de la academia.</p>`;
   b1.onclick = () => {
+    const oldTeamName = G.team ? G.team.name : null;
+    const wasInF1 = G.catIndex === 5;
+    
     const offerTeam = TEAMS['F1'].find(t => t.name === promisedTeamName);
     G.team = offerTeam;
     G.f1ContractYearsLeft = 2; // Un contrato de 2 años
@@ -3066,7 +3078,13 @@ function showAcademyMainTeamPromotionEvent(pendingSteps, promisedTeamName) {
       if (newTeamDrivers.length > 1) {
         const displaced = newTeamDrivers.find(d => !G.peer || d.id !== G.peer.id);
         if (displaced) {
-          G.aiRoster = G.aiRoster.filter(d => d.id !== displaced.id);
+          if (wasInF1 && oldTeamName && oldTeamName !== offerTeam.name) {
+            displaced.team = oldTeamName;
+            const stars = TEAMS['F1'].find(t => t.name === oldTeamName)?.stars || 3;
+            displaced.contractYearsLeft = Math.floor(Math.random() * (stars >= 4 ? 4 : 2)) + 2;
+          } else {
+            G.aiRoster = G.aiRoster.filter(d => d.id !== displaced.id);
+          }
         }
       }
     }
@@ -3250,6 +3268,18 @@ function showGoldenBoyEvent(pendingSteps = []) {
     G.team = offerTeam;
     G.f1ContractYearsLeft = Math.random() < 0.5 ? 1 : 2;
     if (G.catIndex === 5) refreshTeammate();
+    
+    // Displace AI teammate if needed
+    if (G.aiRoster && offerTeam.name) {
+      const newTeamDrivers = G.aiRoster.filter(d => d.cat === 'F1' && d.team === offerTeam.name);
+      if (newTeamDrivers.length > 1) {
+        const displaced = newTeamDrivers.find(d => !G.peer || d.id !== G.peer.id);
+        if (displaced) {
+          G.aiRoster = G.aiRoster.filter(d => d.id !== displaced.id);
+        }
+      }
+    }
+
     const salary = 2000000;
     G.money += salary; G.totalMoney += salary;
 
@@ -3424,8 +3454,8 @@ function goToContracts(oldCatIdx, repeatCat = false, skipContracts = false) {
     }
   }
 
-  // Academy Offer: check when in Karting, F4, FR, or F3
-  if (!G.academy && !G.academyOffered && [0, 1, 2, 3].includes(oldCatIdx)) {
+  // Academy Offer: check when in Karting, F4 or FR
+  if (!G.academy && !G.academyOffered && [0, 1, 2,].includes(oldCatIdx)) {
     const top5 = G.lastResult && G.lastResult.champ <= 5;
     if (top5 && Math.random() < 0.25) {
       G.academyOffered = true;

@@ -4,6 +4,15 @@
 
 const CATEGORIES = ['Karting', 'F4', 'Formula Regional', 'F3', 'F2', 'F1'];
 
+// [3_stars, 4_stars, 5_stars] for each junior category (0: Karting, 1: F4, 2: FR, 3: F3, 4: F2)
+const SEAT_COSTS = [
+  [65000, 75000, 90000],        // Karting
+  [100000, 125000, 150000],     // F4
+  [200000, 250000, 300000],     // FR
+  [400000, 500000, 600000],     // F3
+  [800000, 1000000, 1200000],   // F2
+];
+
 const NATIONALITIES = [
   { flag: '🇦🇷', name: 'Argentina' }, { flag: '🇧🇷', name: 'Brasil' },
   { flag: '🇲🇽', name: 'México' }, { flag: '🇺🇸', name: 'Estados Unidos' }, { flag: '🇬🇧', name: 'Reino Unido' }, { flag: '🇩🇪', name: 'Alemania' },
@@ -933,18 +942,11 @@ function showInterview(postSeasonId = null) {
   let pool = INTERVIEWS.filter(iv => {
     if (iv.requireAcademy && !G.academy) return false;
     if (postSeasonId) return iv.id === postSeasonId;
-    const psIds = ['f1_overpaid', 'f1_fallen_champion', 'f1_carried_by_car', 'f1_shadow_contract_good', 'f1_shadow_contract_bad', 'f1_beaten_by_young_peer', 'f1_epic_champion', 'f1_championship_contender', 'f1_retirement_talk', 'f1_win_record', 'f1_teammate_destroyed', 'f1_first_title', 'f1_title_lost', 'f1_title_record_broken', 'f1_constructors_champ', 'f1_teammate_champ', 'f1_reg_change_better', 'f1_reg_change_worse', 'f1_underperform', 'f1_regulations_criticism', 'f1_academy_sign_filial', 'f1_academy_sign_main', 'f1_academy_leave', 'f1_academy_dropped', 'f1_academy_promoted_main'];
+    const psIds = ['first_win', 'f1_overpaid', 'f1_fallen_champion', 'f1_carried_by_car', 'f1_shadow_contract_good', 'f1_shadow_contract_bad', 'f1_beaten_by_young_peer', 'f1_epic_champion', 'f1_championship_contender', 'f1_retirement_talk', 'f1_win_record', 'f1_teammate_destroyed', 'f1_first_title', 'f1_title_lost', 'f1_title_record_broken', 'f1_constructors_champ', 'f1_teammate_champ', 'f1_reg_change_better', 'f1_reg_change_worse', 'f1_underperform', 'f1_regulations_criticism', 'f1_academy_sign_filial', 'f1_academy_sign_main', 'f1_academy_leave', 'f1_academy_dropped', 'f1_academy_promoted_main'];
     if (!postSeasonId && (psIds.includes(iv.id) || iv.id.startsWith('ev_'))) return false; // Hide post-season interviews from mid-season
     if (G.catIndex < 5) return false; // ONLY IN F1
     if (G.storyFlags['interview_' + iv.id]) return false; // NO REPEATS
 
-    if (iv.id === 'first_win') {
-      if (!G.lastResult || G.lastResult.cat !== 'F1' || G.lastResult.wins === 0) return false;
-      const totalF1Wins = G.seasons.filter(s => s.cat === 'F1').reduce((a, b) => a + (b.wins || 0), 0);
-      if (totalF1Wins > G.lastResult.wins) return false; // not their first F1 win season
-      return true; // Must trigger if conditions met
-    }
-    
     // NEW INTERVIEW LOGIC
     if (iv.id === 'f1_transfer_rumors') {
       if (!G.lastResult || G.lastResult.cat !== 'F1') return false;
@@ -1025,9 +1027,7 @@ function showInterview(postSeasonId = null) {
     return;
   }
   
-  // Prioritize first_win
-  let ivTemplate = pool.find(i => i.id === 'first_win');
-  if (!ivTemplate) ivTemplate = randFrom(pool);
+  let ivTemplate = randFrom(pool);
   
   const iv = JSON.parse(JSON.stringify(ivTemplate));
   
@@ -1341,7 +1341,10 @@ function initState(name, number, nat, talent) {
     _peerInitialized: false,
     wetWins: 0,
     storyFlags: {},
-    personality: { aggressiveness: 0, media: 0, team: 0 }
+    personality: { aggressiveness: 0, media: 0, team: 0 },
+    sponsor: null,
+    loanUsed: false,
+    loanDebt: 0,
   };
   // apply talent
   const t = TALENTS.find(x => x.id === talent);
@@ -1570,6 +1573,21 @@ function buildActivities() {
   const legPool = ACTIVITIES_LEGENDARY.filter(filterAct);
   if (Math.random() < 0.03 && legPool.length > 0) picked.push(randFrom(legPool));
 
+  // Actividad garantizada: "Actividades con patrocinadores" (solo en formativas)
+  if (G.catIndex < 5) { // < 5 significa Karting, F4, FR, F3, F2
+     const seatCost = SEAT_COSTS[G.catIndex][0]; // Asiento más barato de la categoría actual
+     const payAmount = Math.floor(seatCost * 0.5);
+     picked.push({
+       id: 'sponsor_activity',
+       name: 'Actividades con patrocinadores',
+       icon: '🤝',
+       bonus: `Recompensa: $${payAmount.toLocaleString()}`,
+       stats: {},
+       money: payAmount,
+       rarity: 'common'
+     });
+  }
+
   const el = document.getElementById('preseason-activities');
   el.innerHTML = '';
   picked.forEach((act, i) => {
@@ -1717,8 +1735,12 @@ function stopRaceAnimation() {
 function runSimulation() {
   // Apply activity
   if (G.chosenActivity) {
-    for (const [k, v] of Object.entries(G.chosenActivity.stats)) {
+    for (const [k, v] of Object.entries(G.chosenActivity.stats || {})) {
       G.stats[k] = Math.min(G.potential, G.stats[k] + v);
+    }
+    if (G.chosenActivity.money) {
+      G.money += G.chosenActivity.money;
+      G.totalMoney += G.chosenActivity.money;
     }
   }
   // Apply upgrades
@@ -1837,9 +1859,21 @@ function runSimulation() {
     if (hasEvent) G._seasonSteps.push('event');
     if (hasMini) G._seasonSteps.push('minigame');
     if (hasInteractiveMini) G._seasonSteps.push('interactive_minigame');
-    const totalF1Wins = (G.seasons || []).filter(s => s.cat === 'F1').reduce((a, b) => a + (b.wins || 0), 0);
-    const hasInterview = Math.random() < 0.3 || (G.catIndex === 5 && G.lastResult && G.lastResult.cat === 'F1' && G.lastResult.wins > 0 && totalF1Wins === G.lastResult.wins && !G.storyFlags['interview_first_win']);
+    const hasInterview = Math.random() < 0.3;
     if (hasInterview) G._seasonSteps.push('interview');
+
+    // In junior categories, a sponsor selection event fires each season
+    if (G.catIndex < 5) {
+      if (!G.sponsor || G.sponsor.category !== G.catIndex) {
+        G.sponsor = null; // Clear old sponsor
+        G._seasonSteps.unshift('sponsor_selection');
+      } else {
+        // Auto-renew sponsor for the same category
+        G.money += G.sponsor.fixedPaid;
+        G.totalMoney += G.sponsor.fixedPaid;
+        G._seasonEventLogs.push(`💸 ${G.sponsor.brand} renovó automáticamente su patrocinio y depositó ${fmt$(G.sponsor.fixedPaid)}.`);
+      }
+    }
 
     processSeasonStep();
   }, 2100);
@@ -1859,7 +1893,8 @@ function processSeasonStep() {
     return;
   }
   const step = G._seasonSteps.shift();
-  if (step === 'shadow_offer') showShadowOfferEvent();
+  if (step === 'sponsor_selection') showSponsorEvent();
+  else if (step === 'shadow_offer') showShadowOfferEvent();
   else if (step === 'regulation') showRegulationEvent();
   else if (step === 'event') showRandomEvent();
   else if (step === 'minigame') showMinigame();
@@ -1923,10 +1958,16 @@ function computeSeasonResult() {
   }
 
   // Team focus: 'ganar' teams boost effective rating in formative categories
-  const focusRatingBonus = (G.team && G.team.focus === 'ganar') ? 10
-    : (G.team && G.team.focus === 'desarrollo') ? -2
-      : 0;
-  eff += focusRatingBonus;
+  if (cat === 'F3') {
+    // En F3 usamos las estrellas del coche igual que la IA, ignorando el enfoque
+    const playerStars = G.team ? G.team.stars : 3;
+    eff += (playerStars * 3);
+  } else {
+    const focusRatingBonus = (G.team && G.team.focus === 'ganar') ? 10
+      : (G.team && G.team.focus === 'desarrollo') ? -2
+        : 0;
+    eff += focusRatingBonus;
+  }
 
   // Make formative categories slightly easier
   if (cat !== 'F1') {
@@ -2076,9 +2117,30 @@ function computeSeasonResult() {
   const dnfs = Math.max(0, Math.round(dnfBase - tyreFactor * 2));
 
   // 6. Financials and Reputation
-  const salary = [30000, 80000, 150000, 300000, 500000, 2000000][G.catIndex];
+  const salary = [10000, 30000, 50000, 100000, 200000, 2000000][G.catIndex];
+  const winBonus = [2000, 5000, 10000, 20000, 40000, 100000][G.catIndex];
   const mediaMult = 1.0 + (G.personality.media / 200); // -50% to +50%
-  const earned = (salary + wins * 20000) * mediaMult;
+  let earned = (salary + wins * winBonus) * mediaMult;
+
+  // PRIZE MONEY
+  if (champ <= 10 && G.catIndex < 5) {
+    const nextCatIdx = G.catIndex + 1;
+    // Para F2 (que va a F1) ponemos un valor equivalente
+    const baseCheapestNextSeat = SEAT_COSTS[nextCatIdx] ? SEAT_COSTS[nextCatIdx][0] : 3000000;
+    
+    let prizeMoney = 0;
+    if (champ === 1) prizeMoney = baseCheapestNextSeat;
+    else if (champ === 2) prizeMoney = baseCheapestNextSeat * 0.50;
+    else if (champ === 3) prizeMoney = baseCheapestNextSeat * 0.25;
+    else if (champ <= 5) prizeMoney = baseCheapestNextSeat * 0.10;
+    else if (champ <= 10) prizeMoney = baseCheapestNextSeat * 0.05;
+    
+    prizeMoney = Math.round(prizeMoney);
+    if (prizeMoney > 0) {
+      earned += prizeMoney;
+      G._seasonEventLogs.push(`🏆 Premio por terminar ${champ}º en el campeonato: ${fmt$(prizeMoney)}.`);
+    }
+  }
   // Team focus: 'ganar' boosts rep, 'desarrollo' reduces it
   const focusRepMult = (G.team && G.team.focus === 'ganar') ? 1.4
     : (G.team && G.team.focus === 'desarrollo') ? 0.7
@@ -2113,6 +2175,34 @@ function computeSeasonResult() {
   const result = { cat, year: G.year, champ, wins, podiums, poles, dnfs, earned, rep, rating, teamName, teamLogo, teamStars, age: G.age, races };
   G.seasons.push(result);
   G.lastResult = result;
+
+  // Sponsor evaluation (junior categories only)
+  if (G.sponsor && G.catIndex < 5) {
+    const sp = G.sponsor;
+    let bonusEarned = false;
+    if (sp.objective === 'none') {
+      bonusEarned = false; // No bonus, fixed was already paid
+    } else if (sp.objective === 'top5' && champ <= 5) {
+      bonusEarned = true;
+    } else if (sp.objective === 'champion' && champ === 1) {
+      bonusEarned = true;
+    }
+    if (bonusEarned) {
+      G.money += sp.bonusAmount;
+      G.totalMoney += sp.bonusAmount;
+      G._seasonEventLogs.push(`🎉 ¡Objetivo del patrocinador cumplido! ${sp.brand} te deposita el bono de ${fmt$(sp.bonusAmount)}.`);
+    } else if (sp.objective !== 'none') {
+      G._seasonEventLogs.push(`❌ No cumpliste el objetivo de ${sp.brand}. Sin bono de rendimiento.`);
+    }
+    // El patrocinador no se resetea aquí, dura toda la categoría
+  }
+
+  // Loan repayment
+  if (G.loanDebt > 0) {
+    G.money -= G.loanDebt;
+    G._seasonEventLogs.push(`💸 Se descontaron ${fmt$(G.loanDebt)} del préstamo de emergencia.`);
+    G.loanDebt = 0;
+  }
 
   if (result.champ === 1 && result.cat === 'F1') {
     G.f1Titles++;
@@ -2164,9 +2254,12 @@ function computeSeasonResult() {
       const myStRow = standingsRows.find(s => s.isPlayer);
       const peerStRow = standingsRows.find(s => s.isPeer);
       if (myStRow && peerStRow) {
-        if (myStRow.rank < peerStRow.rank) G.peer.h2hLosses = (G.peer.h2hLosses || 0) + 1;
-        else if (peerStRow.rank < myStRow.rank) {
+        if (myStRow.rank < peerStRow.rank) {
+          G.peer.h2hLosses = (G.peer.h2hLosses || 0) + 1;
+          G.f1ContractH2HWins = (G.f1ContractH2HWins || 0) + 1;
+        } else if (peerStRow.rank < myStRow.rank) {
           G.peer.h2hWins = (G.peer.h2hWins || 0) + 1;
+          G.f1ContractH2HLosses = (G.f1ContractH2HLosses || 0) + 1;
           G.careerH2HLosses = (G.careerH2HLosses || 0) + 1;
         }
       }
@@ -2211,6 +2304,10 @@ function computeSeasonResult() {
       G._seasonSteps.push('event:f1_championship_contender');
     }
     
+    const totalF1Wins = G.seasons.filter(s => s.cat === 'F1').reduce((a, b) => a + (b.wins || 0), 0);
+    if (wins > 0 && totalF1Wins === wins && !G.storyFlags['interview_first_win']) {
+      G._seasonSteps.push('event:first_win');
+    }
     if (G.wins >= 105 && !G.storyFlags['interview_f1_win_record']) {
       G._seasonSteps.push('event:f1_win_record');
     }
@@ -2364,6 +2461,139 @@ function resetEventChrome() {
 // ═══════════════════════════════════════════════════════════
 //  SHADOW OFFER — "Una Oferta en las Sombras"
 // ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
+//  SPONSOR EVENT
+// ═══════════════════════════════════════════════════════════
+function showSponsorEvent() {
+  resetEventChrome();
+
+  const cat = CATEGORIES[G.catIndex];
+  const BASE = SEAT_COSTS[G.catIndex] ? SEAT_COSTS[G.catIndex][0] : 1200000;
+
+  // Pool of sponsor options per type
+  const SPONSORS = {
+    A: [
+      { brand: 'Santander', logo: 'assets/images/marcas/marca santander.png', emoji: '🏦', mult: 1.00 },
+      { brand: 'Telmex',    logo: 'assets/images/marcas/marca telmex.png',    emoji: '📞', mult: 1.00 },
+      { brand: 'Rolex',     logo: 'assets/images/marcas/marca rolex.png',     emoji: '⌚', mult: 1.00 },
+      { brand: 'Emirates',  logo: 'assets/images/marcas/marca emirates.png',  emoji: '✈️', mult: 1.00 },
+    ],
+    B: [
+      { brand: 'Castrol', logo: 'assets/images/marcas/marca castrol.png', emoji: '🛢️', multFixed: 0.40, multBonus: 0.90 },
+      { brand: 'Puma',    logo: 'assets/images/marcas/marca puma.png',    emoji: '🐆', multFixed: 0.40, multBonus: 0.90 },
+      { brand: 'Brembo',  logo: 'assets/images/marcas/marca brembo.png',  emoji: '🛑', multFixed: 0.40, multBonus: 0.90 },
+      { brand: 'Pirelli', logo: 'assets/images/marcas/marca pirelli.png', emoji: '🛞', multFixed: 0.40, multBonus: 0.90 },
+    ],
+    C: [
+      { brand: 'Monster Energy', logo: 'assets/images/marcas/marca monster.png',  emoji: '⚡', multFixed: 0.25, multBonus: 1.35 },
+      { brand: 'Red Bull',       logo: 'assets/images/marcas/marca redbull.png',  emoji: '🐂', multFixed: 0.25, multBonus: 1.35 },
+      { brand: 'Crypto.com',     logo: 'assets/images/marcas/marca crypto.png',   emoji: '🪙', multFixed: 0.25, multBonus: 1.35 },
+      { brand: 'Aramco',         logo: 'assets/images/marcas/marca aramco.png',   emoji: '🛢️', multFixed: 0.25, multBonus: 1.35 },
+    ],
+  };
+
+  const pickA = SPONSORS.A[Math.floor(Math.random() * SPONSORS.A.length)];
+  const pickB = SPONSORS.B[Math.floor(Math.random() * SPONSORS.B.length)];
+  const pickC = SPONSORS.C[Math.floor(Math.random() * SPONSORS.C.length)];
+
+  // No rounding to 10k so Type A pays exactly the base seat
+  const fixedA  = Math.round(BASE * pickA.mult);
+  const fixedB  = Math.round(BASE * pickB.multFixed);
+  const bonusB  = Math.round(BASE * pickB.multBonus);
+  const fixedC  = Math.round(BASE * pickC.multFixed);
+  const bonusC  = Math.round(BASE * pickC.multBonus);
+
+  const options = [
+    { brand: pickA.brand, logo: pickA.logo, emoji: pickA.emoji, type: 'A', objective: 'none',     fixedPaid: fixedA, bonusAmount: 0,      label: 'Sin objetivo', detail: `Cobras ${fmt$(fixedA)} al inicio. Sin bono de rendimiento.`, badge: '🟡 Seguro' },
+    { brand: pickB.brand, logo: pickB.logo, emoji: pickB.emoji, type: 'B', objective: 'top5',     fixedPaid: fixedB, bonusAmount: bonusB, label: 'Top 5', detail: `${fmt$(fixedB)} ahora + ${fmt$(bonusB)} si terminás en el Top 5 del campeonato.`, badge: '🔵 Moderado' },
+    { brand: pickC.brand, logo: pickC.logo, emoji: pickC.emoji, type: 'C', objective: 'champion', fixedPaid: fixedC, bonusAmount: bonusC, label: 'Campeón', detail: `${fmt$(fixedC)} ahora + ${fmt$(bonusC)} si salís CAMPEÓN.`, badge: '🔴 Todo o Nada' },
+  ];
+
+  const label = document.querySelector('#screen-event .label');
+  if (label) label.textContent = '💰 Patrocinadores';
+  document.getElementById('ev-icon').textContent = '💰';
+  document.getElementById('ev-title').textContent = 'Elegí tu patrocinador para la categoría';
+  document.getElementById('ev-desc').textContent = `Antes de arrancar la temporada de ${cat}, tres marcas te hacen una oferta. Solo podés elegir una.`;
+
+  const ch = document.getElementById('ev-choices');
+  ch.innerHTML = '';
+
+  options.forEach(opt => {
+    const btn = document.createElement('div');
+    btn.className = 'minigame-choice';
+    const logoEl = `<img src="${opt.logo}" alt="${opt.brand}" style="height:28px;max-width:80px;object-fit:contain;vertical-align:middle;margin-right:8px" onerror="this.style.display='none'">`;
+    btn.innerHTML = `
+      <h3 style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
+        ${logoEl}<span>${opt.brand}</span>
+        <span style="margin-left:auto;font-size:11px;opacity:0.7">${opt.badge}</span>
+      </h3>
+      <p style="margin-bottom:4px;color:var(--muted);font-size:13px">${opt.detail}</p>
+    `;
+    btn.onclick = () => {
+      G.sponsor = {
+        brand: opt.brand,
+        logo: opt.logo,
+        type: opt.type,
+        fixedPaid: opt.fixedPaid,
+        bonusAmount: opt.bonusAmount,
+        objective: opt.objective,
+        category: G.catIndex,
+      };
+      G.money += opt.fixedPaid;
+      G.totalMoney += opt.fixedPaid;
+      ch.innerHTML = `
+        <div class="card" style="text-align:center;padding:24px">
+          <div style="font-size:36px;margin-bottom:12px">✅</div>
+          <div class="heading" style="font-size:18px;margin-bottom:8px">¡Contrato firmado con ${opt.brand}!</div>
+          <div class="sub" style="margin-bottom:16px">${fmt$(opt.fixedPaid)} depositados en tu cuenta.${opt.objective !== 'none' ? ` Objetivo: <strong>${opt.label}</strong> para cobrar el bono de ${fmt$(opt.bonusAmount)}.` : ' Sin objetivo de rendimiento.'}</div>
+          <button class="btn btn-primary" onclick="processSeasonStep()">Continuar</button>
+        </div>
+      `;
+    };
+    ch.appendChild(btn);
+  });
+
+  goto('screen-event');
+}
+
+// ═══════════════════════════════════════════════════════════
+//  EMERGENCY LOAN SCREEN
+// ═══════════════════════════════════════════════════════════
+function showEmergencyLoanScreen(catIdx, r, cheapestSeat) {
+  resetEventChrome();
+  const LOAN = 500000;
+  const label = document.querySelector('#screen-event .label');
+  if (label) label.textContent = '💸 Emergencia Financiera';
+  document.getElementById('ev-icon').textContent = '🆘';
+  document.getElementById('ev-title').textContent = 'Sin fondos';
+  document.getElementById('ev-desc').innerHTML = `No tenés dinero suficiente para comprar un asiento en ${CATEGORIES[catIdx]}.<br><br>Tu familia y managers pueden conseguirte un <strong>préstamo de emergencia de ${fmt$(LOAN)}</strong>, pero tendrás que devolverlo al final de la próxima temporada.<br><br><em>Solo podés usarlo una vez en toda tu carrera.</em>`;
+
+  const ch = document.getElementById('ev-choices');
+  ch.innerHTML = '';
+
+  const bLoan = document.createElement('div');
+  bLoan.className = 'minigame-choice';
+  bLoan.innerHTML = `<h3>🆘 Aceptar el préstamo</h3><p style="margin-bottom:6px">Recibís ${fmt$(LOAN)} ahora. Al final de la temporada, se descuentan automáticamente de tus ganancias.</p>`;
+  bLoan.onclick = () => {
+    G.loanUsed = true;
+    G.loanDebt = LOAN;
+    G.money += LOAN;
+    G.totalMoney += LOAN;
+    // Resume normal flow
+    goToContracts(catIdx);
+  };
+  ch.appendChild(bLoan);
+
+  const bRetire = document.createElement('div');
+  bRetire.className = 'minigame-choice';
+  bRetire.style.borderColor = '#ef4444';
+  bRetire.innerHTML = `<h3 style="color:#ef4444">🏁 Retirarse</h3><p style="margin-bottom:6px">Tu carrera como piloto termina aquí. Sin dinero, sin asiento.</p>`;
+  bRetire.onclick = () => showRetirement('💸 Sin fondos para continuar tu carrera, te retiraste.');
+  ch.appendChild(bRetire);
+
+  goto('screen-event');
+}
+
 function showShadowOfferEvent() {
   resetEventChrome();
 
@@ -2893,7 +3123,10 @@ function afterSummary() {
       if (d.age < 28) {
         let maxLimit = 99;
         if (d.cat === 'F2') maxLimit = 80;
-        else if (d.cat !== 'F1') maxLimit = 75; // F3 and below
+        else if (d.cat === 'F3') maxLimit = 75;
+        else if (d.cat === 'Formula Regional') maxLimit = 65;
+        else if (d.cat === 'F4') maxLimit = 60;
+        else if (d.cat === 'Karting') maxLimit = 55;
         
         if (d.skill < maxLimit) {
           let growth = Math.floor(Math.random() * 3) + 1; // 1 to 3 points
@@ -2931,7 +3164,7 @@ function afterSummary() {
       G._pendingFiredMsg = {
         type: 'message',
         title: 'Despido de la Academia',
-        desc: `Tras sumar tres temporadas consecutivas fuera del Top 8 en la misma categoría, la ${academy.name} ha decidido rescindir tu contrato de desarrollo. Tendrás que buscarte tu propio camino.`
+        desc: `Tras sumar tres temporadas consecutivas decepcionantes en la misma categoría, la directiva de  ${academy.name} ha decidido rescindir tu contrato de desarrollo. Tendrás que buscarte tu propio camino.`
       };
     }
   }
@@ -2944,19 +3177,60 @@ function afterSummary() {
     return;
   }
 
+  const isFormative = G.catIndex < 5;
+  
+  // BANKRUPTCY CHECK: can the player afford any seat in their own category?
+  if (isFormative) {
+    const acadDisc = G.academy ? 0.30 : 1.0;
+    const sameCatTeams = TEAMS[CATEGORIES[catIdx]] || [];
+    const cheapestSeat = Math.min(...sameCatTeams.map(t => {
+      const si = clamp((t.stars || 3) - 3, 0, 2);
+      return Math.round((SEAT_COSTS[catIdx] || SEAT_COSTS[4])[si] * acadDisc);
+    }));
+    if (G.money < cheapestSeat) {
+      if (!G.loanUsed) {
+        // Offer emergency loan
+        showEmergencyLoanScreen(catIdx, r, cheapestSeat);
+        return;
+      } else {
+        // Already used loan: bankruptcy → forced retirement
+        showRetirement('💸 Sin fondos para continuar tu carrera, te viste obligado a retirarte.');
+        return;
+      }
+    }
+  }
+
   // Check if player can advance by position AND meets requirements in next category
   const posCanAdvance = r.champ <= 10 && G.catIndex < 5;
   const meetsNextReqs = posCanAdvance ? canMeetNextCatReqs(G.catIndex + 1) : false;
-  const canAdvance = posCanAdvance && meetsNextReqs;
-  const isFormative = G.catIndex < 5;
+  let canAdvance = posCanAdvance && meetsNextReqs;
   const isChampion = r.champ === 1;
 
-  // Position OK but no team accepts you in next category
+  // Position OK but no team accepts you in next category (OVR/Reputation)
   if (posCanAdvance && !meetsNextReqs && isFormative) {
-    showNoOfferScreen(catIdx, r, true); // requirementsFailed=true
+    showNoOfferScreen(catIdx, r, true, false); // reqsFailed=true
     return;
   }
 
+  // Position & Reqs OK, but check if they can afford next category
+  let canAffordNext = true;
+  if (isFormative && posCanAdvance && meetsNextReqs && catIdx + 1 < 5) {
+    const nextCatIdx = catIdx + 1;
+    const acadDisc = G.academy ? 0.30 : 1.0;
+    const nextTeams = TEAMS[CATEGORIES[nextCatIdx]] || [];
+    const cheapestNextSeat = Math.min(...nextTeams.map(t => {
+      const si = clamp((t.stars || 3) - 3, 0, 2);
+      return Math.round((SEAT_COSTS[nextCatIdx] || SEAT_COSTS[4])[si] * acadDisc);
+    }));
+    canAffordNext = G.money >= cheapestNextSeat;
+  }
+
+  if (posCanAdvance && meetsNextReqs && !canAffordNext && isFormative) {
+    showNoOfferScreen(catIdx, r, false, true); // fundsFailed=true
+    return;
+  }
+
+  canAdvance = posCanAdvance && meetsNextReqs && canAffordNext;
   const canRepeat = canAdvance && isFormative && !isChampion;
 
   if (canRepeat) {
@@ -3070,6 +3344,8 @@ function showAcademyMainTeamPromotionEvent(pendingSteps, promisedTeamName) {
     const offerTeam = TEAMS['F1'].find(t => t.name === promisedTeamName);
     G.team = offerTeam;
     G.f1ContractYearsLeft = 2; // Un contrato de 2 años
+    G.f1ContractH2HWins = 0;
+    G.f1ContractH2HLosses = 0;
     if (G.catIndex === 5) refreshTeammate();
     
     // Displace AI teammate if needed
@@ -3098,6 +3374,8 @@ function showAcademyMainTeamPromotionEvent(pendingSteps, promisedTeamName) {
     updateTopBar();
 
     G.f1ContractYearsLeft = 1;
+    G.f1ContractH2HWins = 0;
+    G.f1ContractH2HLosses = 0;
     if (G.catIndex === 5) refreshTeammate();
     
     G.pendingAcademyInterview = 'f1_academy_promoted_main';
@@ -3152,6 +3430,8 @@ function showAcademyPromisedSeatEvent(pendingSteps, promisedTeamName, champ) {
       updateTopBar();
     }
     G.f1ContractYearsLeft = 1;
+    G.f1ContractH2HWins = 0;
+    G.f1ContractH2HLosses = 0;
     if (G.catIndex === 5) refreshTeammate();
     
     // Displace AI teammate if needed
@@ -3267,6 +3547,8 @@ function showGoldenBoyEvent(pendingSteps = []) {
     G.achievementsProgress['golden_boy_offer'] = true;
     G.team = offerTeam;
     G.f1ContractYearsLeft = Math.random() < 0.5 ? 1 : 2;
+    G.f1ContractH2HWins = 0;
+    G.f1ContractH2HLosses = 0;
     if (G.catIndex === 5) refreshTeammate();
     
     // Displace AI teammate if needed
@@ -3378,8 +3660,12 @@ function goToContracts(oldCatIdx, repeatCat = false, skipContracts = false) {
        // if we are currently in a B-team
        const isBTeam = academy.f1Teams.slice(1).includes(G.team.name);
        if (isBTeam) {
-         // G.peer.h2hWins are player losses, G.peer.h2hLosses are player wins
-         if (G.peer && (G.peer.h2hWins || 0) === 0 && (G.peer.h2hLosses || 0) > 0) {
+         // Evaluamos todo el contrato usando las nuevas variables persistentes
+         // f1ContractH2HLosses = veces que perdiste el H2H. f1ContractH2HWins = veces que ganaste
+         const contractLost = G.f1ContractH2HLosses || 0;
+         const contractWon = G.f1ContractH2HWins || 0;
+         
+         if (contractLost === 0 && contractWon > 0) {
             showAcademyMainTeamPromotionEvent(steps.filter(s => s !== 'contracts'), academy.f1Teams[0]);
             return;
          } else {
@@ -3455,12 +3741,18 @@ function goToContracts(oldCatIdx, repeatCat = false, skipContracts = false) {
   }
 
   // Academy Offer: check when in Karting, F4 or FR
-  if (!G.academy && !G.academyOffered && [0, 1, 2,].includes(oldCatIdx)) {
-    const top5 = G.lastResult && G.lastResult.champ <= 5;
-    if (top5 && Math.random() < 0.25) {
-      G.academyOffered = true;
-      showAcademyEvent(steps);
-      return;
+  if (!G.academy && !G.academyOffered && [0, 1, 2].includes(oldCatIdx)) {
+    const catName = CATEGORIES[oldCatIdx];
+    const seasonsInCat = G.seasons.filter(s => s.cat === catName).length;
+    
+    // Solo pueden ofrecerte la academia en tu primer o segundo año en la categoría
+    if (seasonsInCat <= 2) {
+      const top3 = G.lastResult && G.lastResult.champ <= 3;
+      if (top3 && Math.random() < 0.25) {
+        G.academyOffered = true;
+        showAcademyEvent(steps);
+        return;
+      }
     }
   }
 
@@ -3468,27 +3760,30 @@ function goToContracts(oldCatIdx, repeatCat = false, skipContracts = false) {
   processNextStep();
 }
 
-function showNoOfferScreen(catIdx, r, reqsFailed = false) {
+function showNoOfferScreen(catIdx, r, reqsFailed = false, fundsFailed = false) {
   const cat = CATEGORIES[catIdx];
   const nextCat = CATEGORIES[Math.min(catIdx + 1, 5)];
   const screen = document.getElementById('screen-contracts');
   screen.querySelector('.stripe').style.display = 'block';
-  document.querySelector('#screen-contracts .heading').textContent = 'Sin ofertas';
+  document.querySelector('#screen-contracts .heading').textContent = fundsFailed ? 'Sin presupuesto' : 'Sin ofertas';
   document.querySelector('#screen-contracts .sub').textContent = '';
 
   const list = document.getElementById('contracts-list');
   list.innerHTML = '';
 
-  const reason = reqsFailed
-    ? `Terminaste ${r.champ}° en ${cat}, pero ningún equipo de ${nextCat} te ofrece un asiento. No cumplís los requisitos de reputación u OVR. Tendrás que repetir ${cat} y mejorar.`
-    : `Terminaste ${r.champ}° en ${cat}. Los equipos de la categoría superior no te tuvieron en cuenta. Tendrás que repetir ${cat}.`;
+  let reason = `Terminaste ${r.champ}º en ${cat}. Los equipos de la categoría superior no te tuvieron en cuenta. Tendrás que repetir ${cat}.`;
+  if (reqsFailed) {
+    reason = `Terminaste ${r.champ}º en ${cat}, pero ningún equipo de ${nextCat} te ofrece un asiento. No cumplís los requisitos de reputación u OVR. Tendrás que repetir ${cat} y mejorar.`;
+  } else if (fundsFailed) {
+    reason = `Terminaste ${r.champ}º en ${cat} y los equipos de ${nextCat} te ofrecieron un asiento, pero NO TENÉS PRESUPUESTO para pagarlo. Te viste obligado a repetir ${cat}.`;
+  }
 
   const card = document.createElement('div');
   card.className = 'card';
   card.style.textAlign = 'center';
   card.innerHTML = `
     <div style="font-size:48px;margin-bottom:12px">🚫</div>
-    <div class="heading" style="font-size:20px;margin-bottom:8px">Nadie te buscó</div>
+    <div class="heading" style="font-size:20px;margin-bottom:8px">${fundsFailed ? 'No hay presupuesto' : 'Nadie te buscó'}</div>
     <div class="sub" style="margin-bottom:16px">${reason}</div>
     <button class="btn btn-primary" id="btn-no-offer-ok">Aceptar y seguir</button>
   `;
@@ -3925,6 +4220,15 @@ function showMinigame(forcedId = null) {
     b.onclick = () => {
       autocompleteRadio('mg-radio-text');
       G.storyFlags['minigame_' + mg.id] = index;
+      
+      // Inject immediate follow-up interview for team orders
+      if (mg.id === 'peer_ordenes') {
+        if (index === 0 && !G.storyFlags['interview_f1_team_orders_obey']) {
+          G._seasonSteps.unshift('event:f1_team_orders_obey');
+        } else if (index === 1 && !G.storyFlags['interview_f1_team_orders_ignore']) {
+          G._seasonSteps.unshift('event:f1_team_orders_ignore');
+        }
+      }
       const success = Math.random() < successChance;
       let logText;
       const logName = c.pureLuck ? "Suerte" : STAT_LABELS[c.skillStat];
@@ -4131,12 +4435,21 @@ const INTERACTIVE_MINIGAMES = [
   },
   {
     id: 'img_reboot',
-    label: '⚙️ Reboot',
-    icon: '⚙️',
+    label: '💻 Reboot',
+    icon: '💻',
     title: 'FALLA ELECTRÓNICA',
     situation: 'En plena recta el volante se apaga. El auto pierde potencia. Tu ingeniero grita una secuencia de botones para reiniciar el MGU-K antes de llegar a la curva.',
     instructions: 'Memorizá la secuencia de 5 botones de colores que aparece en pantalla y repetila en orden exacto. Tenés 7 segundos desde que empieza la cuenta. Un solo error y el motor muere.',
     minCat: 4,
+  },
+  {
+    id: 'img_comeback',
+    label: '🚀 A Remontar',
+    icon: '🚀',
+    title: 'BUSCAR EL HUECO',
+    situation: 'Mala clasificación. Estás en el fondo y tenés que adelantar a 5 autos lentos rápidamente antes de perder la estela de los líderes.',
+    instructions: 'Deslizá el dedo o el mouse de lado a lado para moverte libremente. ¡Los rezagados se moverán intentando cerrarte el paso! Si los tocás, rompés el alerón. Pasá a los 5 para ganar.',
+    minCat: 1,
   },
 ];
 
@@ -4144,9 +4457,10 @@ const INTERACTIVE_MINIGAMES = [
 function showInteractiveMinigame(forcedId = null) {
   // Filter by category
   const eligible = INTERACTIVE_MINIGAMES.filter(mg => {
+    if (G.minigameCounts && G.minigameCounts[mg.id] >= 2) return false;
     if (mg.requireAcademy && !G.academy) return false;
     if (G.catIndex < mg.minCat) return false;
-    const winGames = ['img_reaction', 'img_pitstop', 'img_timing', 'img_defense', 'img_slipstream', 'img_strategy'];
+    const winGames = ['img_reaction', 'img_pitstop', 'img_timing', 'img_defense', 'img_slipstream', 'img_strategy', 'img_comeback'];
     if (winGames.includes(mg.id) && (G.team.stars || 0) < 3) return false;
     if (mg.id === 'img_rain') return false; // temporarily disabled
     return true;
@@ -4156,6 +4470,10 @@ function showInteractiveMinigame(forcedId = null) {
   let mg = null;
   if (forcedId) mg = INTERACTIVE_MINIGAMES.find(m => m.id === forcedId);
   if (!mg) mg = randFrom(eligible);
+
+  // Registrar que este minijuego salió
+  if (!G.minigameCounts) G.minigameCounts = {};
+  G.minigameCounts[mg.id] = (G.minigameCounts[mg.id] || 0) + 1;
 
   document.getElementById('img-intro-label').textContent = mg.label;
   document.getElementById('img-intro-icon').textContent = mg.icon;
@@ -4184,6 +4502,7 @@ function showInteractiveMinigame(forcedId = null) {
       case 'img_rain':        startRainGame();        break;
       case 'img_tyres':       startTyresGame();       break;
       case 'img_reboot':      startRebootGame();      break;
+      case 'img_comeback':    startComebackGame();    break;
     }
   };
   goto('screen-img-intro');
@@ -5414,24 +5733,52 @@ function startSetupGame() {
 function startLineGame() {
   const area = document.getElementById('img-game-area');
   const CURVES = [
-    { name: 'Curva 1 — Sainte-Devóte', path: [{x:10,y:70},{x:30,y:68},{x:55,y:55},{x:70,y:35},{x:80,y:15}] },
-    { name: 'Curva 2 — Massenet', path: [{x:10,y:75},{x:25,y:72},{x:50,y:60},{x:75,y:30},{x:85,y:10}] },
-    { name: 'Curva 3 — Loews (Horquilla)', path: [{x:10,y:20},{x:30,y:20},{x:60,y:25},{x:75,y:50},{x:65,y:75},{x:40,y:82},{x:15,y:75}] },
+    { name: 'Curva 1 - Sainte-Devôte', path: [{x:10,y:70},{x:30,y:68},{x:55,y:55},{x:70,y:35},{x:80,y:15}] },
+    { name: 'Curva 2 - Massenet', path: [{x:85,y:75},{x:75,y:55},{x:55,y:35},{x:30,y:20},{x:10,y:15}] },
+    { name: 'Curva 3 - Loews (Horquilla)', path: [{x:10,y:20},{x:30,y:20},{x:60,y:25},{x:75,y:50},{x:65,y:75},{x:40,y:82},{x:15,y:75}] },
   ];
   let curveIdx = 0;
   let done = false;
+  let timerInterval = null;
 
   const renderCurve = () => {
+    if (timerInterval) clearInterval(timerInterval);
+    let timeLeft = 5.0;
+
     const c = CURVES[curveIdx];
     area.innerHTML = `
-      <div style="font-size:36px;margin-bottom:6px">✏️</div>
+      <div style="font-size:36px;margin-bottom:6px">🏁</div>
       <div class="heading" style="font-size:18px;margin-bottom:2px">TRAZADA IDEAL</div>
       <div class="label" style="color:var(--muted);margin-bottom:8px">${c.name}</div>
       <canvas id="img-line-canvas" width="280" height="140"
         style="display:block;margin:0 auto 8px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:#111827;touch-action:none"></canvas>
+      <div id="img-line-timer" style="font-size:24px; font-weight:bold; color:var(--text); margin-bottom:4px">5.0s</div>
       <div id="img-line-status" class="label" style="color:var(--accent);margin-bottom:10px">Arrastrá siguiendo la línea verde</div>
       <div style="font-size:12px;color:var(--muted)">Curva ${curveIdx+1} de ${CURVES.length}</div>
     `;
+
+    timerInterval = setInterval(() => {
+      if (done || succeeded || failed) {
+         clearInterval(timerInterval);
+         return;
+      }
+      timeLeft -= 0.1;
+      const tEl = document.getElementById('img-line-timer');
+      if (tEl) tEl.textContent = Math.max(0, timeLeft).toFixed(1) + 's';
+
+      if (timeLeft <= 0.01) {
+         clearInterval(timerInterval);
+         failed = true;
+         done = true;
+         drawing = false;
+         if (tEl) tEl.style.color = '#f87171';
+         const status = document.getElementById('img-line-status');
+         if (status) { status.textContent = '❌ ¡Tiempo Agotado!'; status.style.color = '#f87171'; }
+         setTimeout(() => {
+           showIMGResult(false, 'Tiempo Agotado', 'Fuiste demasiado lento', 'Tardaste demasiado en trazar la curva y el comisario te invalidó la vuelta.');
+         }, 900);
+      }
+    }, 100);
 
     const canvas = document.getElementById('img-line-canvas');
     const ctx = canvas.getContext('2d');
@@ -5894,6 +6241,142 @@ function showFlash(text) {
   setTimeout(() => f.remove(), 1000);
 }
 
+// -------------------------------------------------------------------------
+//  12. COMEBACK - A Remontar
+// -------------------------------------------------------------------------
+function startComebackGame() {
+  const area = document.getElementById('img-game-area');
+  area.innerHTML = `
+    <div style="font-size:36px;margin-bottom:6px">🚀</div>
+    <div class="heading" style="font-size:18px;margin-bottom:2px">A REMONTAR</div>
+    <div class="label" id="img-cb-status" style="color:var(--muted);margin-bottom:8px">Autos superados: 0 / 5</div>
+    <canvas id="img-cb-canvas" width="300" height="240"
+      style="display:block;margin:0 auto 10px;border-radius:10px;border:1px solid rgba(255,255,255,0.15);background:#111827;cursor:ew-resize;touch-action:none"></canvas>
+    <div style="font-size:13px;color:var(--muted)">Deslizá para esquivar al auto que te frena</div>
+  `;
+
+  const canvas = document.getElementById('img-cb-canvas');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  
+  let carsPassed = 0;
+  let targetCars = 5;
+  
+  // Free movement variables
+  let playerX = W / 2;
+  let oppX = W / 2 + (Math.random() > 0.5 ? 60 : -60);
+  let oppY = -50;
+  
+  let oppSpeedY = 2.0; 
+  let oppTrackSpeed = 0.02; // How strongly the opponent tracks the player
+  
+  let gridOffset = 0;
+  let isGameOver = false;
+  let animFrame;
+  let lastTime = 0;
+  
+  // Controls
+  const onMove = (e) => {
+    if (e.cancelable) e.preventDefault();
+    if (isGameOver) return;
+    const rect = canvas.getBoundingClientRect();
+    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+    const scaleX = W / rect.width;
+    playerX = (clientX - rect.left) * scaleX;
+    // Clamp inside canvas
+    playerX = Math.max(20, Math.min(W - 20, playerX));
+  };
+  
+  canvas.addEventListener('mousemove', onMove);
+  canvas.addEventListener('touchmove', onMove, {passive: false});
+
+  const loop = (timestamp) => {
+    if (isGameOver) return;
+    if (!lastTime) lastTime = timestamp;
+    const dt = timestamp - lastTime;
+    lastTime = timestamp;
+    
+    // Scale by dt to ensure smooth movement
+    const timeScale = dt / 16.66;
+    gridOffset = (gridOffset + oppSpeedY * 2 * timeScale) % 40;
+    oppY += oppSpeedY * timeScale;
+    
+    // Opponent AI: tracks player smoothly
+    if (oppY > 0 && oppY < H - 50) {
+       // Only start tracking intensely as difficulty goes up
+       const currentTrackSpeed = oppTrackSpeed + (carsPassed * 0.015);
+       oppX += (playerX - oppX) * currentTrackSpeed * timeScale;
+    }
+    
+    // Collision / Pass check
+    const hitbox = 35; // Size of the collision check
+    if (oppY > H - 60 && oppY < H - 20) {
+       if (Math.abs(oppX - playerX) < hitbox) {
+          isGameOver = true;
+          drawScene(true); 
+          setTimeout(() => {
+            showIMGResult(false, '¡Choque!', 'Le diste de atrás', 'Calculaste mal, el auto lento se movió y rompiste el alerón delantero. Perdiste muchísimo tiempo.');
+          }, 1000);
+          return;
+       }
+    }
+    
+    if (oppY > H) {
+       carsPassed++;
+       const statusEl = document.getElementById('img-cb-status');
+       if (statusEl) statusEl.textContent = `Autos superados: ${carsPassed} / ${targetCars}`;
+       if (carsPassed >= targetCars) {
+          isGameOver = true;
+          drawScene(false);
+          setTimeout(() => {
+            showIMGResult(true, '¡Remontada Épica!', 'Pasaste a los 5 autos', 'Encontraste los huecos milimétricos y no perdiste nada de tiempo. ¡Pudiste alcanzar a los líderes!');
+          }, 500);
+          return;
+       }
+       // Spawn next
+       oppY = -50;
+       // Spawn opponent far away from player's current side to give a brief moment
+       oppX = playerX > W/2 ? 30 : W - 30;
+       oppSpeedY += 0.8; // Drops faster
+    }
+    
+    drawScene(false);
+    animFrame = requestAnimationFrame(loop);
+  };
+  
+  const drawScene = (crashed) => {
+    ctx.clearRect(0,0,W,H);
+    
+    // Grid (Vertical lanes & horizontal speed lines)
+    ctx.strokeStyle = 'rgba(255,255,255,0.06)';
+    ctx.lineWidth = 2;
+    // 4 vertical lines to simulate perspective lanes
+    ctx.beginPath(); ctx.moveTo(W/4, 0); ctx.lineTo(W/4, H); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(W/2, 0); ctx.lineTo(W/2, H); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(3*W/4, 0); ctx.lineTo(3*W/4, H); ctx.stroke();
+    
+    for(let y = gridOffset - 40; y < H; y += 40) {
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+    }
+    
+    ctx.font = '36px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    
+    // Player
+    ctx.fillText('🏎️', playerX, H - 40);
+    
+    // Opponent
+    ctx.fillText('🚙', oppX, oppY);
+    
+    if (crashed) {
+      ctx.font = '40px sans-serif';
+      ctx.fillText('💥', playerX, H - 50);
+    }
+  };
+  
+  animFrame = requestAnimationFrame(loop);
+}
 // ═══════════════════════════════════════════════════════════
 //  CONTRACTS
 // ═══════════════════════════════════════════════════════════
@@ -6011,15 +6494,17 @@ function showContracts() {
     const prevChamp = (G.lastResult && G.lastResult.cat === 'F1') ? G.lastResult.champ : 20;
 
     // Current team always gets to offer renewal if player met the position requirement for their team's stars
+    // NEW RULE: They will NOT offer a renewal if the player has 0 H2H wins during this contract.
+    const hasH2HWins = G.f1ContractH2HWins === undefined ? true : G.f1ContractH2HWins > 0;
     const currentTeamInPool = allTeams.find(t => G.team && t.name === G.team.name);
     const renewalChampReq = G.team ? (G.team.stars >= 5 ? 8 : G.team.stars >= 4 ? 12 : G.team.stars >= 3 ? 18 : 20) : 20;
-    const forceRenewal = currentTeamInPool && prevChamp <= renewalChampReq;
+    const forceRenewal = currentTeamInPool && prevChamp <= renewalChampReq && hasH2HWins;
     if (forceRenewal && !offerPool.find(t => t.name === G.team.name)) {
       offerPool.push(currentTeamInPool);
     }
 
     offerPool = offerPool.filter(t => {
-      if (G.team && t.name === G.team.name) return forceRenewal || prevChamp <= 15;
+      if (G.team && t.name === G.team.name) return forceRenewal || (prevChamp <= 15 && hasH2HWins);
       if (t.stars === 5) return prevChamp <= 8;
       if (t.stars === 4) return prevChamp <= 12;
       if (t.stars === 3) return prevChamp <= 18;
@@ -6050,6 +6535,21 @@ function showContracts() {
     offerPool = selectedOffers;
   }
 
+  // For junior categories: sort so affordable offers appear first
+  if (G.catIndex < 5) {
+    const acadDisc = G.academy ? 0.30 : 1.0;
+    offerPool.sort((a, b) => {
+      const aIdx = clamp((a.stars || 3) - 3, 0, 2);
+      const bIdx = clamp((b.stars || 3) - 3, 0, 2);
+      const aCost = Math.round((SEAT_COSTS[G.catIndex] || SEAT_COSTS[4])[aIdx] * acadDisc);
+      const bCost = Math.round((SEAT_COSTS[G.catIndex] || SEAT_COSTS[4])[bIdx] * acadDisc);
+      const aAfford = G.money >= aCost ? 0 : 1;
+      const bAfford = G.money >= bCost ? 0 : 1;
+      return aAfford - bAfford;
+    });
+  }
+
+
   const list = document.getElementById('contracts-list');
   list.innerHTML = '';
 
@@ -6063,16 +6563,27 @@ function showContracts() {
   }
 
   offerPool.forEach(team => {
+    const isF1 = G.catIndex === 5;
+
+    // === PAY-TO-DRIVE (Junior) vs SALARY (F1) ===
+    const starIdx = clamp((team.stars || 3) - 3, 0, 2); // 3★=0, 4★=1, 5★=2
+    let seatCost = isF1 ? 0 : (SEAT_COSTS[G.catIndex] || SEAT_COSTS[4])[starIdx];
+
+    // Academy discount: -50%
+    const academyDiscount = (!isF1 && G.academy) ? 0.50 : 1.0;
+    const rawCost = seatCost;
+    seatCost = Math.round(seatCost * academyDiscount);
+
+    // F1 salary (kept from original)
     const salary = [30000, 80000, 150000, 300000, 500000, 2000000][G.catIndex];
-    
-      let salarySpin = Math.round(salary * (0.8 + Math.random() * 0.6) / 10000) * 10000;
-      if (G.upgrades.includes('agent')) salarySpin = Math.round(salarySpin * 1.15); // agent_salary
-    
-    const isRegChange = cat === 'F1' && G.lastRegChangeYear === (G.year - 1);
+    let salarySpin = Math.round(salary * (0.8 + Math.random() * 0.6) / 10000) * 10000;
+    if (G.upgrades.includes('agent')) salarySpin = Math.round(salarySpin * 1.15);
+
+    const canAfford = isF1 || G.money >= seatCost;
     const probIdx = clamp(team.stars - 1, 0, 4);
+    const isRegChange = cat === 'F1' && G.lastRegChangeYear === (G.year - 1);
     const stars = isRegChange ? '❓❓❓❓❓' : '★'.repeat(team.stars) + '☆'.repeat(5 - team.stars);
     // F1 contracts last 2-3 years
-    const isF1 = G.catIndex === 5;
     const contractYears = isF1 ? (Math.random() < 0.5 ? 2 : 3) : 1;
     const contractLabel = isF1 ? `📋 Contrato: ${contractYears} temporadas` : '';
     const salaryTotal = isF1 ? `Total: ${fmt$(salarySpin * contractYears)}` : '';
@@ -6147,34 +6658,55 @@ function showContracts() {
       `;
 
     } else {
-      // ── Formativas: layout clásico simple ──
-      c.className = 'card offer-card selectable';
+      // 🏎️ Formativas: Pay-to-Drive layout
+      c.className = 'card offer-card selectable' + (!canAfford ? ' disabled' : '');
+      if (!canAfford) {
+        c.style.opacity = '0.5';
+        c.style.cursor = 'not-allowed';
+      }
       const logoHtml = team.logo
         ? `<div style="width:56px;height:48px;background:rgba(255,255,255,0.06);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;padding:4px"><img src="${team.logo}" alt="${team.name}" style="max-width:48px;max-height:38px;object-fit:contain"></div>`
-        : `<div style="width:56px;height:48px;border-radius:8px;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">🏎️</div>`;
+        : `<div style="width:56px;height:48px;border-radius:8px;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">🏎</div>`;
+      const discountHtml = (G.academy && rawCost > seatCost)
+        ? `<span style="text-decoration:line-through;color:var(--muted);font-size:14px;margin-right:6px">${fmt$(rawCost)}</span>`
+        : '';
+      const affordHtml = !canAfford
+        ? `<div style="margin-top:6px;padding:4px 8px;border-radius:4px;background:rgba(239,68,68,0.15);color:#f87171;font-size:11px;font-weight:bold">⛔ Fondos insuficientes</div>`
+        : '';
       c.innerHTML = `
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
           <div style="display:flex;align-items:center;gap:12px">
             ${logoHtml}
             <div>
               <div class="heading" style="font-size:20px">${team.name} ${badges}</div>
-              <div style="font-size:12px;color:var(--muted);margin-top:2px">📍 ${cat} | Req: ⭐ ${reqRep} / OVR ${reqOvr}</div>
-              ${team.focus ? `<div style="font-size:12px;margin-top:2px;color:${team.focus === 'desarrollo' ? '#60a5fa' : team.focus === 'ganar' ? '#f87171' : '#facc15'}">${team.focus === 'desarrollo' ? '📚 Prioriza desarrollo' : team.focus === 'ganar' ? '🏆 Prioriza ganar' : '⚖️ Equilibrado'}</div>` : ''}
+              <div style="font-size:12px;color:var(--muted);margin-top:2px">🏁 ${cat} | Req: ⭐ ${reqRep} / OVR ${reqOvr}</div>
+              ${team.focus ? `<div style="font-size:12px;margin-top:2px;color:${team.focus === 'desarrollo' ? '#60a5fa' : team.focus === 'ganar' ? '#f87171' : '#facc15'}">${team.focus === 'desarrollo' ? '📈 Prioriza desarrollo' : team.focus === 'ganar' ? '🏆 Prioriza ganar' : '⚖️ Equilibrado'}</div>` : ''}
             </div>
           </div>
           <div class="offer-star">${stars}</div>
         </div>
         <div class="result-row" style="padding:8px 0;border-color:var(--border)">
-          <div class="r-label">Salario / temporada</div>
-          <div class="r-val" style="font-size:17px">${fmt$(salarySpin)}</div>
+          <div class="r-label">💳 Costo del asiento</div>
+          <div class="r-val" style="font-size:17px;color:#f87171">${discountHtml}${fmt$(seatCost)}${G.academy ? ' <span style="font-size:11px;color:#4ade80">(-50% academia)</span>' : ''}</div>
         </div>
         <div class="result-row" style="padding:8px 0;border-color:transparent">
           <div class="r-label">Prob. de ganar</div>
           <div class="offer-prob">${isRegChange ? '❓' : WIN_PROBS[probIdx]}</div>
         </div>
+        ${affordHtml}
       `;
     }
     c.onclick = () => {
+      if (!canAfford) return; // Locked — not enough money
+      if (!isF1) {
+        // Pay-to-drive: deduct seat cost
+        G.money -= seatCost;
+        G.totalMoney -= seatCost; // doesn't count as earnings
+      } else {
+        // F1: add signing bonus (10% of salary)
+        G.money += Math.round(salarySpin * 0.1);
+        G.totalMoney += Math.round(salarySpin * 0.1);
+      }
       if (G.team && team.name === G.team.name) {
         G.renewalsCount++;
         G.nonRenewalsCount = 0;
@@ -6212,9 +6744,11 @@ function showContracts() {
           }
         }
       }
-      G.money += Math.round(salarySpin * 0.1);
-      G.totalMoney += Math.round(salarySpin * 0.1);
-      if (isF1) G.f1ContractYearsLeft = contractYears - 1;
+      if (isF1) {
+        G.f1ContractYearsLeft = contractYears - 1;
+        G.f1ContractH2HWins = 0;
+    G.f1ContractH2HLosses = 0;
+      }
       
       if (isF1) {
         refreshTeammate();
@@ -6384,8 +6918,9 @@ window.goto = function (id) {
 // ═══════════════════════════════════════════════════════════
 //  RETIREMENT
 // ═══════════════════════════════════════════════════════════
-function showRetirement() {
+function showRetirement(reason = null) {
   G.isRetired = true;
+  G._retirementReason = reason;
   checkAchievements('retirement');
   document.getElementById('ret-name').textContent = `${G.flag} ${G.name}`;
   const startYear = G.seasons[0]?.year || G.year;

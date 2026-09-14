@@ -605,6 +605,26 @@ const INTERVIEWS = [
       ]
     },
     {
+      id: 'f1_h2h_domination',
+      title: 'Destruyendo a tu compañero',
+      desc: '"Llevás varias temporadas pasándole por encima a tu compañero de equipo en el mundial. Muchos dicen que el segundo auto está de adorno. ¿Qué opinás?"',
+      choices: [
+        { text: '"Yo solo me enfoco en sacar el 100% del auto"', pers: 'aggressiveness', delta: 15, repDelta: 10, peerRelDelta: -20, hint: 'Menospreciás su rendimiento indirectamente.', fixedDesc: '"Si él no puede seguir el ritmo, ese no es mi problema. Yo exprimo el auto al máximo." La frialdad de tu respuesta dejó a todos mudos.' },
+        { text: '"Él también aporta al equipo"', pers: 'team', delta: 20, peerRelDelta: 20, hint: 'Ayudás a mantener la paz en el garaje (+Equipo).', fixedDesc: '"Los campeonatos se construyen entre dos. Su trabajo con la puesta a punto es clave, aunque no se vea los domingos."' },
+        { text: '"Me gustaría tener más competencia"', pers: 'aggressiveness', delta: 25, repDelta: 20, peerRelDelta: -35, hint: 'Destruís su moral completamente.', fixedDesc: '"Sinceramente, a veces me aburro. Ojalá el equipo me ponga a alguien que me exija más el año que viene." Tu compañero tiró los auriculares al escuchar la transmisión.' }
+      ]
+    },
+    {
+      id: 'f1_h2h_getting_destroyed',
+      title: 'A la sombra de tu compañero',
+      desc: '"Tu compañero te está ganando constantemente en el mundial y la prensa empieza a dudar de si merecés esa butaca. ¿Cómo manejás esta situación?"',
+      choices: [
+        { text: '"El auto está diseñado para él"', pers: 'media', delta: 25, peerRelDelta: -20, hint: 'Excusas que dividen al equipo (+Mediático, -Relación).', fixedDesc: '"Las mejoras siempre favorecen su estilo de conducción. Es muy difícil pelear así." El jefe de equipo no ocultó su enojo por tus declaraciones.' },
+        { text: '"Tengo que mejorar, no hay excusas"', pers: 'team', delta: 20, peerRelDelta: 10, repDelta: 10, hint: 'Aceptás la culpa y mostrás madurez (+Equipo).', fixedDesc: '"Él está haciendo un trabajo fenomenal y yo tengo que subir mi nivel. Así de simple."' },
+        { text: '"Que no se relaje, porque voy a volver"', pers: 'aggressiveness', delta: 20, peerRelDelta: -15, hint: 'Marcás territorio y jurás venganza (+Agresividad).', fixedDesc: '"Tuvo un par de buenas temporadas, pero esto es largo. El año que viene la historia va a ser muy diferente."' }
+      ]
+    },
+    {
       id: 'f1_academy_leave',
       title: 'Ruptura con la academia',
       desc: '"Sorprendiste a todos al rechazar la vía de tu academia para subir a F1 y firmar por otro equipo. ¿Por qué tomaste esa decisión?"',
@@ -1026,7 +1046,7 @@ function showInterview(postSeasonId = null) {
   let pool = INTERVIEWS.filter(iv => {
     if (iv.requireAcademy && !G.academy) return false;
     if (postSeasonId) return iv.id === postSeasonId;
-    const psIds = ['first_win', 'f1_overpaid', 'f1_fallen_champion', 'f1_carried_by_car', 'f1_shadow_contract_good', 'f1_shadow_contract_bad', 'f1_beaten_by_young_peer', 'f1_epic_champion', 'f1_championship_contender', 'f1_retirement_talk', 'f1_win_record', 'f1_teammate_destroyed', 'f1_first_title', 'f1_title_lost', 'f1_title_record_broken', 'f1_constructors_champ', 'f1_teammate_champ', 'f1_reg_change_better', 'f1_reg_change_worse', 'f1_underperform', 'f1_regulations_criticism', 'f1_academy_sign_filial', 'f1_academy_sign_main', 'f1_academy_leave', 'f1_academy_dropped', 'f1_academy_promoted_main'];
+    const psIds = ['first_win', 'f1_overpaid', 'f1_fallen_champion', 'f1_carried_by_car', 'f1_shadow_contract_good', 'f1_shadow_contract_bad', 'f1_beaten_by_young_peer', 'f1_epic_champion', 'f1_championship_contender', 'f1_retirement_talk', 'f1_win_record', 'f1_teammate_destroyed', 'f1_first_title', 'f1_title_lost', 'f1_title_record_broken', 'f1_constructors_champ', 'f1_teammate_champ', 'f1_reg_change_better', 'f1_reg_change_worse', 'f1_underperform', 'f1_regulations_criticism', 'f1_academy_sign_filial', 'f1_academy_sign_main', 'f1_academy_leave', 'f1_academy_dropped', 'f1_academy_promoted_main', 'f1_h2h_domination', 'f1_h2h_getting_destroyed'];
     if (!postSeasonId && (psIds.includes(iv.id) || iv.id.startsWith('ev_') || iv.nemesisInterview)) return false; // Hide post-season interviews from mid-season
     if (iv.nemesisInterview) {
       if (!G.nemesis) return false;
@@ -2493,6 +2513,12 @@ function computeSeasonResult() {
     }
     if (myStRow && tmRow && myStRow.rank >= tmRow.rank + 4 && !G.storyFlags['interview_f1_underperform']) {
       G._seasonSteps.push('event:f1_underperform');
+    }
+    if (G.peer && (G.peer.h2hLosses || 0) >= 3 && (G.peer.h2hWins || 0) === 0 && !G.storyFlags['interview_f1_h2h_domination']) {
+      G._seasonSteps.push('event:f1_h2h_domination');
+    }
+    if (G.peer && (G.peer.h2hWins || 0) >= 3 && (G.peer.h2hLosses || 0) === 0 && !G.storyFlags['interview_f1_h2h_getting_destroyed']) {
+      G._seasonSteps.push('event:f1_h2h_getting_destroyed');
     }
     if (myTeamRow && myTeamRow.rank === 1 && !G.storyFlags['interview_f1_constructors_champ']) {
       G._seasonSteps.push('event:f1_constructors_champ');
@@ -4124,8 +4150,8 @@ function processNextStep() {
             if (driversInTarget.length >= (nemDriver.cat === 'F1' ? 2 : 3)) { // Assuming F1 has 2 seats, juniors have 3
               const toDisplace = driversInTarget.find(d => !G.peer || d.id !== G.peer.id);
               if (toDisplace) {
-                if (nemDriver.cat === 'F1') toDisplace.team = 'Free Agent';
-                else G.aiRoster = G.aiRoster.filter(d => d.id !== toDisplace.id);
+                // Completely remove the displaced driver to prevent them from racing as a 'Free Agent'
+                G.aiRoster = G.aiRoster.filter(d => d.id !== toDisplace.id);
               }
             }
           } else {

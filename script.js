@@ -139,7 +139,7 @@ const CAT_LOGOS = {
 const WIN_PROBS = ['Muy baja', 'Baja', 'Media', 'Alta', 'Muy alta'];
 
 const ACTIVITIES_COMMON = [
-  { name: 'Entrenar en simulador', icon: '🖥️', bonus: '+2 clasificación', stats: { quali: 2 }, rarity: 'common' },
+  { name: 'Buscar el limite en pista', icon: '🚀', bonus: '+2 clasificación', stats: { quali: 2 }, rarity: 'common' },
   { name: 'Resistencia física', icon: '🏃', bonus: '+2 consistencia', stats: { tyres: 2 }, rarity: 'common' },
   { name: 'Practicar adelantamientos', icon: '🏎️', bonus: '+2 adelantamientos', stats: { overtake: 2 }, rarity: 'common' },
   { name: 'Trabajar con ingenieros', icon: '⚙️', bonus: '+1 clasif, +1 const', stats: { quali: 1, tyres: 1 }, rarity: 'common' },
@@ -380,6 +380,57 @@ const RANDOM_EVENTS = [
       { text: 'Buscar tiempo en las curvas rápidas', stat: 'speed', delta: 0, money: 0, skillStat: 'speed', skillBonus: 3, skillFail: -1, hint: '🚀 Velocidad: las curvas rápidas son donde más tiempo podés encontrar, pero también donde más fácil es equivocarse.', successDesc: 'Te animaste a llevar el auto un poco más allá. Cada curva fue perfecta y encontraste casi cuatro décimas. El equipo pasó a la siguiente sesión gracias a esa vuelta.', failDesc: 'El límite estaba demasiado cerca. Una corrección mínima en una curva rápida te hizo perder toda la vuelta. No hubo segunda oportunidad.' },
       { text: 'Buscar tiempo en las frenadas', stat: 'quali', delta: 0, money: 0, skillStat: 'quali', skillBonus: 3, skillFail: -1, hint: '🏎️ Clasificación: frenar exactamente en el límite puede darte las décimas que necesitás.', successDesc: 'Clavaste cada referencia. No parecías estar haciendo nada espectacular, pero frenaste medio metro más tarde en cada curva y la suma fue suficiente para avanzar.', failDesc: 'Una frenada demasiado tardía arruinó la vuelta. Bloqueaste los neumáticos y perdiste más tiempo del que intentabas recuperar.' }
     ]
+  },
+  {
+    id: 'nemesis_tapon',
+    icon: '🚫', title: 'El Tapón en Clasificación',
+    desc: 'Venís en tu vuelta rápida cuando tu némesis, que ya cerró la suya, va lento por la línea ideal. Es deliberado. Te arruinó el tiempo.',
+    nemesisOnly: true,
+    choices: [
+      { text: 'Reclamar a dirección de carrera', stat: 'quali', delta: 1, repDelta: -15, pers: 'aggressiveness', delta2: -10, hint: 'Resultado fijo: recuperás la posición si la FIA te escucha, pero la prensa te tilda de quejoso.', fixedDesc: 'Llamaste a la radio protestando. Los comisarios revisaron el caso y lo sancionaron con 3 puestos en la parrilla para la carrera. Ganaste la posición, pero todos en el paddock notaron que fuiste a llorarle a los jueces.' },
+      { text: 'Bloquearlo en su siguiente intento', stat: 'speed', delta: 0, skillStat: 'overtake', skillBonus: 2, skillFail: -2, repDelta: 15, pers: 'aggressiveness', delta2: 20, hint: '⚔️ Riesgo de penalización, pero ganás la reputación de que no te dejás pisotear.', successDesc: 'Te quedaste en pista y cuando lo tuviste detrás, redujiste la velocidad exactamente en el peor momento para él. Le arruinaste la vuelta. El paddock vio la maniobra y algunos sonrieron.', failDesc: 'Intentaste el bloqueo pero los comisarios te vieron primero. Penalización en la grilla. Él clasificó por delante y disfrutó cada segundo.' }
+    ]
+  },
+  {
+    id: 'nemesis_reglajes',
+    icon: '🗺️', title: 'El Mapa Prohibido',
+    desc: 'Tu némesis encontró una correlación aerodinámica mágica en su lado del box. Sus ingenieros le prohíben compartirla con vos. La diferencia en pista es evidente.',
+    nemesisTeammateOnly: true,
+    choices: [
+      { text: 'Acceder a la red interna del equipo', stat: 'quali', delta: 0, skillStat: 'quali', skillBonus: 3, skillFail: -2, money: 0, repDelta: 0, hint: '🔓 Classificación: si lo lográs, ganás una ventaja real. Si te descubren, el escándalo destruye tu reputación.', successDesc: 'Te las ingeniaste para acceder a los logs de telemetría de su lado. Encontraste el parámetro clave. Desde ese fin de semana, tu auto respondió distinto. Solo vos sabés por qué.', failDesc: 'El jefe de TI del equipo detectó el intento de acceso en minutos. El equipo te multó con el salario de un mes y prohibió que tus ingenieros toquen la red compartida.' },
+      { text: 'Trabajar a ciegas con tus mecánicos', stat: 'speed', delta: 0, skillStat: 'speed', skillBonus: 3, skillFail: -1, hint: '🔧 Velocidad: si tu intuición técnica es buena, podés llegar a la misma solución por tu cuenta.', successDesc: 'Pasaste horas en el box con tus mecánicos, ajustando milímetros sin saber qué buscabas exactamente. De repente, el auto cargó diferente en la curva 3. Lo habías encontrado. El jefe de equipo anotó algo en su libreta.', failDesc: 'Trabajar sin referencia fue frustrante. Probaste veinte configuraciones y ninguna funcionó. Saliste a clasificar con el auto como lo recibiste. Él fue cuatro décimas más rápido.' }
+    ]
+  },
+  {
+    id: 'nemesis_academy_sim',
+    icon: '💻', title: 'Duelo en el Simulador',
+    desc: 'El director de tu academia organizó una sesión de simulador en la base. Tu némesis y vos deben probar las actualizaciones del F1 del equipo mayor. Hay mucha tensión.',
+    requireAcademyNemesis: true,
+    choices: [
+      { text: 'Conducir al límite para humillarlo', stat: 'speed', delta: 1, repDelta: 10, pers: 'aggressiveness', delta2: 15, skillStat: 'quali', skillBonus: 1, skillFail: -1, hint: '✅ Ganás respeto si sos más rápido, pero podés chocar el simulador.', successDesc: 'Marcaste un tiempo medio segundo más rápido que él. El director de la academia sonrió. Tu némesis se fue sin saludar.', failDesc: 'Fuiste tan al límite que terminaste chocando el simulador virtual en la vuelta rápida. El equipo principal no quedó muy contento.' },
+      { text: 'Probar configuraciones para el equipo', stat: 'team', delta: 1, repDelta: 15, pers: 'team', delta2: 20, hint: 'Resultado fijo: sumás muchos puntos con los jefes de la academia.', fixedDesc: 'Mientras él intentaba hacer la vuelta rápida, vos te dedicaste a dar feedback técnico útil. Los ingenieros del equipo de F1 anotaron tu nombre. Él ganó el cronómetro, vos te ganaste a los jefes.' }
+    ]
+  },
+  {
+    id: 'nemesis_academy_seat',
+    icon: '🪑', title: 'El Asiento Prometido',
+    desc: 'Rumores en el paddock: la academia solo tiene un asiento libre en F1 para el año que viene, y se lo van a dar al que termine mejor esta temporada entre tu némesis y vos.',
+    requireAcademyNemesis: true,
+    choices: [
+      { text: '"Ese asiento es mío"', stat: 'quali', delta: 1, repDelta: 5, pers: 'aggressiveness', delta2: 20, hint: 'Aumentás tu confianza y agresividad de cara a la temporada.', fixedDesc: '"Que se busque lugar en otra categoría, porque el asiento de F1 ya tiene mi nombre." Tus declaraciones encendieron aún más el campeonato.' },
+      { text: '"Que gane el mejor en pista"', stat: 'tyres', delta: 1, repDelta: 20, pers: 'media', delta2: 15, hint: 'Respuesta diplomática, sumás reputación.', fixedDesc: '"Los dos somos grandes pilotos y la academia tiene suerte de tenernos. Daremos el 100% y los jefes decidirán." Quedaste como un profesional absoluto ante la prensa.' }
+    ]
+  },
+  {
+    id: 'junior_rival_spark',
+    icon: '🗯️', title: 'Roces de Paddock',
+    desc: 'Un piloto destacado de tu misma categoría lleva un par de carreras cerrándote la línea de forma peligrosa. Hoy en el paddock hizo un comentario soberbio frente a todos.',
+    minCat: 0,
+    maxCat: 4, // Solo categorías formativas
+    choices: [
+      { text: 'Ignorarlo y hablar en la pista', stat: 'quali', delta: 1, repDelta: 10, hint: 'Resultado fijo: sumás reputación por tu madurez, pero no demostras agresividad.', fixedDesc: 'Seguiste de largo sin mirarlo. Los periodistas valoraron tu madurez y te enfocaste en tu ritmo de clasificación, pero él sigue sintiéndose superior.' },
+      { text: 'Enfrentarlo públicamente', stat: 'speed', delta: 0, pers: 'aggressiveness', delta2: 25, repDelta: -10, nemesisSpark: true, hint: '🔥 +Agresividad masiva. Nace una gran rivalidad.', fixedDesc: 'Lo frenaste en seco adelante de las cámaras. Se dijeron de todo. Tu agresividad se disparó y el paddock ya eligió bandos. La próxima carrera va a ser una guerra.' }
+    ]
   }
 ];
 
@@ -507,7 +558,7 @@ const MINIGAMES = [
     id: 'peer_defense',
     icon: '🛡️', title: 'El Ministro de Defensa', desc: 'Tu compañero esta por delante tuyo. Vos venís segundo y detrás tenés un auto más rápido pisándote los talones.', radioMsg: '"Piloto, necesitamos que retengas al grupo de atrás. Repito, hacete ancho. {{PEER_NAME}} necesita 3 segundos de ventaja para asegurar los puntos."', choices: [
       { text: 'Defender como un león', skillStat: 'tyres', statBonus: 0.8, baseBonus: 0.1, noWinOnSuccess: true, repDelta: +20, peerRelDelta: +30, onFailDnf: 0.3, successDesc: 'Te convertiste en una muralla. Aguantaste los ataques arruinando tus propias gomas. Tu compañero termino mas adelante de lo esperado y te lo agradeció por radio. Héroe del equipo.', failDesc: 'Intentaste defender pero te quedaste sin gomas. Te pasaron a vos y terminaron cazando a tu compañero también. Un desastre para el equipo.' },
-      { text: 'Ignorar y atacar a tu compañero', skillStat: 'overtake', statBonus: 0.8, baseBonus: 0.1, noWinOnSuccess: true, repDelta: -15, peerRelDelta: -30, successDesc: 'Respondiste "No soy el guardaespaldas de nadie". Pasaste a tu compañero y terminaste por delante de él. {{PEER_NAME}} termino siendo rebazado por los demas y la escuderia sumó menos puntos de los que deberia.', failDesc: 'Intentaste atacar a tu compañero pero perdiste tracción. Te pasaron los de atrás y perdiste varias posiciones. El equipo te soltó la mano.' }
+      { text: 'Ignorar y atacar a tu compañero', skillStat: 'overtake', statBonus: 0.8, baseBonus: 0.1, noWinOnSuccess: true, repDelta: -15, peerRelDelta: -30, successDesc: 'Respondiste "No soy el guardaespaldas de nadie". Pasaste a tu compañero y terminaste por delante de él. {{PEER_NAME}} terminó siendo rebasado por los demas y la escuderia sumó menos puntos de los que deberia.', failDesc: 'Intentaste atacar a tu compañero pero perdiste tracción. Te pasaron los de atrás y perdiste varias posiciones. El equipo te soltó la mano.' }
     ]
   },
   {
@@ -935,7 +986,40 @@ const INTERVIEWS = [
       { text: '"Espero que alguien me supere algún día"', pers: 'media', delta: 20, hint: 'Dejás una frase para la historia (+Mediático).', fixedDesc: '"Eso significaría que este deporte sigue avanzando." Tu respuesta recorrió todos los medios.' }
     ]
   },
+  {
+    id: 'nemesis_ahead_comment',
+    title: 'La Sombra desde Arriba',
+    desc: '"Tu gran rival, {{NEMESIS_NAME}}, ya está corriendo en {{NEMESIS_CAT}} mientras vos seguís peleando acá abajo. ¿No sentís que te estás quedando atrás?"',
+    nemesisInterview: true,
+    choices: [
+      { text: '"Cada uno tiene su tiempo"', pers: 'media', delta: 15, hint: 'Mostrás paciencia.', fixedDesc: 'Mantuviste la calma. "Él tomó un atajo, yo estoy construyendo mi camino paso a paso. Nos volveremos a cruzar, no te preocupes."' },
+      { text: '"Que disfrute mientras pueda"', pers: 'aggressiveness', delta: 20, hint: 'Agresivo.', fixedDesc: '"Que junte todos los trofeos que pueda ahora, porque cuando yo llegue a esa categoría no va a ganar nunca más."' }
+    ]
+  },
+  {
+    id: 'nemesis_champ',
+    title: 'La Sombra del Año',
+    desc: 'Mientras vos terminaste una temporada discreta, tu némesis salió campeón. La prensa te espera en la conferencia.',
+    nemesisInterview: true,
+    choices: [
+      { text: '"Felicitaciones, hizo un gran trabajo"', pers: 'media', delta: 20, pers2: 'team', delta2: 15, hint: 'Resultado fijo: acumulás puntos de profesionalismo.', fixedDesc: '"Hizo un gran trabajo, el año que viene estaremos ahí para competirle." Bajaste la cabeza y respondiste con clase. Todos lo notaron.' },
+      { text: '"Cualquiera gana con ese auto"', pers: 'aggressiveness', delta: 30, repDelta: -25, hint: 'Resultado fijo: brutal en lo personal pero te destruye la reputación en el paddock.', fixedDesc: '"Poneme en su butaca y lo gano en la mitad de tiempo." El periodista abrió los ojos. La cita corrió por todos los medios. Tu némesis la imprimió y la colgó en su motorhome.' }
+    ]
+  },
+  {
+    id: 'nemesis_retired_comment',
+    title: 'Palabras desde el Paddock de TV',
+    desc: 'Tu némesis, ya retirado, aparece en un programa de análisis y te destina varios minutos de crítica. "Le falta el instinto de los grandes", dice mirando a cámara.',
+    nemesisInterview: true,
+    choices: [
+      { text: 'Ignorarlo públicamente', pers: 'media', delta: 15, pers2: 'team', delta2: 10, hint: 'Resultado fijo: la madurez suma puntos de imagen.', fixedDesc: 'No dijiste nada. Dejaste que hablara solo. Al día siguiente ya nadie recordaba sus palabras.' },
+      { text: 'Responderle en redes sociales', pers: 'aggressiveness', delta: 20, pers2: 'media', delta2: 25, repDelta: -10, hint: 'Resultado fijo: tus seguidores estallan, pero el escándalo te salpica a vos también.', fixedDesc: '"Los que ya no pueden competir, opinan." Un solo tuit. Un millón de reacciones. El programa lo invitó de nuevo para responder. Ya creaste un monstruo.' }
+    ]
+  }
 ];
+
+// F1 Car Rating Helper
+const getF1CarRating = (stars) => stars === 1 ? 15 : stars === 2 ? 30 : stars === 3 ? 55 : stars === 4 ? 78 : 92;
 
 function showInterview(postSeasonId = null) {
   // Select an interview
@@ -943,7 +1027,24 @@ function showInterview(postSeasonId = null) {
     if (iv.requireAcademy && !G.academy) return false;
     if (postSeasonId) return iv.id === postSeasonId;
     const psIds = ['first_win', 'f1_overpaid', 'f1_fallen_champion', 'f1_carried_by_car', 'f1_shadow_contract_good', 'f1_shadow_contract_bad', 'f1_beaten_by_young_peer', 'f1_epic_champion', 'f1_championship_contender', 'f1_retirement_talk', 'f1_win_record', 'f1_teammate_destroyed', 'f1_first_title', 'f1_title_lost', 'f1_title_record_broken', 'f1_constructors_champ', 'f1_teammate_champ', 'f1_reg_change_better', 'f1_reg_change_worse', 'f1_underperform', 'f1_regulations_criticism', 'f1_academy_sign_filial', 'f1_academy_sign_main', 'f1_academy_leave', 'f1_academy_dropped', 'f1_academy_promoted_main'];
-    if (!postSeasonId && (psIds.includes(iv.id) || iv.id.startsWith('ev_'))) return false; // Hide post-season interviews from mid-season
+    if (!postSeasonId && (psIds.includes(iv.id) || iv.id.startsWith('ev_') || iv.nemesisInterview)) return false; // Hide post-season interviews from mid-season
+    if (iv.nemesisInterview) {
+      if (!G.nemesis) return false;
+      // nemesis_champ: only if nemesis is in same cat and they did better than us this season
+      if (iv.id === 'nemesis_champ') {
+        if (!G.lastResult) return false;
+        const nemDriver = G.aiRoster && G.aiRoster.find(d => d.id === G.nemesis.id);
+        if (!nemDriver || nemDriver.cat !== G.lastResult.cat) return false;
+        const approxNemRank = Math.max(1, Math.round((1 - nemDriver.skill / 99) * 20) + 1);
+        if (approxNemRank >= G.lastResult.champ) return false; // Nemesis must have beaten us
+        if (approxNemRank !== 1) return false; // Nemesis must be champion
+      }
+      if (iv.id === 'nemesis_retired_comment') {
+        if (!G.nemesis.retired) return false;
+        if (G.storyFlags['interview_nemesis_retired_comment']) return false;
+      }
+      return true;
+    }
     if (G.catIndex < 5) return false; // ONLY IN F1
     if (G.storyFlags['interview_' + iv.id]) return false; // NO REPEATS
 
@@ -1042,7 +1143,18 @@ function showInterview(postSeasonId = null) {
       return;
   }
 
-  document.getElementById('int-title').textContent = iv.title;
+  let ivTitle = iv.title;
+  let ivDesc = iv.desc;
+  if (G.nemesis) {
+    const nStyle = `<span style="color:#ef4444;font-weight:bold">${G.nemesis.name}</span>`;
+    const nemRegex = /tu n[éèe]mesis/gi;
+    ivTitle = ivTitle.replace(/\{\{NEMESIS_NAME\}\}/g, nStyle).replace(nemRegex, nStyle);
+    ivDesc = ivDesc.replace(/\{\{NEMESIS_NAME\}\}/g, nStyle)
+                   .replace(/\{\{NEMESIS_CAT\}\}/g, G.nemesis.cat || 'otra categoría')
+                   .replace(nemRegex, nStyle);
+  }
+
+  document.getElementById('int-title').innerHTML = ivTitle;
   const screenInt = document.getElementById('screen-interview');
   
   // The first element is the emoji div
@@ -1072,7 +1184,6 @@ function showInterview(postSeasonId = null) {
 
 
 
-    let ivDesc = iv.desc;
     document.getElementById('int-desc').innerHTML = ivDesc;
 
   const ch = document.getElementById('int-choices');
@@ -1081,8 +1192,15 @@ function showInterview(postSeasonId = null) {
   iv.choices.forEach(c => {
     const b = document.createElement('div');
     b.className = 'minigame-choice';
+    
+    let cText = c.text;
+    if (G.nemesis) {
+      const nStyle = `<span style="color:#ef4444;font-weight:bold">${G.nemesis.name}</span>`;
+      cText = cText.replace(/\{\{NEMESIS_NAME\}\}/g, nStyle).replace(/tu n[éèe]mesis/gi, nStyle);
+    }
+    
     b.innerHTML = `
-      <h3>${c.text}</h3>
+      <h3>${cText}</h3>
       ${c.hint ? `<div style="font-size:12px;color:var(--blue);margin-top:4px">${c.hint}</div>` : ''}
     `;
     
@@ -1345,6 +1463,8 @@ function initState(name, number, nat, talent) {
     sponsor: null,
     loanUsed: false,
     loanDebt: 0,
+    nemesis: null,       // { id, name, retired: false } — fijado al llegar a 100 de tensión
+    nemesisHeat: {},     // { 'ai_12': 45 } — tensión acumulada por piloto
   };
   // apply talent
   const t = TALENTS.find(x => x.id === talent);
@@ -1782,6 +1902,7 @@ function runSimulation() {
 
     G._seasonSteps = [];
     G._seasonEventLogs = [];
+    G._minigamePowerBonus = 0; // reset each season
 
     // Natural growth (aging curve)
     const age = G.age;
@@ -1794,30 +1915,44 @@ function runSimulation() {
         : 0.8; // equilibrado or F1
 
     const tb = G.upgrades.includes('track') ? 0.75 : 0;
-      if (age < 18) {
-        logMsg = `🌱 Por tu juventud (Edad ${age}), tus atributos mejoraron notablemente.`;
-        if (tb) logMsg += ' (Bonus de Pista)';
-      for (const k of Object.keys(G.stats)) G.stats[k] = clamp(G.stats[k] + (3 + Math.random() * 2.5 + (typeof tb !== 'undefined' ? tb : 0)) * focusGrowthMult, 1, G.potential);
+    
+    const applyStatDelta = (k, rawDelta, decayMult = 1) => {
+      let delta = rawDelta * decayMult;
+      if (k === G.talent) {
+        // Talent passive: 10% extra growth, 10% less decay
+        delta = delta >= 0 ? delta * 1.1 : delta * 0.9;
+      }
+      G.stats[k] = clamp(G.stats[k] + delta, 1, G.potential);
+    };
+
+    if (age < 18) {
+      logMsg = `🌱 Por tu juventud (Edad ${age}), tus atributos mejoraron notablemente.`;
+      if (tb) logMsg += ' (Bonus de Pista)';
+      for (const k of Object.keys(G.stats)) applyStatDelta(k, (3 + Math.random() * 2.5 + tb) * focusGrowthMult);
     }
     else if (age < 23) {
       logMsg = `🌱 Seguís desarrollándote a gran ritmo (Edad ${age}).`;
-      for (const k of Object.keys(G.stats)) G.stats[k] = clamp(G.stats[k] + (1.5 + Math.random() * 2 + (typeof tb !== 'undefined' ? tb : 0)) * focusGrowthMult, 1, G.potential);
+      for (const k of Object.keys(G.stats)) applyStatDelta(k, (1.5 + Math.random() * 2 + tb) * focusGrowthMult);
     }
     else if (age < 28) {
       logMsg = `🌱 Acercándote a tu máximo potencial (Edad ${age}), seguís puliendo detalles.`;
-      for (const k of Object.keys(G.stats)) G.stats[k] = clamp(G.stats[k] + (0.3 + Math.random() * 1.7 + (typeof tb !== 'undefined' ? tb : 0)) * focusGrowthMult, 1, G.potential);
+      for (const k of Object.keys(G.stats)) applyStatDelta(k, (0.3 + Math.random() * 1.7 + tb) * focusGrowthMult);
     }
     else if (age < 34) {
-      logMsg = `⭐ Estás en tu plenitud física y mental (Edad ${age}). Atributos estables.`;
-      for (const k of Object.keys(G.stats)) G.stats[k] = clamp(G.stats[k] + (Math.random() * 1.5 - 0.9 + (typeof tb !== 'undefined' ? tb : 0)), 1, G.potential);
+      logMsg = `⚖️ Estás en tu plenitud física y mental (Edad ${age}). Atributos estables.`;
+      for (const k of Object.keys(G.stats)) applyStatDelta(k, (Math.random() * 1.5 - 0.9 + tb));
     }
     else if (age < 38) {
-      logMsg = `🍂 Los años empiezan a pesar (Edad ${age}). Tus reflejos y estado físico caen notablemente.`;
-      const decayMult = G.upgrades.includes('cryo') ? 0.2 : (G.upgrades.includes('mansion') ? 0.5 : 1); if(decayMult<1) logMsg+=' (Mitigado)'; for (const k of Object.keys(G.stats)) G.stats[k] = clamp(G.stats[k] - (1 + Math.random() * 3) * decayMult, 1, G.potential);
+      logMsg = `📉 Los años empiezan a pesar (Edad ${age}). Tus reflejos y estado físico caen notablemente.`;
+      const decayMult = G.upgrades.includes('cryo') ? 0.2 : (G.upgrades.includes('mansion') ? 0.5 : 1); 
+      if(decayMult<1) logMsg+=' (Mitigado)';
+      for (const k of Object.keys(G.stats)) applyStatDelta(k, -(1 + Math.random() * 3), decayMult);
     }
     else {
-      logMsg = `🍂 Estás en el ocaso de tu carrera (Edad ${age}). Tus atributos se desploman.`;
-      const decayMult2 = G.upgrades.includes('cryo') ? 0.2 : (G.upgrades.includes('mansion') ? 0.5 : 1); if(decayMult2<1) logMsg+=' (Mitigado)'; for (const k of Object.keys(G.stats)) G.stats[k] = clamp(G.stats[k] - (3 + Math.random() * 4) * decayMult2, 1, G.potential);
+      logMsg = `📉 Estás en el ocaso de tu carrera (Edad ${age}). Tus atributos se desploman.`;
+      const decayMult2 = G.upgrades.includes('cryo') ? 0.2 : (G.upgrades.includes('mansion') ? 0.5 : 1); 
+      if(decayMult2<1) logMsg+=' (Mitigado)';
+      for (const k of Object.keys(G.stats)) applyStatDelta(k, -(3 + Math.random() * 4), decayMult2);
     }
 
     // Log team focus effect
@@ -1839,10 +1974,10 @@ function runSimulation() {
         G.lastRegChangeYear = G.year;
         G.nextRegChangeYear = G.year + 3 + Math.floor(Math.random() * 3);
 
-        // ── EXCLUSIVE EVENT: "Una Oferta en las Sombras" ──
+        // ──        // ✨ EXCLUSIVE EVENT: "Una Oferta en las Sombras" ✨
         // Only fires in the season right before a reg change, if the player has
-        // 1+ years left on their current contract with a top (4-5 star) team.
-        if (G.f1ContractYearsLeft >= 1 && G.team && G.team.stars >= 4 && !G.storyFlags['shadow_offer_seen'] && Math.random() < 0.25) {
+        // 1+ years left on their current contract with a mid-top (3-5 star) team.
+        if (G.f1ContractYearsLeft >= 1 && G.team && G.team.stars >= 3 && !G.storyFlags['shadow_offer_seen'] && Math.random() < 0.25) {
           G.storyFlags['shadow_offer_seen'] = true;
           G._seasonSteps.push('shadow_offer');
         }
@@ -1863,6 +1998,8 @@ function runSimulation() {
     if (hasInterview) G._seasonSteps.push('interview');
 
     // In junior categories, a sponsor selection event fires each season
+    // [DESACTIVADO A PEDIDO DEL JUGADOR]
+    /*
     if (G.catIndex < 5) {
       if (!G.sponsor || G.sponsor.category !== G.catIndex) {
         G.sponsor = null; // Clear old sponsor
@@ -1874,6 +2011,7 @@ function runSimulation() {
         G._seasonEventLogs.push(`💸 ${G.sponsor.brand} renovó automáticamente su patrocinio y depositó ${fmt$(G.sponsor.fixedPaid)}.`);
       }
     }
+    */
 
     processSeasonStep();
   }, 2100);
@@ -1901,6 +2039,8 @@ function processSeasonStep() {
   else if (step === 'interactive_minigame') showInteractiveMinigame();
   else if (step === 'interview') showInterview();
   else if (step.startsWith('event:')) showInterview(step.split(':')[1]);
+  else if (step.startsWith('nemesis_born:')) showNemesisBornEvent(step.split(':')[1]);
+  else if (step === 'nemesis_retired') showNemesisRetiredEvent();
   else if (step === 'compute') {
     computeSeasonResult();
     processSeasonStep();
@@ -1948,13 +2088,19 @@ function computeSeasonResult() {
   let eff = weightedBase + rainBonus;
   if (cat === 'F1') {
     const effectiveStars = clamp(G.team.stars + (G._tempStarBonus || 0), 1, 5);
-    const carRating = effectiveStars === 1 ? 15 : effectiveStars === 2 ? 30 : effectiveStars === 3 ? 55 : effectiveStars === 4 ? 78 : 92;
-    eff = (weightedBase * 0.20) + (carRating * 0.80) + rainBonus;
+    const carRating = getF1CarRating(effectiveStars);
+    eff = (weightedBase * 0.25) + (carRating * 0.75) + rainBonus + 4; // +4 boost al jugador
     // Apply regulation bonus if player chose to focus on current season
     if (G.regulationBonus > 0) {
       eff += G.regulationBonus;
       G.regulationBonus = 0; // consume it
     }
+  }
+
+  // Apply minigame power bonus accumulated this season (applies to all categories)
+  if (G._minigamePowerBonus > 0) {
+    eff += G._minigamePowerBonus;
+    G._minigamePowerBonus = 0; // consume it
   }
 
   // Team focus: 'ganar' teams boost effective rating in formative categories
@@ -2010,14 +2156,15 @@ function computeSeasonResult() {
       const tObj = TEAMS[cat].find(t => t.name === ai.team);
       const aiStars = tObj ? tObj.stars : 3;
       
-      if (cat === 'F1') {
-        const aiCarRating = aiStars === 1 ? 15 : aiStars === 2 ? 30 : aiStars === 3 ? 55 : aiStars === 4 ? 78 : 92;
-        aiPower = (ai.skill * 0.20) + (aiCarRating * 0.80);
+        if (cat === 'F1') {
+          const aiCarRating = getF1CarRating(aiStars);
+          aiPower = (ai.skill * 0.25) + (aiCarRating * 0.75);
       } else {
         aiPower = ai.skill + (aiStars * 3);
       }
       
       aiPower += rand(-10, 10);
+      ai._power = aiPower; // Store for later rank estimation
       if (aiPower > playerPower) rank++;
     });
     champ = rank;
@@ -2176,7 +2323,73 @@ function computeSeasonResult() {
   G.seasons.push(result);
   G.lastResult = result;
 
+  // ─── Nemesis Heat Accumulation ───
+  if (!G.nemesis && G.aiRoster) {
+    G.nemesisHeat = G.nemesisHeat || {};
+    // Passive heat: being teammates each season
+    if (G.peer && G.catIndex === 5) {
+      const peerDriver = G.aiRoster.find(d => d.id === G.peer.id);
+      if (peerDriver) addNemesisHeat(peerDriver, 15);
+    }
+    // Accurate championship positions (within 2 places of each other in same category)
+    const catDrivers = G.aiRoster.filter(d => d.cat === cat);
+    // Sort by _power (simulated performance including car)
+    catDrivers.sort((a,b) => (b._power || 0) - (a._power || 0));
+    let currentRank = 1;
+    catDrivers.forEach(d => {
+      if (currentRank === champ) currentRank++; // Skip the player's slot
+      d._finalRank = currentRank;
+      
+      const diff = Math.abs(d._finalRank - champ);
+      if (G.catIndex < 5) {
+        if (diff === 0) addNemesisHeat(d, 70);
+        else if (diff === 1) addNemesisHeat(d, 60);
+        else if (diff === 2) addNemesisHeat(d, 35);
+      } else {
+        if (diff === 0) addNemesisHeat(d, 40);
+        else if (diff === 1) addNemesisHeat(d, 30);
+        else if (diff === 2) addNemesisHeat(d, 15);
+      }
+      currentRank++;
+    });
+  }
+  // 🏁🏁🏁 Nemesis H2H Tracking 🏁🏁🏁
+  if (G.nemesis && G.aiRoster) {
+    const nemDriver = G.aiRoster.find(d => d.id === G.nemesis.id);
+    if (nemDriver && nemDriver.cat === cat) {
+      G.nemesis.cat = nemDriver.cat;
+      // Fallback if _finalRank missing (shouldn't happen)
+      const approxNemRank = nemDriver._finalRank || Math.max(1, Math.round((1 - nemDriver.skill / 99) * 20) + 1);
+      if (champ < approxNemRank) G.nemesis.h2hWins = (G.nemesis.h2hWins || 0) + 1;
+      else if (champ > approxNemRank) G.nemesis.h2hLosses = (G.nemesis.h2hLosses || 0) + 1;
+      // Nemesis champion interview (if he won and we didn't)
+      if (approxNemRank === 1 && champ > 1 && !G.storyFlags['interview_nemesis_champ']) {
+        G._seasonSteps = G._seasonSteps || [];
+        G._seasonSteps.push('event:nemesis_champ');
+      }
+    } else if (nemDriver) {
+      G.nemesis.cat = nemDriver.cat; // Keep cat updated even in different categories
+    }
+    // Check nemesis retirement (age >= 40 or past prime)
+    if (nemDriver && !G.nemesis.retired && nemDriver.age >= 40) {
+      G.nemesis.retired = true;
+      G._seasonSteps = G._seasonSteps || [];
+      G._seasonSteps.push('nemesis_retired');
+    }
+    // Occasional retired comment (15% chance per season after retirement)
+    if (G.nemesis.retired && Math.random() < 0.15 && !G.storyFlags['interview_nemesis_retired_comment']) {
+      G._seasonSteps = G._seasonSteps || [];
+      G._seasonSteps.push('event:nemesis_retired_comment');
+    }
+    
+    // Add summary log
+    const statusStr = G.nemesis.retired ? 'Retirado' : (G.nemesis.cat ? G.nemesis.cat : '');
+    G._seasonEventLogs.push(`⚔️ Rivalidad Histórica vs ${G.nemesis.name} (${statusStr}): ${G.nemesis.h2hWins || 0} - ${G.nemesis.h2hLosses || 0}`);
+  }
+
   // Sponsor evaluation (junior categories only)
+  // [DESACTIVADO A PEDIDO DEL JUGADOR]
+  /*
   if (G.sponsor && G.catIndex < 5) {
     const sp = G.sponsor;
     let bonusEarned = false;
@@ -2190,19 +2403,23 @@ function computeSeasonResult() {
     if (bonusEarned) {
       G.money += sp.bonusAmount;
       G.totalMoney += sp.bonusAmount;
-      G._seasonEventLogs.push(`🎉 ¡Objetivo del patrocinador cumplido! ${sp.brand} te deposita el bono de ${fmt$(sp.bonusAmount)}.`);
+      G._seasonEventLogs.push(`💸 ¡Objetivo del patrocinador cumplido! ${sp.brand} te deposita el bono de ${fmt$(sp.bonusAmount)}.`);
     } else if (sp.objective !== 'none') {
       G._seasonEventLogs.push(`❌ No cumpliste el objetivo de ${sp.brand}. Sin bono de rendimiento.`);
     }
     // El patrocinador no se resetea aquí, dura toda la categoría
   }
+  */
 
   // Loan repayment
+  // [DESACTIVADO A PEDIDO DEL JUGADOR]
+  /*
   if (G.loanDebt > 0) {
     G.money -= G.loanDebt;
     G._seasonEventLogs.push(`💸 Se descontaron ${fmt$(G.loanDebt)} del préstamo de emergencia.`);
     G.loanDebt = 0;
   }
+  */
 
   if (result.champ === 1 && result.cat === 'F1') {
     G.f1Titles++;
@@ -2419,8 +2636,8 @@ function simulateShadowF1Season() {
   const scored = f1Drivers.map(d => {
     const team = (TEAMS['F1'] || []).find(t => t.name === d.team);
     const stars = team ? team.stars : 3;
-    const carRating = stars === 1 ? 15 : stars === 2 ? 30 : stars === 3 ? 55 : stars === 4 ? 78 : 92;
-    const power = (d.skill * 0.20) + (carRating * 0.80) + rand(-10, 10);
+    const carRating = getF1CarRating(stars);
+    const power = (d.skill * 0.25) + (carRating * 0.75) + rand(-10, 10);
     return { name: d.name, team: d.team, power };
   });
   scored.sort((a, b) => b.power - a.power);
@@ -2591,6 +2808,42 @@ function showEmergencyLoanScreen(catIdx, r, cheapestSeat) {
   bRetire.onclick = () => showRetirement('💸 Sin fondos para continuar tu carrera, te retiraste.');
   ch.appendChild(bRetire);
 
+  goto('screen-event');
+}
+
+function showNemesisBornEvent(driverId) {
+  const driver = G.aiRoster && G.aiRoster.find(d => d.id === driverId);
+  const rawName = G.nemesis ? G.nemesis.name : (driver ? driver.name : 'Tu Rival');
+  const name = `<span style="color:#ef4444;font-weight:bold">${rawName}</span>`;
+  const msgFn = NEMESIS_ORIGIN_MESSAGES[Math.floor(Math.random() * NEMESIS_ORIGIN_MESSAGES.length)];
+  resetEventChrome();
+  document.getElementById('ev-icon').textContent = '⚔️';
+  document.getElementById('ev-title').textContent = 'Nace una Rivalidad';
+  document.getElementById('ev-desc').innerHTML = msgFn(name);
+  const ch = document.getElementById('ev-choices');
+  ch.innerHTML = '';
+  const btn = document.createElement('div');
+  btn.className = 'minigame-choice';
+  btn.innerHTML = `<h3>"Nos vemos en la pista"</h3><div style="font-size:12px;color:var(--muted);margin-top:4px">Se ha generado un Némesis, nace una rivalidad.</div>`;
+  btn.onclick = processSeasonStep;
+  ch.appendChild(btn);
+  goto('screen-event');
+}
+
+function showNemesisRetiredEvent() {
+  const rawName = G.nemesis ? G.nemesis.name : 'Tu Némesis';
+  const name = `<span style="color:#ef4444;font-weight:bold">${rawName}</span>`;
+  resetEventChrome();
+  document.getElementById('ev-icon').textContent = '🏁';
+  document.getElementById('ev-title').innerHTML = `${name} se Retira`;
+  document.getElementById('ev-desc').innerHTML = `${name} anunció su retiro del automovilismo. Su carrera termina acá. La guerra entre ustedes quedará en los libros de historia.`;
+  const ch = document.getElementById('ev-choices');
+  ch.innerHTML = '';
+  const btn = document.createElement('div');
+  btn.className = 'minigame-choice';
+  btn.innerHTML = `<h3>Fin de una era</h3><p style="margin-bottom:6px">Balance final: ${G.nemesis.h2hWins || 0} temporadas por delante, ${G.nemesis.h2hLosses || 0} temporadas por detrás. Aunque ya no compita, puede que sus comentarios rn los medios no terminen acá.</p>`;
+  btn.onclick = () => processSeasonStep();
+  ch.appendChild(btn);
   goto('screen-event');
 }
 
@@ -3082,7 +3335,7 @@ function buildSummary() {
             </div>
             <div>
               <div style="font-weight:bold">${G.peer.name} <span style="font-size:12px; color:var(--muted); font-weight:normal">(${G.peer.nat.flag} OVR ${Math.round(G.peer.skill || 50)})</span></div>
-              <div style="font-size:12px; color:var(--muted); font-weight:normal">${G.peer.h2hLosses} victorias, ${G.peer.h2hWins} derrotas</div>
+              <div style="font-size:12px; color:var(--muted); font-weight:normal">${G.peer.h2hWins} victorias, ${G.peer.h2hLosses} derrotas</div>
             </div>
           </div>
           <div style="font-size:12px; color:${relColor}; font-weight:bold; text-align:right">${relLabel}</div>
@@ -3180,6 +3433,8 @@ function afterSummary() {
   const isFormative = G.catIndex < 5;
   
   // BANKRUPTCY CHECK: can the player afford any seat in their own category?
+  // [DESACTIVADO A PEDIDO DEL JUGADOR: Asientos formativos gratis]
+  /*
   if (isFormative) {
     const acadDisc = G.academy ? 0.30 : 1.0;
     const sameCatTeams = TEAMS[CATEGORIES[catIdx]] || [];
@@ -3193,12 +3448,13 @@ function afterSummary() {
         showEmergencyLoanScreen(catIdx, r, cheapestSeat);
         return;
       } else {
-        // Already used loan: bankruptcy → forced retirement
+        // Already used loan: bankruptcy ➔ forced retirement
         showRetirement('💸 Sin fondos para continuar tu carrera, te viste obligado a retirarte.');
         return;
       }
     }
   }
+  */
 
   // Check if player can advance by position AND meets requirements in next category
   const posCanAdvance = r.champ <= 10 && G.catIndex < 5;
@@ -3214,6 +3470,8 @@ function afterSummary() {
 
   // Position & Reqs OK, but check if they can afford next category
   let canAffordNext = true;
+  // [DESACTIVADO A PEDIDO DEL JUGADOR: Asientos formativos gratis, ya no se requiere chequear fondos]
+  /*
   if (isFormative && posCanAdvance && meetsNextReqs && catIdx + 1 < 5) {
     const nextCatIdx = catIdx + 1;
     const acadDisc = G.academy ? 0.30 : 1.0;
@@ -3224,6 +3482,7 @@ function afterSummary() {
     }));
     canAffordNext = G.money >= cheapestNextSeat;
   }
+  */
 
   if (posCanAdvance && meetsNextReqs && !canAffordNext && isFormative) {
     showNoOfferScreen(catIdx, r, false, true); // fundsFailed=true
@@ -3506,6 +3765,7 @@ function showAcademyEvent(pendingSteps = []) {
   b1.innerHTML = `<h3>Unirse a la academia de ${academy.name}</h3><p style="margin-bottom:6px">Te facilitará el camino y los contratos, pero estarás atado a ellos.</p>`;
   b1.onclick = () => {
     G.academy = academy.id;
+    if (G.nemesis && Math.random() < 0.25) G.nemesis.academy = academy.id;
     G.academyWarnings = 0;
     updateTopBar();
     G._nextSteps = [...pendingSteps];
@@ -3732,8 +3992,11 @@ function goToContracts(oldCatIdx, repeatCat = false, skipContracts = false) {
   if (oldCatIdx === 4 && G.catIndex === 5 && !G._goldenBoyChecked && !G.academy) {
     G._goldenBoyChecked = true;
     const formativeWins = G.seasons.filter(s => s.cat !== 'F1').reduce((acc, s) => acc + s.wins, 0);
+    const f2SeasonsCount = G.seasons.filter(s => s.cat === 'F2').length;
     const top5F2 = G.lastResult && G.lastResult.champ <= 5;
-    if (top5F2 && formativeWins >= 5 && Math.random() < 0.5) {
+    
+    // Solo sale si estuviste menos de 3 temporadas en F2 (chico de oro = ascenso meteórico)
+    if (top5F2 && formativeWins >= 5 && f2SeasonsCount < 3 && Math.random() < 0.5) {
       // Golden Boy event ignores 'contracts' step since it handles signing internally
       showGoldenBoyEvent(steps.filter(s => s !== 'contracts'));
       return;
@@ -3833,13 +4096,57 @@ function processNextStep() {
   } else if (step === 'preseason') {
     if (G._pendingTeammateChangeMsg) {
       const p = G._pendingTeammateChangeMsg;
-      const title = '🤝 Cambio en el Garaje';
+      const title = '🏎️ Cambio en el Garaje';
       const resultText = p.h2hWins > p.h2hLosses ? 'a tu favor' : (p.h2hWins < p.h2hLosses ? 'en tu contra' : 'en empate');
-      const desc = `Tu antiguo compañero, <strong>${p.oldName}</strong>, ${p.destination}.<br><br>El duelo interno durante estos años finalizó con un récord de <strong>${p.h2hWins} a ${p.h2hLosses}</strong> ${resultText}.<br><br>Tu nuevo compañero de equipo será <strong>${p.newName}</strong>.`;
+      const nemesisColor = p.isNemesis ? 'color:#ef4444;' : 'color:#6366f1;';
+      const desc = `Tu antiguo compañero, <strong>${p.oldName}</strong>, ${p.destination}.<br><br>El duelo interno durante estos años finalizó con un récord de <strong>${p.h2hWins} a ${p.h2hLosses}</strong> ${resultText}.<br><br>Tu nuevo compañero de equipo será <strong style="${nemesisColor}">${p.newName}</strong>.`;
       G._pendingTeammateChangeMsg = null;
       G._nextSteps.unshift('preseason');
       showMessageScreen(title, desc);
       return;
+    }
+
+    // Check Nemesis Progression
+    if (G.nemesis && !G.nemesis.retired && G.aiRoster) {
+      const nemDriver = G.aiRoster.find(d => d.id === G.nemesis.id);
+      if (nemDriver) {
+        const nemCatIdx = CATEGORIES.indexOf(nemDriver.cat);
+        if (nemCatIdx < G.catIndex) {
+          // Forcefully promote nemesis to player's category
+          nemDriver.cat = CATEGORIES[G.catIndex];
+          G.nemesis.cat = nemDriver.cat;
+          
+          const newCatTeams = TEAMS[nemDriver.cat];
+          if (newCatTeams && newCatTeams.length > 0) {
+            nemDriver.team = newCatTeams[Math.floor(Math.random() * newCatTeams.length)].name;
+            // Kick an existing AI driver out of this team to make room
+            const driversInTarget = G.aiRoster.filter(d => d.cat === nemDriver.cat && d.team === nemDriver.team && d.id !== nemDriver.id);
+            if (driversInTarget.length >= (nemDriver.cat === 'F1' ? 2 : 3)) { // Assuming F1 has 2 seats, juniors have 3
+              const toDisplace = driversInTarget.find(d => !G.peer || d.id !== G.peer.id);
+              if (toDisplace) {
+                if (nemDriver.cat === 'F1') toDisplace.team = 'Free Agent';
+                else G.aiRoster = G.aiRoster.filter(d => d.id !== toDisplace.id);
+              }
+            }
+          } else {
+            nemDriver.team = 'Privado';
+          }
+          
+          let baseSkill = 30;
+          if (G.catIndex === 5) baseSkill = 80;
+          else if (G.catIndex === 4) baseSkill = 60;
+          else if (G.catIndex === 3) baseSkill = 50;
+          if (nemDriver.skill < baseSkill) nemDriver.skill = baseSkill;
+          
+        } else if (nemCatIdx > G.catIndex) {
+          // Nemesis is ahead of player
+          const flagKey = `nemesis_ahead_${G.year}`;
+          if (!G.storyFlags[flagKey]) {
+            G.storyFlags[flagKey] = true;
+            G._nextSteps.unshift('event:nemesis_ahead_comment');
+          }
+        }
+      }
     }
 
     const cat = CATEGORIES[G.catIndex];
@@ -3987,6 +4294,21 @@ function showRandomEvent(forcedId = null) {
       }
       if (ev.id === 'peer_wall' && G.peer.relationship >= -30) return false;
     }
+    // Nemesis-only events
+    if (ev.nemesisOnly) {
+      if (!G.nemesis) return false;
+      const nemDriver = G.aiRoster && G.aiRoster.find(d => d.id === G.nemesis.id);
+      if (!nemDriver || nemDriver.cat !== CATEGORIES[G.catIndex]) return false; // Must be in same category
+    }
+    if (ev.nemesisTeammateOnly) {
+      if (!G.nemesis || !G.peer) return false;
+      if (G.peer.id !== G.nemesis.id) return false; // Must be your current teammate
+    }
+    if (ev.requireAcademyNemesis) {
+      if (!G.academy || !G.nemesis || G.nemesis.academy !== G.academy) return false;
+      const nemDriver = G.aiRoster && G.aiRoster.find(d => d.id === G.nemesis.id);
+      if (!nemDriver || nemDriver.cat !== CATEGORIES[G.catIndex]) return false; // Must be in same category
+    }
     return true;
   });
   if (pool.length === 0) pool = RANDOM_EVENTS;
@@ -4040,9 +4362,21 @@ function showRandomEvent(forcedId = null) {
     G._directivaUsed = true;
   }
 
+  let evTitle = ev.title;
+  let evDesc = ev.desc;
+  
+  if (G.nemesis) {
+    const nStyle = `<span style="color:#ef4444;font-weight:bold">${G.nemesis.name}</span>`;
+    const nemRegex = /tu n[éèe]mesis/gi;
+    evTitle = evTitle.replace(/\{\{NEMESIS_NAME\}\}/g, nStyle).replace(nemRegex, nStyle);
+    evDesc = evDesc.replace(/\{\{NEMESIS_NAME\}\}/g, nStyle)
+                   .replace(/\{\{NEMESIS_CAT\}\}/g, G.nemesis.cat || 'otra categoría')
+                   .replace(nemRegex, nStyle);
+  }
+
   document.getElementById('ev-icon').textContent = ev.icon;
-  document.getElementById('ev-title').textContent = ev.title;
-  document.getElementById('ev-desc').textContent = ev.desc;
+  document.getElementById('ev-title').innerHTML = evTitle;
+  document.getElementById('ev-desc').innerHTML = evDesc;
 
   // Team Radio block
   const existingRadio = document.getElementById('ev-radio-block');
@@ -4080,8 +4414,14 @@ function showRandomEvent(forcedId = null) {
       resolvedDelta = success ? (c.skillBonus || 0) : (c.skillFail || 0);
     }
 
+    let cText = c.text;
+    if (G.nemesis) {
+      const nStyle = `<span style="color:#ef4444;font-weight:bold">${G.nemesis.name}</span>`;
+      cText = cText.replace(/\{\{NEMESIS_NAME\}\}/g, nStyle).replace(/tu n[éèe]mesis/gi, nStyle);
+    }
+
     const hintHtml = c.hint ? `<div style="font-size:12px;color:var(--accent);margin-top:4px">${c.hint}</div>` : '';
-    b.innerHTML = `<h3>${c.text}</h3>${hintHtml}`;
+    b.innerHTML = `<h3>${cText}</h3>${hintHtml}`;
 
     b.onclick = () => {
       autocompleteRadio('ev-radio-text');
@@ -4091,8 +4431,13 @@ function showRandomEvent(forcedId = null) {
       }
       if (relChange && G.peer) {
         G.peer.relationship = clamp(G.peer.relationship + relChange, -100, 100);
+        if (G.nemesis && G.peer.id === G.nemesis.id) G.peer.relationship = Math.min(G.peer.relationship, -100);
       }
-      G.stats[c.stat] = clamp(G.stats[c.stat] + resolvedDelta, 1, G.potential);
+      
+      if (c.stat) {
+        G.stats[c.stat] = clamp(G.stats[c.stat] + resolvedDelta, 1, G.potential);
+      }
+      
       // Handle base money cost (e.g. doctor)
       if (c.money) { G.money += c.money; G.totalMoney += Math.max(0, c.money); }
       // Handle conditional money for pureLuck outcomes
@@ -4101,7 +4446,8 @@ function showRandomEvent(forcedId = null) {
       const resolvedMoney = c.money || (success === true && c.successMoney ? c.successMoney : 0) || (success === false && c.failMoney ? c.failMoney : 0);
       const deltaSign = resolvedDelta >= 0 ? '+' : '';
       const moneyText = resolvedMoney ? (resolvedMoney > 0 ? ` | +$${resolvedMoney.toLocaleString()}` : ` | -$${Math.abs(resolvedMoney).toLocaleString()}`) : '';
-      const logText = `Evento: "${c.text}" → ${deltaSign}${resolvedDelta} ${STAT_LABELS[c.stat]}${moneyText}`;
+      const statLabelText = c.stat ? ` ${STAT_LABELS[c.stat]}` : '';
+      const logText = `Evento: "${c.text}" ➔ ${deltaSign}${resolvedDelta}${statLabelText}${moneyText}`;
 
       // Pick narrative description
       let narrative = '';
@@ -4115,9 +4461,22 @@ function showRandomEvent(forcedId = null) {
 
       G._seasonEventLogs.push(logText);
       updateTopBar();
+      
+      if (c.nemesisSpark && !G.nemesis) {
+        const catDrivers = G.aiRoster ? G.aiRoster.filter(d => d.cat === CATEGORIES[G.catIndex]) : [];
+        if (catDrivers.length > 0) {
+          catDrivers.sort((a,b) => b.skill - a.skill);
+          addNemesisHeat(catDrivers[0], 100);
+        }
+      }
 
-      const outcomeIcon = resolvedDelta >= 0 ? '✅' : '❌';
-      const statLine = `<div style="font-size:13px;color:var(--muted);margin-bottom:12px">${deltaSign}${resolvedDelta} ${STAT_LABELS[c.stat]}${moneyText}</div>`;
+      if (G.nemesis && narrative) {
+        const nStyle = `<span style="color:#ef4444;font-weight:bold">${G.nemesis.name}</span>`;
+        narrative = narrative.replace(/\{\{NEMESIS_NAME\}\}/g, nStyle).replace(/tu n[éèe]mesis/gi, nStyle);
+      }
+
+      const outcomeIcon = resolvedDelta >= 0 ? '✅' : '💥';
+      const statLine = `<div style="font-size:13px;color:var(--muted);margin-bottom:12px">${deltaSign}${resolvedDelta}${statLabelText}${moneyText}</div>`;
       const narrativeHtml = narrative
         ? `<div style="font-size:14px;line-height:1.6;color:var(--text);background:rgba(255,255,255,0.04);border-radius:10px;padding:14px 16px;margin-bottom:16px;text-align:left;border-left:3px solid ${resolvedDelta >= 0 ? '#4ade80' : '#f87171'}">${narrative}</div>`
         : '';
@@ -4250,14 +4609,16 @@ function showMinigame(forcedId = null) {
           G._ach_chaosCount = (G._ach_chaosCount || 0) + 1;
         }
         if (c.wasEscudero) G.wasEscudero = true;
-        logText = `En pista: "${c.text}" [${logName}${logStat}${mg.hidePct ? '' : ' → ' + pct + '%'}] — ¡Éxito! +1 Victoria`;
+        G._minigamePowerBonus = (G._minigamePowerBonus || 0) + 3;
+        logText = `En pista: "${c.text}" [${logName}${logStat}${mg.hidePct ? '' : ' ➔ ' + pct + '%'}] ➔ ¡Éxito! +1 Victoria.`;
       } else if (success && c.noWinOnSuccess) {
         if (c.onFailDnf) G._ach_survivor = true;
         if (c.pureLuck) {
           G._ach_chaosCount = (G._ach_chaosCount || 0) + 1;
         }
         if (c.wasEscudero) G.wasEscudero = true;
-        logText = `En pista: "${c.text}" [${logName}${logStat}${mg.hidePct ? '' : ' → ' + pct + '%'}] — ¡Llegaste! Sin DNF.`;
+        G._minigamePowerBonus = (G._minigamePowerBonus || 0) + 1;
+        logText = `En pista: "${c.text}" [${logName}${logStat}${mg.hidePct ? '' : ' ➔ ' + pct + '%'}] ➔ ¡Completaste la carrera!`;
       } else if (isNeutralFail) {
         logText = `En pista: "${c.text}" [${logName}${logStat}${mg.hidePct ? '' : ' → ' + pct + '%'}] — Posición mantenida (Sin sobresaltos)`;
       } else {
@@ -4280,6 +4641,7 @@ function showMinigame(forcedId = null) {
       if (c.moneyDelta) { G.money += c.moneyDelta; G.totalMoney += c.moneyDelta; }
       if (peerRelDelta && G.peer) {
         G.peer.relationship = clamp(G.peer.relationship + peerRelDelta, -100, 100);
+        if (G.nemesis && G.peer.id === G.nemesis.id) G.peer.relationship = Math.min(G.peer.relationship, -100);
       }
       G._seasonEventLogs.push(logText);
 
@@ -4530,9 +4892,13 @@ function showIMGResult(success, title, detail, narrative, givesWin = true) {
       G.wins++;
       G.lastResult.podiums = Math.max(G.lastResult.podiums || 0, G.lastResult.wins);
       G.podiums++;
+      // +3 de poder para la temporada
+      G._minigamePowerBonus = (G._minigamePowerBonus || 0) + 3;
       G._seasonEventLogs.push(`🏆 Minijuego interactivo: ¡Éxito! +1 Victoria`);
     } else {
-      G._seasonEventLogs.push(`✅ Minijuego interactivo: ¡Éxito! (Ventaja obtenida)`);
+      // +1 de poder para la temporada
+      G._minigamePowerBonus = (G._minigamePowerBonus || 0) + 1;
+      G._seasonEventLogs.push(`✅ Minijuego interactivo: ¡Éxito!`);
     }
   } else {
     G._seasonEventLogs.push(`💥 Minijuego interactivo: Fallaste`);
@@ -4951,6 +5317,7 @@ function startReconGame() {
         G.stats.quali = clamp(G.stats.quali + 1, 0, 99);
         statGains = 'Clasificación +1';
       }
+      G._minigamePowerBonus = (G._minigamePowerBonus || 0) + 1;
       showIMGResult(true, '¡Memoria perfecta!', `Reconociste todo el circuito. (${statGains})`, 'Te sentís con mucha confianza y encontrás el límite de la pista más rápido que el resto.', false);
     } else {
       showIMGResult(false, 'Demasiados errores', 'Se te mezclaron las referencias.', 'Saliste a la pista sin tener claros los puntos de frenada y te costó encontrar el ritmo en las primeras vueltas.', false);
@@ -5582,6 +5949,8 @@ function startSlipstreamGame() {
     </div>
   `;
 
+  let nextDirChange = 800 + Math.random() * 1500;
+
   document.getElementById('img-slip-left').onclick  = () => { playerX = Math.max(-MAX_OFFSET, playerX - PLAYER_SPEED); };
   document.getElementById('img-slip-right').onclick = () => { playerX = Math.min(MAX_OFFSET,  playerX + PLAYER_SPEED); };
 
@@ -5597,6 +5966,14 @@ function startSlipstreamGame() {
     rivalX += RIVAL_SPEED * rivalDir * dt;
     if (rivalX >= MAX_OFFSET) { rivalX = MAX_OFFSET; rivalDir = -1; }
     if (rivalX <= -MAX_OFFSET) { rivalX = -MAX_OFFSET; rivalDir = 1; }
+
+    if (elapsedTime > nextDirChange) {
+      // Cambia de dirección de forma impredecible si no está muy cerca de los bordes
+      if (Math.abs(rivalX) < MAX_OFFSET * 0.8) {
+        rivalDir = Math.random() > 0.5 ? 1 : -1;
+      }
+      nextDirChange = elapsedTime + 400 + Math.random() * 1200;
+    }
 
     const rivalEl  = document.getElementById('img-slip-rival');
     const playerEl = document.getElementById('img-slip-player');
@@ -6496,6 +6873,9 @@ function showContracts() {
     // Current team always gets to offer renewal if player met the position requirement for their team's stars
     // NEW RULE: They will NOT offer a renewal if the player has 0 H2H wins during this contract.
     const hasH2HWins = G.f1ContractH2HWins === undefined ? true : G.f1ContractH2HWins > 0;
+    const wonH2H = (G.f1ContractH2HWins || 0) > (G.f1ContractH2HLosses || 0);
+    const myCurrentStars = G.team ? (G.team.stars || 3) : 3;
+
     const currentTeamInPool = allTeams.find(t => G.team && t.name === G.team.name);
     const renewalChampReq = G.team ? (G.team.stars >= 5 ? 8 : G.team.stars >= 4 ? 12 : G.team.stars >= 3 ? 18 : 20) : 20;
     const forceRenewal = currentTeamInPool && prevChamp <= renewalChampReq && hasH2HWins;
@@ -6505,6 +6885,9 @@ function showContracts() {
 
     offerPool = offerPool.filter(t => {
       if (G.team && t.name === G.team.name) return forceRenewal || (prevChamp <= 15 && hasH2HWins);
+      // REGLA: Si ganamos el H2H, podemos subir un escalón de estrellas sin importar nuestra posición en el campeonato
+      if (wonH2H && t.stars === myCurrentStars + 1) return true;
+
       if (t.stars === 5) return prevChamp <= 8;
       if (t.stars === 4) return prevChamp <= 12;
       if (t.stars === 3) return prevChamp <= 18;
@@ -6518,7 +6901,19 @@ function showContracts() {
       finalOffers.push(renewalTeam);
       offerPool = offerPool.filter(t => t.name !== renewalTeam.name);
     }
-    finalOffers.push(...offerPool.slice(0, 3));
+
+    // REGLA: Si ganamos el H2H, GARANTIZAR al menos un equipo superior en la mesa
+    if (wonH2H && myCurrentStars < 5) {
+      const upgradeTeam = offerPool.find(t => t.stars > myCurrentStars);
+      if (upgradeTeam) {
+        finalOffers.push(upgradeTeam);
+        offerPool = offerPool.filter(t => t.name !== upgradeTeam.name);
+      }
+    }
+
+    // Llenar con el resto de ofertas (hasta 4 ofertas totales)
+    const needed = Math.max(4 - finalOffers.length, 0);
+    finalOffers.push(...offerPool.slice(0, needed));
     offerPool = finalOffers;
   } else {
     offerPool = shuffle(offerPool);
@@ -6536,8 +6931,10 @@ function showContracts() {
   }
 
   // For junior categories: sort so affordable offers appear first
+  // [DESACTIVADO A PEDIDO DEL JUGADOR]
+  /*
   if (G.catIndex < 5) {
-    const acadDisc = G.academy ? 0.30 : 1.0;
+    const acadDisc = G.academy ? 0.50 : 1.0;
     offerPool.sort((a, b) => {
       const aIdx = clamp((a.stars || 3) - 3, 0, 2);
       const bIdx = clamp((b.stars || 3) - 3, 0, 2);
@@ -6548,6 +6945,7 @@ function showContracts() {
       return aAfford - bAfford;
     });
   }
+  */
 
 
   const list = document.getElementById('contracts-list');
@@ -6566,20 +6964,25 @@ function showContracts() {
     const isF1 = G.catIndex === 5;
 
     // === PAY-TO-DRIVE (Junior) vs SALARY (F1) ===
-    const starIdx = clamp((team.stars || 3) - 3, 0, 2); // 3★=0, 4★=1, 5★=2
+    const starIdx = clamp((team.stars || 3) - 3, 0, 2); // 3⭐=0, 4⭐=1, 5⭐=2
+    
+    // [DESACTIVADO A PEDIDO DEL JUGADOR]
+    /*
     let seatCost = isF1 ? 0 : (SEAT_COSTS[G.catIndex] || SEAT_COSTS[4])[starIdx];
-
-    // Academy discount: -50%
     const academyDiscount = (!isF1 && G.academy) ? 0.50 : 1.0;
     const rawCost = seatCost;
     seatCost = Math.round(seatCost * academyDiscount);
+    */
+    let seatCost = 0;
+    const rawCost = 0;
 
     // F1 salary (kept from original)
     const salary = [30000, 80000, 150000, 300000, 500000, 2000000][G.catIndex];
     let salarySpin = Math.round(salary * (0.8 + Math.random() * 0.6) / 10000) * 10000;
     if (G.upgrades.includes('agent')) salarySpin = Math.round(salarySpin * 1.15);
 
-    const canAfford = isF1 || G.money >= seatCost;
+    // const canAfford = isF1 || G.money >= seatCost;
+    const canAfford = true;
     const probIdx = clamp(team.stars - 1, 0, 4);
     const isRegChange = cat === 'F1' && G.lastRegChangeYear === (G.year - 1);
     const stars = isRegChange ? '❓❓❓❓❓' : '★'.repeat(team.stars) + '☆'.repeat(5 - team.stars);
@@ -6602,18 +7005,31 @@ function showContracts() {
     
     let prospectiveTeammate = null;
     let prospectiveSkill = null;
+    let isNemesisTeammate = false;
     if (isF1 && G.aiRoster) {
       const teamDrivers = G.aiRoster.filter(d => d.cat === 'F1' && d.team === team.name);
       if (teamDrivers.length > 0) {
         // Sort highest skill first
         teamDrivers.sort((a,b) => b.skill - a.skill);
-        prospectiveTeammate = teamDrivers[0].name;
-        prospectiveSkill = Math.round(teamDrivers[0].skill);
+        let ptDriver = teamDrivers[0];
+        
+        // If nemesis is in this team, they will ALWAYS be the teammate
+        if (G.nemesis) {
+          const nemInTeam = teamDrivers.find(d => d.id === G.nemesis.id);
+          if (nemInTeam) {
+            ptDriver = nemInTeam;
+            isNemesisTeammate = true;
+          }
+        }
+        
+        prospectiveTeammate = ptDriver.name;
+        prospectiveSkill = Math.round(ptDriver.skill);
       }
     }
 
     if (prospectiveTeammate) {
-      badges += `<span class="badge" style="background-color:#6366f1;color:#fff;font-size:10px;margin-left:6px;vertical-align:middle;padding:2px 6px;border-radius:4px;font-weight:bold;text-transform:uppercase;">Compañero: ${prospectiveTeammate} (${prospectiveSkill})</span>`;
+      const badgeColor = isNemesisTeammate ? '#ef4444' : '#6366f1';
+      badges += `<span class="badge" style="background-color:${badgeColor};color:#fff;font-size:10px;margin-left:6px;vertical-align:middle;padding:2px 6px;border-radius:4px;font-weight:bold;text-transform:uppercase;">Compañero: ${prospectiveTeammate} (${prospectiveSkill})</span>`;
     }
 
     const c = document.createElement('div');
@@ -6679,16 +7095,18 @@ function showContracts() {
             ${logoHtml}
             <div>
               <div class="heading" style="font-size:20px">${team.name} ${badges}</div>
-              <div style="font-size:12px;color:var(--muted);margin-top:2px">🏁 ${cat} | Req: ⭐ ${reqRep} / OVR ${reqOvr}</div>
-              ${team.focus ? `<div style="font-size:12px;margin-top:2px;color:${team.focus === 'desarrollo' ? '#60a5fa' : team.focus === 'ganar' ? '#f87171' : '#facc15'}">${team.focus === 'desarrollo' ? '📈 Prioriza desarrollo' : team.focus === 'ganar' ? '🏆 Prioriza ganar' : '⚖️ Equilibrado'}</div>` : ''}
+              <div style="font-size:12px;color:var(--muted);margin-top:2px">🏎️ ${cat} | Req: 🏆 ${reqRep} / OVR ${reqOvr}</div>
+              ${team.focus ? `<div style="font-size:12px;margin-top:2px;color:${team.focus === 'desarrollo' ? '#60a5fa' : team.focus === 'ganar' ? '#f87171' : '#facc15'}">${team.focus === 'desarrollo' ? '📈 Prioriza desarrollo' : team.focus === 'ganar' ? '🏁 Prioriza ganar' : '⚖️ Equilibrado'}</div>` : ''}
             </div>
           </div>
           <div class="offer-star">${stars}</div>
         </div>
+        <!-- [DESACTIVADO A PEDIDO DEL JUGADOR: Asientos formativos gratis]
         <div class="result-row" style="padding:8px 0;border-color:var(--border)">
-          <div class="r-label">💳 Costo del asiento</div>
+          <div class="r-label">💸 Costo del asiento</div>
           <div class="r-val" style="font-size:17px;color:#f87171">${discountHtml}${fmt$(seatCost)}${G.academy ? ' <span style="font-size:11px;color:#4ade80">(-50% academia)</span>' : ''}</div>
         </div>
+        -->
         <div class="result-row" style="padding:8px 0;border-color:transparent">
           <div class="r-label">Prob. de ganar</div>
           <div class="offer-prob">${isRegChange ? '❓' : WIN_PROBS[probIdx]}</div>
@@ -6884,7 +7302,7 @@ function buildUpgradesScreen() {
           <div class="upgrade-info" style="flex:1;">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
               <h4 style="margin:0; font-size:14px;">${u.name}</h4>
-              <div style="font-size:12px; font-weight:bold; color:var(--text); opacity: ${owned ? 0.5 : 1}; margin-left:8px;">${owned ? '✔️ Adquirido' : formatAbbrev(u.cost)}</div>
+              <div style="font-size:12px; font-weight:bold; color:var(--text); opacity: ${owned ? 0.5 : 1}; margin-left:8px;">${owned ? '✅ Adquirido' : formatAbbrev(u.cost)}</div>
             </div>
             <p style="margin:0; font-size:11px; opacity:0.7; line-height:1.4;">${u.desc}</p>
           </div>
@@ -6939,10 +7357,6 @@ function showRetirement(reason = null) {
   else if (G.personality.media < -40) persText += 'Alejado de los micrófonos, enfocado en la pista. ';
   if (G.personality.team > 40) persText += 'Un verdadero jugador de equipo. ';
   else if (G.personality.team < -40) persText += 'Egoísta y despiadado con sus compañeros. ';
-  
-  if (persText) {
-      document.getElementById('ret-legacy-banner').insertAdjacentHTML('afterend', `<div class="card" style="margin-bottom:16px;background:rgba(74, 144, 232, 0.1);border-color:var(--blue);text-align:center"><div style="font-size:14px;color:var(--blue);margin-bottom:4px;font-weight:bold;letter-spacing:1px">PERFIL DEL PILOTO</div><div style="font-size:15px">${persText}</div></div>`);
-  }
 
   if (totalWins === 0 && f1Seasons === 0) { 
     legacyClass = 'legacy-promise'; legacyIcon = '🌱'; legacyTitle = 'Promesa'; 
@@ -6991,6 +7405,10 @@ function showRetirement(reason = null) {
       <div style="font-size: 14px; color: var(--muted); font-style: italic">${legacyCompare}</div>
     </div>
   `;
+
+  if (persText) {
+      document.getElementById('ret-legacy-banner').insertAdjacentHTML('afterend', `<div class="card" style="margin-bottom:16px;background:rgba(74, 144, 232, 0.1);border-color:var(--blue);text-align:center"><div style="font-size:14px;color:var(--blue);margin-bottom:4px;font-weight:bold;letter-spacing:1px">PERFIL DEL PILOTO</div><div style="font-size:15px">${persText}</div></div>`);
+  }
 
   const f1TeamsData = [];
     G.seasons.filter(s => s.cat === 'F1').forEach(s => {
@@ -7102,6 +7520,47 @@ function rand(a, b) { return a + Math.random() * (b - a); }
 function randFrom(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
 function shuffle(arr) { return [...arr].sort(() => Math.random() - .5); }
 function average(arr) { return arr.reduce((a, b) => a + b, 0) / arr.length; }
+// ─────────────────────────────────────────────
+//  NEMESIS SYSTEM
+// ─────────────────────────────────────────────
+const NEMESIS_ORIGIN_MESSAGES = [
+  n => `En la vuelta de honor, ${n} emparejó su auto con el tuyo y te hizo un gesto agresivo. Las declaraciones cruzadas de todo el año acaban de explotar. La prensa lo tiene claro: esto es personal.`,
+  n => `En la conferencia de prensa, ${n} se giró hacia las cámaras y dijo: "Hay pilotos en esta categoría que no deberían estar acá". Todos saben a quién se refería. La guerra acaba de empezar.`,
+  n => `Después de la última carrera, ${n} se bajó del podio antes de que pudieras subir y se fue al motorhome sin saludarte. El jefe de tu equipo sacudió la cabeza. Esto ya tiene nombre.`,
+  n => `Una fuente anónima filtró a la prensa que ${n} fue a la dirección para que te sancionaran por una maniobra. No lo consiguió, pero el mensaje fue claro.`,
+  n => `Después de que te llevaras la victoria con una maniobra audaz en la última curva, ${n} se tiró el casco contra el suelo en el parque cerrado. El mundo del motor habla solo de eso.`,
+];
+
+function addNemesisHeat(driver, amount) {
+  if (!driver) return;
+  if (G.nemesis) return; // Already fixed, no more accumulation
+  if (!G.nemesisHeat) G.nemesisHeat = {};
+  G.nemesisHeat[driver.id] = (G.nemesisHeat[driver.id] || 0) + amount;
+  if (G.nemesisHeat[driver.id] >= 100) {
+    checkNemesisBorn(driver);
+  }
+}
+
+function checkNemesisBorn(driver) {
+  if (G.nemesis) return;
+  G.nemesis = { id: driver.id, name: driver.name, h2hWins: 0, h2hLosses: 0, retired: false, cat: driver.cat || '' };
+  
+  if (G.peer && G.peer.id === driver.id) {
+    G.peer.relationship = -100;
+  }
+  
+  if (G.academy && Math.random() < 0.25) G.nemesis.academy = G.academy;
+  const msgFn = NEMESIS_ORIGIN_MESSAGES[Math.floor(Math.random() * NEMESIS_ORIGIN_MESSAGES.length)];
+  G._seasonSteps = G._seasonSteps || [];
+  G._seasonSteps.unshift('nemesis_born:' + driver.id);
+  updateTopBar();
+}
+
+function getNemesisDriver() {
+  if (!G.nemesis || !G.aiRoster) return null;
+  return G.aiRoster.find(d => d.id === G.nemesis.id) || null;
+}
+
 function fmt$(n) { return '$' + Math.round(n).toLocaleString('es-AR'); }
 
 // ═══════════════════════════════════════════════════════════
@@ -7208,9 +7667,27 @@ function refreshTeammate() {
   catDrivers.sort((a, b) => b.skill - a.skill);
   let newTm = catDrivers[0];
 
+  // If nemesis is in the team, ALWAYS pick them to avoid displacing them!
+  let nemesisInTeam = null;
+  if (G.nemesis) {
+    nemesisInTeam = catDrivers.find(d => d.id === G.nemesis.id);
+  }
+
   // If current peer is still in the team, keep them to avoid flip-flopping!
   const currentPeerStillInTeam = G.peer ? catDrivers.find(d => d.id === G.peer.id) : null;
-  if (currentPeerStillInTeam) {
+  
+  if (nemesisInTeam) {
+    newTm = nemesisInTeam;
+    // We don't return here if it's the first time they are teammates, 
+    // because we want the "New teammate: fresh slate" block below to run to assign G.peer.
+    // BUT if the nemesis was ALREADY the peer, we can return.
+    if (G.peer && G.peer.id === nemesisInTeam.id) {
+      G.peer.skill = nemesisInTeam.skill;
+      G.peer.age = nemesisInTeam.age;
+      G.peer.team = G.team.name;
+      return;
+    }
+  } else if (currentPeerStillInTeam) {
     newTm = currentPeerStillInTeam;
     G.peer.skill = currentPeerStillInTeam.skill;
     G.peer.age = currentPeerStillInTeam.age;
@@ -7237,7 +7714,8 @@ function refreshTeammate() {
          destination: destination,
          h2hWins: G.peer.h2hLosses, // Inverted: player's wins are peer's losses
          h2hLosses: G.peer.h2hWins, // Inverted: player's losses are peer's wins
-         newName: (newTm.flag || '🏁') + ' ' + newTm.name
+         newName: (newTm.flag || '🏳️') + ' ' + newTm.name,
+         isNemesis: G.nemesis && newTm.id === G.nemesis.id
      };
   }
 
@@ -7246,7 +7724,7 @@ function refreshTeammate() {
   G.peer = {
     id: newTm.id,
     name: newTm.name,
-    nat: { name: 'Unknown', flag: newTm.flag || '🏁' },
+    nat: { name: 'Unknown', flag: newTm.flag || '🏳️' },
     team: G.team.name,
     relationship: 0,
     h2hWins: 0,
@@ -7256,6 +7734,10 @@ function refreshTeammate() {
     age: newTm.age || 20,
     avatar: newTm.avatar || EMOJI_AVATARS[Math.floor(Math.random() * EMOJI_AVATARS.length)]
   };
+  // If the new teammate IS the nemesis, freeze the relationship at war-level and add heat
+  if (G.nemesis && G.peer.id === G.nemesis.id) {
+    G.peer.relationship = -100;
+  }
   G._lastTeammateLeft = prevName;
 }
 
@@ -7432,7 +7914,7 @@ const ACHIEVEMENTS = [
   { id: 'survivor', name: 'El Sobreviviente', desc: 'Terminaste una carrera donde todo parecía perdido (Superar un minijuego con riesgo de DNF).', icon: '🩹', tier: 'bronze', condition: () => G._ach_survivor },
   { id: 'chaos_specialist', name: 'Especialista en Caos', desc: 'Ganaste 3 minijuegos de puro azar o situaciones extremas.', icon: '🌪️', tier: 'bronze', condition: () => (G._ach_chaosCount || 0) >= 3 },
   { id: 'lucky_guy', name: 'El Afortunado', desc: 'Ganaste una carrera mediante un evento o minijuego de pura suerte.', icon: '🍀', tier: 'bronze', condition: () => G._ach_luckyWin },
-  { id: 'loyalty', name: 'Fidelidad', desc: 'Firmaste 3 renovaciones de contrato consecutivas con el mismo equipo.', icon: '🤝', tier: 'bronze', condition: () => (G.renewalsCount || 0) >= 3 }
+  { id: 'loyalty', name: 'Fidelidad', desc: 'Firmaste 3 renovaciones de contrato consecutivas con el mismo equipo.', icon: '✍️', tier: 'bronze', condition: () => (G.renewalsCount || 0) >= 3 }
 ];
 
 let G_unlockedAchievements = [];
@@ -7520,20 +8002,25 @@ function generateStandingsTable(r) {
     aiPool = catDrivers.map(d => {
       const tObj = catTeams.find(t => t.name === d.team);
       const stars = tObj ? tObj.stars : 3;
-      let power = d.skill;
-      if (r.cat === 'F1') {
-        const carRating = stars === 1 ? 15 : stars === 2 ? 30 : stars === 3 ? 55 : stars === 4 ? 78 : 92;
-        power = (d.skill * 0.20) + (carRating * 0.80);
+      let power;
+      if (d._power !== undefined) {
+        power = d._power;
       } else {
-        power = d.skill + (stars * 3);
+        if (r.cat === 'F1') {
+          const carRating = getF1CarRating(stars);
+          power = (d.skill * 0.25) + (carRating * 0.75);
+        } else {
+          power = d.skill + (stars * 3);
+        }
+        power += rand(-10, 10);
       }
-      power += rand(-10, 10);
       return { 
         name: d.flag + ' ' + d.name, 
         team: d.team, 
         logo: tObj ? tObj.logo : null, 
         _power: power,
-        isPeer: (G.peer && G.peer.id === d.id)
+        isPeer: (G.peer && G.peer.id === d.id),
+        isNemesis: (G.nemesis && G.nemesis.id === d.id)
       };
     });
     
@@ -7561,6 +8048,9 @@ function generateStandingsTable(r) {
       row.isPeer = ai.isPeer;
       if (r.cat === 'F1' && row.isPeer) {
         row.name = '🤝 ' + row.name;
+      }
+      if (ai.isNemesis) {
+        row.name = '😈 ' + row.name;
       }
     }
   });
@@ -7780,6 +8270,33 @@ loadAchievements();
 function simulateDriverMarket() {
   if (!G.aiRoster) return;
 
+  // Retire old drivers in junior categories (age > 27) to avoid blocking seats
+  G.aiRoster.forEach((d, idx) => {
+    const isNemesis = G.nemesis && G.nemesis.id === d.id;
+    if (d.cat !== 'F1' && d.age > 27 && !isNemesis) {
+      
+      let baseSkill = 30;
+      if (d.cat === 'F2') baseSkill = 60;
+      else if (d.cat === 'F3') baseSkill = 50;
+      else if (d.cat === 'Formula Regional') baseSkill = 45;
+      else if (d.cat === 'F4') baseSkill = 40;
+      
+      const newNat = NATIONALITIES[Math.floor(Math.random() * NATIONALITIES.length)];
+      G.aiRoster[idx] = {
+        id: 'ai_gen_' + Date.now().toString(36) + '_' + Math.floor(Math.random() * 10000),
+        name: FIRST_NAMES[Math.floor(Math.random()*FIRST_NAMES.length)] + ' ' + LAST_NAMES[Math.floor(Math.random()*LAST_NAMES.length)],
+        team: d.team,
+        age: 16 + Math.floor(Math.random()*4), // 16 to 19
+        flag: newNat ? newNat.flag : '🏳️',
+        cat: d.cat,
+        skill: baseSkill + Math.floor(Math.random() * 15),
+        contractYearsLeft: 1,
+        consecutiveLosses: 0,
+        avatar: EMOJI_AVATARS[Math.floor(Math.random() * EMOJI_AVATARS.length)]
+      };
+    }
+  });
+
   // 1. Process teammate battles in F1 to find who is underperforming
   processF1TeammateBattles();
 
@@ -7873,6 +8390,7 @@ function simulateDriverMarket() {
       if (f2Drivers[i]) {
         openSeatsInCurrentCat.push(f2Drivers[i].team); // Record F2 seat vacated
         f2Drivers[i].cat = 'F1';
+        if (f2Drivers[i].skill < 80) f2Drivers[i].skill = 80; // BOOST SKILL TO MIN 80 IN F1
         f2Drivers[i].team = openF1Seats[i];
         f2Drivers[i].consecutiveLosses = 0;
         const stars = TEAMS['F1'].find(t => t.name === openF1Seats[i])?.stars || 3;
@@ -7910,7 +8428,7 @@ function simulateDriverMarket() {
       const newTeam = openSeatsInCurrentCat[i] || 'Privado';
       const newNat = NATIONALITIES[Math.floor(Math.random() * NATIONALITIES.length)];
       G.aiRoster.push({
-        id: 'ai_gen_' + Math.floor(Math.random()*1000000),
+        id: 'ai_gen_' + Date.now().toString(36) + '_' + Math.floor(Math.random() * 10000),
         name: FIRST_NAMES[Math.floor(Math.random()*FIRST_NAMES.length)] + ' ' + LAST_NAMES[Math.floor(Math.random()*LAST_NAMES.length)],
         team: newTeam,
         age: 15 + Math.floor(Math.random()*3),

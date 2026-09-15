@@ -1052,7 +1052,7 @@
   touch-action: manipulation;
   transition: transform .08s, background .1s;
 }
-#img-timing-press-btn:active { transform: scale(0.96); background: rgba(232,200,74,0.1); }
+#img-timing-press-btn:active { transform: scale(0.96);  }
 
 /* ── Simon Says (Sequence) ── */
 .img-seq-display {
@@ -1090,3 +1090,111 @@
 .img-seq-btn.wrong { border-color: #f87171; background: rgba(248,113,113,0.12); animation: img-shake .2s ease; }
 @keyframes img-shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
 
+
+/* ======================================
+   ANIMACIONES AGREGADAS (sesi�n actual)
+   ====================================== */
+
+/* --- Cascada en la tabla de posiciones --- */
+@keyframes standingsRowSlide {
+  0% { opacity: 0; transform: translateX(-30px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+.standings-row {
+  animation: standingsRowSlide 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  opacity: 0;
+}
+
+/* --- Sello FIRMADO en contratos F1 --- */
+.contract-stamp {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(3) rotate(-15deg);
+  color: #ef4444;
+  border: 4px solid #ef4444;
+  font-size: 36px;
+  font-weight: 900;
+  letter-spacing: 4px;
+  padding: 4px 20px;
+  border-radius: 8px;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 20;
+  text-shadow: 0 0 10px rgba(239,68,68,0.4);
+  box-shadow: inset 0 0 10px rgba(239,68,68,0.3), 0 0 15px rgba(239,68,68,0.4);
+  font-family: 'Barlow Condensed', sans-serif;
+  transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.2s ease;
+}
+.contract-stamp.stamped {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1) rotate(-15deg);
+}
+@keyframes stampShake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-4px) rotate(-1deg); }
+  50% { transform: translateX(4px) rotate(1deg); }
+  75% { transform: translateX(-2px); }
+  100% { transform: translateX(0); }
+}
+.stamp-shake {
+  animation: stampShake 0.3s ease-out;
+}
+
+/* --- Resultado Exito/Fracaso en eventos --- */
+@keyframes resultSuccessFlash {
+  0% { box-shadow: 0 0 0 rgba(74, 222, 128, 0); }
+  50% { box-shadow: 0 0 20px rgba(74, 222, 128, 0.4); }
+  100% { box-shadow: 0 0 0 rgba(74, 222, 128, 0); }
+}
+@keyframes resultFailFlash {
+  0% { box-shadow: 0 0 0 rgba(248, 113, 113, 0); }
+  50% { box-shadow: 0 0 20px rgba(248, 113, 113, 0.4); }
+  100% { box-shadow: 0 0 0 rgba(248, 113, 113, 0); }
+}
+.result-success {
+  animation: resultSuccessFlash 0.5s ease-out forwards;
+  border-left: 4px solid #4ade80 !important;
+}
+.result-fail {
+  animation: resultFailFlash 0.5s ease-out forwards;
+  border-left: 4px solid #f87171 !important;
+}
+.result-neutral {
+  border-left: 4px solid #9ca3af !important;
+}
+
+/* --- Hover magnetico en opciones de minijuegos/eventos --- */
+.minigame-choice {
+  transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+.minigame-choice:hover {
+  transform: translateX(6px);
+  border-left-color: var(--accent);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* --- Glow de promocion en barra de categorias --- */
+@keyframes pathPromoteGlow {
+  0% { box-shadow: 0 0 0 rgba(232,200,74,0);  }
+  50% { box-shadow: 0 0 14px rgba(232,200,74,0.8);  }
+  100% { box-shadow: 0 0 0 rgba(232,200,74,0);  }
+}
+.path-step.promoted-glow {
+  animation: pathPromoteGlow 1.5s ease-out;
+}
+
+/* --- Dinero con ancho fijo para evitar temblor --- */
+.money, #money-display2, #upgrade-money {
+  font-variant-numeric: tabular-nums;
+}
+.topbar .money {
+  text-align: right;
+  min-width: 75px;
+}
+
+@keyframes pathPromoteGlow {
+  0% { box-shadow: 0 0 0 rgba(255,255,255,0); background-color: var(--accent); }
+  25% { box-shadow: 0 0 24px rgba(255,255,255,1); background-color: #ffffff; }
+  100% { box-shadow: 0 0 0 rgba(232,200,74,0); background-color: var(--accent); }
+}

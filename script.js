@@ -1,4 +1,4 @@
-// ═══════════════════════════════════════════════════════════
+﻿// ═══════════════════════════════════════════════════════════
 //  GAME DATA
 // ═══════════════════════════════════════════════════════════
 
@@ -1036,8 +1036,51 @@ const INTERVIEWS = [
       { text: 'Ignorarlo públicamente', pers: 'media', delta: 15, pers2: 'team', delta2: 10, hint: 'Resultado fijo: la madurez suma puntos de imagen.', fixedDesc: 'No dijiste nada. Dejaste que hablara solo. Al día siguiente ya nadie recordaba sus palabras.' },
       { text: 'Responderle en redes sociales', pers: 'aggressiveness', delta: 20, pers2: 'media', delta2: 25, repDelta: -10, hint: 'Resultado fijo: tus seguidores estallan, pero el escándalo te salpica a vos también.', fixedDesc: '"Los que ya no pueden competir, opinan." Un solo tuit. Un millón de reacciones. El programa lo invitó de nuevo para responder. Ya creaste un monstruo.' }
     ]
+  },
+  {
+    id: 'nemesis_press_compare',
+    title: 'La Pregunta Inevitable',
+    desc: '"La prensa lleva años comparándote con {{NEMESIS_NAME}}. ¿Quién es mejor piloto?"',
+    nemesisInterview: true,
+    choices: [
+      { text: '"Son comparaciones que no me interesan"', pers: 'media', delta: 15, hint: 'Respuesta diplomática. Subís imagen pública.', fixedDesc: '"Cada piloto tiene su propio camino. Yo me enfoco en lo mío." Sonreíste y cerraste el tema con clase. La respuesta no le gustó al periodista, pero el paddock te respetó.' },
+      { text: '"Las carreras hablan por sí solas"', pers: 'aggressiveness', delta: 10, repDelta: 10, hint: 'Confianza controlada.', fixedDesc: '"Mirá el marcador. Ahí está tu respuesta." No nombraste a nadie, pero todos entendieron a quién apuntabas. La frase dio la vuelta al mundo del motor.' },
+      { text: '"Yo, sin dudas"', pers: 'aggressiveness', delta: 30, repDelta: -15, hint: 'Declaración brutal. Sube agresividad, baja reputación.', fixedDesc: 'Silencio. El periodista tragó saliva. "¿Podés probarlo?" te preguntó. "Ya lo estoy haciendo", respondiste. La cita fue trending topic toda la semana.' }
+    ]
+  },
+  {
+    id: 'nemesis_press_rivalry',
+    title: 'Combustible para la Rivalidad',
+    desc: '"Un periodista te pregunta directamente: ¿Sentís que {{NEMESIS_NAME}} es tu mayor obstáculo para llegar a donde querés?"',
+    nemesisInterview: true,
+    choices: [
+      { text: '"Hay muchos rivales en esta parrilla"', pers: 'media', delta: 20, hint: 'Negás la rivalidad públicamente. Imagen de madurez.', fixedDesc: '"En este deporte son veinte pilotos compitiendo, no dos." Diluyendo la narrativa, te mostraste como alguien enfocado en el colectivo. A tu némesis no le gustó para nada.' },
+      { text: '"Es uno de los obstáculos, sí"', pers: 'aggressiveness', delta: 15, repDelta: 5, hint: 'Reconocés la rivalidad con respeto.', fixedDesc: '"Sería una falta de respeto no nombrarlo. Es un piloto de élite y me hace mejorar." La honestidad fue bien recibida. Tu némesis lo leyó y guardó silencio.' },
+      { text: '"Obstáculo no, sombra."', pers: 'aggressiveness', delta: 35, repDelta: -20, hint: 'Declaración de guerra total.', fixedDesc: 'El paddock estalló. La frase fue reproducida en cada programa de motor durante tres días seguidos. Tu némesis lo vio. La respuesta llegó en la pista.' }
+    ]
+  },
+  {
+    id: 'nemesis_talks_trash',
+    title: 'Lo que Dijo',
+    desc: 'Un periodista te muestra en pantalla una declaración de {{NEMESIS_NAME}} de esta mañana: "Hay pilotos en esta parrilla que no merecen estar en la Formula 1. No voy a dar nombres, pero todos saben de quién hablo."',
+    nemesisInterview: true,
+    nemesisMonologue: true,
+    choices: [
+      { text: 'Continuar', pers: 'aggressiveness', delta: 0, hint: '', fixedDesc: '' }
+    ]
+  },
+  {
+    id: 'nemesis_talks_respect',
+    title: 'Lo que Dijo',
+    desc: 'En la conferencia de prensa de ayer, {{NEMESIS_NAME}} fue directo: "Me inspira competir contra él. Me hace mejor piloto. Ojalá sigamos muchos años más peleando por el mismo título."',
+    nemesisInterview: true,
+    nemesisMonologue: true,
+    choices: [
+      { text: 'Continuar', pers: 'aggressiveness', delta: 0, hint: '', fixedDesc: '' }
+    ]
   }
 ];
+
 
 // F1 Car Rating Helper
 const getF1CarRating = (stars) => stars === 1 ? 15 : stars === 2 ? 30 : stars === 3 ? 55 : stars === 4 ? 78 : 92;
@@ -1046,7 +1089,14 @@ function showInterview(postSeasonId = null) {
   // Select an interview
   let pool = INTERVIEWS.filter(iv => {
     if (iv.requireAcademy && !G.academy) return false;
-    if (postSeasonId) return iv.id === postSeasonId;
+    
+    // Fix: If a specific interview is requested, ensure we haven't seen it yet.
+    if (postSeasonId) {
+      if (iv.id !== postSeasonId) return false;
+      if (G.storyFlags['interview_' + iv.id]) return false;
+      return true;
+    }
+    
     const psIds = ['first_win', 'f1_overpaid', 'f1_fallen_champion', 'f1_carried_by_car', 'f1_shadow_contract_good', 'f1_shadow_contract_bad', 'f1_beaten_by_young_peer', 'f1_epic_champion', 'f1_championship_contender', 'f1_retirement_talk', 'f1_win_record', 'f1_teammate_destroyed', 'f1_first_title', 'f1_title_lost', 'f1_title_record_broken', 'f1_constructors_champ', 'f1_teammate_champ', 'f1_reg_change_better', 'f1_reg_change_worse', 'f1_underperform', 'f1_regulations_criticism', 'f1_academy_sign_filial', 'f1_academy_sign_main', 'f1_academy_leave', 'f1_academy_dropped', 'f1_academy_promoted_main', 'f1_h2h_domination', 'f1_h2h_getting_destroyed'];
     if (!postSeasonId && (psIds.includes(iv.id) || iv.id.startsWith('ev_') || iv.nemesisInterview)) return false; // Hide post-season interviews from mid-season
     if (iv.nemesisInterview) {
@@ -1063,6 +1113,32 @@ function showInterview(postSeasonId = null) {
       if (iv.id === 'nemesis_retired_comment') {
         if (!G.nemesis.retired) return false;
         if (G.storyFlags['interview_nemesis_retired_comment']) return false;
+      }
+      // Press interviews: no repeats, nemesis must be alive
+      if (iv.id === 'nemesis_press_compare' || iv.id === 'nemesis_press_rivalry') {
+        if (G.nemesis.retired) return false;
+        if (G.storyFlags['interview_' + iv.id]) return false;
+        if (G.catIndex < 5) return false; // F1 only for press interviews
+      }
+      // Monologues: no repeats, nemesis must be alive and in F1
+      if (iv.id === 'nemesis_talks_trash' || iv.id === 'nemesis_talks_respect') {
+        if (G.nemesis.retired) return false;
+        if (G.storyFlags['interview_' + iv.id]) return false;
+        if (G.catIndex < 5) return false;
+        // talks_trash: only if player beat nemesis this year (nemesis might be salty)
+        if (iv.id === 'nemesis_talks_trash') {
+          const nemDrv = G.aiRoster && G.aiRoster.find(d => d.id === G.nemesis.id);
+          if (!nemDrv || !G.lastResult) return false;
+          const nemRank = nemDrv._finalRank || 10;
+          if (nemRank <= G.lastResult.champ) return false; // Nemesis must have finished behind player
+        }
+        // talks_respect: only if nemesis beat player (respect from a position of strength)
+        if (iv.id === 'nemesis_talks_respect') {
+          const nemDrv = G.aiRoster && G.aiRoster.find(d => d.id === G.nemesis.id);
+          if (!nemDrv || !G.lastResult) return false;
+          const nemRank = nemDrv._finalRank || 10;
+          if (nemRank >= G.lastResult.champ) return false; // Nemesis must have finished ahead of player
+        }
       }
       return true;
     }
@@ -1157,12 +1233,6 @@ function showInterview(postSeasonId = null) {
 
   
   const isEventMode = iv.id.startsWith('ev_');
-  
-  if (isEventMode && G.storyFlags['interview_' + iv.id]) {
-      // If it was already seen but queued multiple times by a bug, skip it
-      processSeasonStep();
-      return;
-  }
 
   let ivTitle = iv.title;
   let ivDesc = iv.desc;
@@ -1207,9 +1277,24 @@ function showInterview(postSeasonId = null) {
 
     document.getElementById('int-desc').innerHTML = ivDesc;
 
+  // --- Monologue mode: just show quote and a Continue button ---
   const ch = document.getElementById('int-choices');
   ch.innerHTML = '';
-  
+
+  if (iv.nemesisMonologue) {
+    G.storyFlags['interview_' + iv.id] = true;
+    const nemColor = '#ef4444';
+    const btn = document.createElement('div');
+    btn.className = 'minigame-choice';
+    btn.innerHTML = `<h3>Continuar</h3>`;
+    btn.onclick = () => {
+      processSeasonStep();
+    };
+    ch.appendChild(btn);
+    goto('screen-interview');
+    return;
+  }
+
   iv.choices.forEach(c => {
     const b = document.createElement('div');
     b.className = 'minigame-choice';
@@ -1298,6 +1383,7 @@ const UPGRADES = [
 //  GAME STATE
 // ═══════════════════════════════════════════════════════════
 let G = {};
+let _lastStandings = null; // cache de la clasificación generada para el resumen actual
 
 function resetGame() {
   G = {
@@ -2089,6 +2175,10 @@ function processSeasonStep() {
   else if (step.startsWith('event:')) showInterview(step.split(':')[1]);
   else if (step.startsWith('nemesis_born:')) showNemesisBornEvent(step.split(':')[1]);
   else if (step === 'nemesis_retired') showNemesisRetiredEvent();
+  else if (step === 'nemesis_steal_seat') showNemesisSeatStealEvent();
+  else if (step === 'nemesis_h2h_ultimatum_warn') showNemesisUltimatumWarnEvent();
+  else if (step === 'nemesis_h2h_ultimatum_win') showNemesisUltimatumResolveEvent(true);
+  else if (step === 'nemesis_h2h_ultimatum_lose') showNemesisUltimatumResolveEvent(false);
   else if (step === 'compute') {
     computeSeasonResult();
     processSeasonStep();
@@ -2139,16 +2229,14 @@ function computeSeasonResult() {
     const carRating = getF1CarRating(effectiveStars);
     eff = (weightedBase * 0.25) + (carRating * 0.75) + rainBonus + 4; // +4 boost al jugador
     // Apply regulation bonus if player chose to focus on current season
-    if (G.regulationBonus > 0) {
+    if (G.regulationBonus) {
       eff += G.regulationBonus;
-      G.regulationBonus = 0; // consume it
     }
   }
 
   // Apply minigame power bonus accumulated this season (applies to all categories)
-  if (G._minigamePowerBonus > 0) {
+  if (G._minigamePowerBonus) {
     eff += G._minigamePowerBonus;
-    G._minigamePowerBonus = 0; // consume it
   }
 
   // Team focus: 'ganar' teams boost effective rating in formative categories
@@ -2415,6 +2503,62 @@ function computeSeasonResult() {
         G._seasonSteps = G._seasonSteps || [];
         G._seasonSteps.push('event:nemesis_champ');
       }
+
+      // ─── Feature 1: Seat Steal ───
+      // Conditions: F1, our contract expires, nemesis is in a BETTER team but finished BEHIND us
+      if (cat === 'F1' && G.f1ContractYearsLeft === 0 && !G.nemesis.retired) {
+        const myStars = G.team ? G.team.stars : 0;
+        const nemTeam = TEAMS['F1'] && TEAMS['F1'].find(t => t.name === nemDriver.team);
+        const nemStars = nemTeam ? nemTeam.stars : 0;
+        if (nemStars > myStars && approxNemRank > champ && !G.storyFlags['nemesis_seat_steal_offered']) {
+          G._seasonSteps = G._seasonSteps || [];
+          G._seasonSteps.push('nemesis_steal_seat');
+        }
+      }
+
+      // ─── Feature 2: H2H Ultimatum ───
+      if (cat === 'F1' && G.peer && G.peer.id === G.nemesis.id && !G.nemesis.retired) {
+        G.nemesis.teammateSeasons = (G.nemesis.teammateSeasons || 0) + 1;
+        if (G.nemesis.ultimatumActive) {
+          // Resolve the ultimatum: who won the H2H this year?
+          G.nemesis.ultimatumActive = false;
+          G._seasonSteps = G._seasonSteps || [];
+          if (champ < approxNemRank) {
+            G._seasonSteps.push('nemesis_h2h_ultimatum_win'); // Player beat nemesis
+          } else {
+            G._seasonSteps.push('nemesis_h2h_ultimatum_lose'); // Nemesis beat player
+          }
+        } else if (!G.storyFlags['nemesis_ultimatum_used'] && G.nemesis.teammateSeasons >= 2 && Math.random() < 0.5) {
+          // Warn: 50% chance, only once per career, minimum 2 seasons together
+          G.nemesis.ultimatumActive = true;
+          G._seasonSteps = G._seasonSteps || [];
+          G._seasonSteps.push('nemesis_h2h_ultimatum_warn');
+        }
+      }
+
+      // ─── Feature 3: Press Events (random, once each, F1 only) ───
+      if (cat === 'F1' && !G.nemesis.retired) {
+        // Monologue trash talk: nemesis finished behind player
+        if (approxNemRank > champ && !G.storyFlags['interview_nemesis_talks_trash'] && Math.random() < 0.4) {
+          G._seasonSteps = G._seasonSteps || [];
+          G._seasonSteps.push('event:nemesis_talks_trash');
+        }
+        // Monologue respect: nemesis finished ahead of player
+        if (approxNemRank < champ && !G.storyFlags['interview_nemesis_talks_respect'] && Math.random() < 0.35) {
+          G._seasonSteps = G._seasonSteps || [];
+          G._seasonSteps.push('event:nemesis_talks_respect');
+        }
+        // Press compare/rivalry: random chance any season, only once each
+        if (!G.storyFlags['interview_nemesis_press_compare'] && Math.random() < 0.3) {
+          G._seasonSteps = G._seasonSteps || [];
+          G._seasonSteps.push('event:nemesis_press_compare');
+        }
+        if (!G.storyFlags['interview_nemesis_press_rivalry'] && Math.random() < 0.3) {
+          G._seasonSteps = G._seasonSteps || [];
+          G._seasonSteps.push('event:nemesis_press_rivalry');
+        }
+      }
+
     } else if (nemDriver) {
       G.nemesis.cat = nemDriver.cat; // Keep cat updated even in different categories
     }
@@ -2900,6 +3044,129 @@ function showNemesisRetiredEvent() {
   ch.appendChild(btn);
   goto('screen-event');
 }
+
+function showNemesisSeatStealEvent() {
+  if (!G.nemesis || !G.aiRoster) { processSeasonStep(); return; }
+  const nemDriver = G.aiRoster.find(d => d.id === G.nemesis.id);
+  if (!nemDriver) { processSeasonStep(); return; }
+
+  const rawName = G.nemesis.name;
+  const name = `<span style="color:#ef4444;font-weight:bold">${rawName}</span>`;
+  const nemTeam = TEAMS['F1'] && TEAMS['F1'].find(t => t.name === nemDriver.team);
+
+  G.storyFlags['nemesis_seat_steal_offered'] = true;
+
+  resetEventChrome();
+  document.getElementById('ev-icon').textContent = '🪑';
+  document.getElementById('ev-title').innerHTML = `La Butaca de ${rawName}`;
+  document.getElementById('ev-desc').innerHTML = `Tu mánager te llama con una novedad enorme: en <strong style="color:var(--accent)">${nemDriver.team}</strong> están evaluando opciones para la próxima temporada. ${name} terminó por detrás tuyo pese a tener mejor auto, y desde adentro del equipo preguntaron si estarías dispuesto a tomar su butaca. Es una estructura de ${'⭐'.repeat(nemTeam ? nemTeam.stars : 3)} que terminó muy decepcionada con los resultados de tu rival.`;
+
+  const ch = document.getElementById('ev-choices');
+  ch.innerHTML = '';
+
+  const b1 = document.createElement('div');
+  b1.className = 'minigame-choice';
+  b1.innerHTML = `<h3>📞 "Sí, que me llamen"</h3><p style="margin-bottom:6px">Dejás que el equipo de ${rawName} te contacte. Aparecerá como opción en el mercado de contratos.</p>`;
+  b1.onclick = () => {
+    // Flag so showContracts knows to highlight this team
+    G._nemesisSeatTarget = nemDriver.team;
+    G._seasonEventLogs = G._seasonEventLogs || [];
+    G._seasonEventLogs.push(`🪑 Te ofreciste para el asiento de ${rawName} en ${nemDriver.team}.`);
+    ch.innerHTML = `
+      <div class="card" style="padding:24px;text-align:center">
+        <div style="font-size:36px;margin-bottom:8px">📲</div>
+        <div class="heading" style="margin-bottom:8px">Mensaje enviado</div>
+        <div class="sub" style="margin-bottom:16px">Tu mánager habló con el director del equipo. El asiento de ${rawName} aparecerá disponible en el mercado de contratos.</div>
+        <button class="btn btn-primary" style="width:100%" onclick="processSeasonStep()">Continuar</button>
+      </div>
+    `;
+  };
+  ch.appendChild(b1);
+
+  const b2 = document.createElement('div');
+  b2.className = 'minigame-choice';
+  b2.innerHTML = `<h3>🚫 "No me interesa"</h3><p style="margin-bottom:6px">Preferís buscar otro equipo. No se sabe nada, el mercado sigue igual.</p>`;
+  b2.onclick = () => {
+    processSeasonStep();
+  };
+  ch.appendChild(b2);
+
+  goto('screen-event');
+}
+
+function showNemesisUltimatumWarnEvent() {
+  if (!G.nemesis) { processSeasonStep(); return; }
+  const rawName = G.nemesis.name;
+  const name = `<span style="color:#ef4444;font-weight:bold">${rawName}</span>`;
+  const teamName = G.team ? G.team.name : 'tu equipo';
+
+  G.storyFlags['nemesis_ultimatum_used'] = true;
+
+  resetEventChrome();
+  document.getElementById('ev-icon').textContent = '⚠️';
+  document.getElementById('ev-title').textContent = 'Clima Insostenible';
+  document.getElementById('ev-desc').innerHTML = `El director de ${teamName} los llama a los dos juntos al motorhome. "Llevan demasiado tiempo dentro del mismo equipo sin que ninguno tome ventaja decisiva. Esto no puede seguir así." Mirándolos a ambos, fue claro: <strong>"El que quede por debajo el año que viene tendrá que marcharse. Solo hay lugar para uno."</strong>`;
+
+  const ch = document.getElementById('ev-choices');
+  ch.innerHTML = '';
+  const btn = document.createElement('div');
+  btn.className = 'minigame-choice';
+  btn.style.borderColor = '#ef4444';
+  btn.innerHTML = `<h3 style="color:#ef4444">⚔️ "Entendido"</h3><p style="margin-bottom:6px">El año que viene uno de los dos se va. El reloj ya arrancó.</p>`;
+  btn.onclick = () => processSeasonStep();
+  ch.appendChild(btn);
+
+  goto('screen-event');
+}
+
+function showNemesisUltimatumResolveEvent(playerWon) {
+  if (!G.nemesis) { processSeasonStep(); return; }
+  const rawName = G.nemesis.name;
+  const name = `<span style="color:#ef4444;font-weight:bold">${rawName}</span>`;
+  const teamName = G.team ? G.team.name : 'el equipo';
+
+  resetEventChrome();
+
+  if (playerWon) {
+    document.getElementById('ev-icon').textContent = '🏆';
+    document.getElementById('ev-title').innerHTML = `${rawName} Echado del Equipo`;
+    document.getElementById('ev-desc').innerHTML = `Lo que el equipo prometió, el equipo cumplió. ${name} fue convocado a la oficina del director y salió de ahí con el contrato terminado. La prensa tardó minutos en saberlo: <em>"${rawName} fuera de ${teamName} por bajo rendimiento."</em> Vos seguís. Él busca asiento.`;
+    // Nemesis gets reassigned to a worse team
+    const nemDriver = G.aiRoster && G.aiRoster.find(d => d.id === G.nemesis.id);
+    if (nemDriver) {
+      const worseTeams = TEAMS['F1'].filter(t => t.stars < (G.team ? G.team.stars : 3));
+      if (worseTeams.length > 0) {
+        nemDriver.team = worseTeams[Math.floor(Math.random() * worseTeams.length)].name;
+      }
+    }
+    G.reputation += 30;
+    G._seasonEventLogs = G._seasonEventLogs || [];
+    G._seasonEventLogs.push(`🏆 Forzaste la salida de ${rawName} del equipo. +30 Reputación.`);
+  } else {
+    document.getElementById('ev-icon').textContent = '📦';
+    document.getElementById('ev-title').textContent = 'El Equipo Tomó su Decisión';
+    document.getElementById('ev-desc').innerHTML = `Fue rápido y sin anestesia. El director te llamó, cerró la puerta y fue directo: "Este año ${name} estuvo por encima. Tenemos que ir en una dirección y no podés ser vos." Tu contrato en ${teamName} terminó ahí. Ahora el mercado está abierto.`;
+    // Force player back to market: expire contract
+    G.f1ContractYearsLeft = 0;
+    G.reputation = Math.max(0, G.reputation - 20);
+    G._seasonEventLogs = G._seasonEventLogs || [];
+    G._seasonEventLogs.push(`📦 ${rawName} ganó el pulso. Fuiste echado de ${teamName}. -20 Reputación.`);
+  }
+
+  const ch = document.getElementById('ev-choices');
+  ch.innerHTML = '';
+  const btn = document.createElement('div');
+  btn.className = 'minigame-choice';
+  btn.style.borderColor = playerWon ? '#4ade80' : '#ef4444';
+  btn.innerHTML = playerWon
+    ? `<h3 style="color:#4ade80">💪 "El mejor ganó"</h3><p style="margin-bottom:6px">Balance H2H: ${G.nemesis.h2hWins || 0} a ${G.nemesis.h2hLosses || 0} a tu favor.</p>`
+    : `<h3 style="color:#ef4444">😤 "Esto no terminó"</h3><p style="margin-bottom:6px">Balance H2H: ${G.nemesis.h2hWins || 0} a ${G.nemesis.h2hLosses || 0}. La deuda queda pendiente.</p>`;
+  btn.onclick = () => processSeasonStep();
+  ch.appendChild(btn);
+
+  goto('screen-event');
+}
+
 
 function showShadowOfferEvent() {
   resetEventChrome();
@@ -3422,6 +3689,8 @@ function afterSummary() {
   const careerLen = G.seasons.length;
 
   G.academyTempBans = []; // Clear 1-year bans
+  G.regulationBonus = 0; // Clear bonuses after they were used
+  G._minigamePowerBonus = 0;
 
   // Advance Age & Year
   G.year++;
@@ -3615,7 +3884,7 @@ function showAcademyDropEvent(pendingSteps) {
   
   document.getElementById('ev-icon').innerHTML = `<img src="${academy.icon}" width="40" style="object-fit:contain">`;
   document.getElementById('ev-title').textContent = `Fin de Ciclo`;
-  document.getElementById('ev-desc').textContent = `Tu contrato con el equipo ha terminado. Al no lograr dominar internamente a tu compañero, los directivos de ${academy.name} sienten que tu techo de desarrollo no cumple con las expectativas para subirte al asiento. Han decidido no renovarte el apoyo, por lo que a partir de ahora eres agente libre. Podrás negociar con cualquier equipo de la parrilla.`;
+  document.getElementById('ev-desc').textContent = `Tu contrato con el equipo ha terminado. A pesar de tus esfuerzos los directivos de ${academy.name} sienten que tu techo de desarrollo no cumple con las expectativas para subirte al asiento. Han decidido no renovarte el apoyo, por lo que a partir de ahora eres agente libre. Podrás negociar con cualquier equipo de la parrilla.`;
 
   const ch = document.getElementById('ev-choices');
   ch.innerHTML = '';
@@ -4714,7 +4983,7 @@ function showMinigame(forcedId = null) {
 
       ch.innerHTML = `
         <div class="card result-card ${success ? 'result-success' : isNeutralFail ? 'result-neutral' : 'result-fail'}" style="padding: 24px">
-          <div style="font-size:48px;margin-bottom:8px;text-align:center">${success ? (c.noWinOnSuccess ? '🏎️' : '🏁') : isNeutralFail ? '😐' : '💥'}</div>
+          <div style="font-size:48px;margin-bottom:8px;text-align:center">${success ? (c.noWinOnSuccess ? '🏁' : '🏆') : isNeutralFail ? '😐' : '💥'}</div>
           <div class="heading" style="font-size:20px;margin-bottom:4px;text-align:center">${success ? '¡Éxito en pista!' : isNeutralFail ? 'Sin incidentes' : 'Mala suerte'}</div>
           <div style="font-size:13px;color:var(--muted);margin-bottom:12px;text-align:center">${logText}</div>
           ${narrativeHtml}
@@ -4883,6 +5152,7 @@ function showInteractiveMinigame(forcedId = null) {
   // Filter by category
   const eligible = INTERACTIVE_MINIGAMES.filter(mg => {
     if (G.minigameCounts && G.minigameCounts[mg.id] >= 2) return false;
+    if (G.minigameLastYearPlayed && G.minigameLastYearPlayed[mg.id] >= G.year - 1) return false;
     if (mg.requireAcademy && !G.academy) return false;
     if (G.catIndex < mg.minCat) return false;
     const winGames = ['img_reaction', 'img_pitstop', 'img_timing', 'img_defense', 'img_slipstream', 'img_strategy', 'img_comeback'];
@@ -4898,7 +5168,9 @@ function showInteractiveMinigame(forcedId = null) {
 
   // Registrar que este minijuego salió
   if (!G.minigameCounts) G.minigameCounts = {};
+  if (!G.minigameLastYearPlayed) G.minigameLastYearPlayed = {};
   G.minigameCounts[mg.id] = (G.minigameCounts[mg.id] || 0) + 1;
+  G.minigameLastYearPlayed[mg.id] = G.year;
 
   document.getElementById('img-intro-label').textContent = mg.label;
   document.getElementById('img-intro-icon').textContent = mg.icon;
@@ -6886,8 +7158,9 @@ function showContracts() {
 
   // Filter out teams that require more rep or ovr than you have
   let offerPool = allTeams.filter(t => {
-    // Check if the team is promised by the academy (bypasses requirements)
+    // Check if the team is promised by the academy or nemesis (bypasses requirements)
     if (G.academyPromisedTeam === t.name) return true;
+    if (G._nemesisSeatTarget === t.name) return true;
 
     if (cat === 'F1') {
       const allBans = [...(G.academyBans || []), ...(G.academyTempBans || [])];
@@ -6947,6 +7220,7 @@ function showContracts() {
     }
 
     offerPool = offerPool.filter(t => {
+      if (G._nemesisSeatTarget === t.name) return true;
       if (G.team && t.name === G.team.name) return forceRenewal || (prevChamp <= 15 && hasH2HWins);
       // REGLA: Si ganamos el H2H, podemos subir un escalón de estrellas sin importar nuestra posición en el campeonato
       if (wonH2H && t.stars === myCurrentStars + 1) return true;
@@ -6959,6 +7233,16 @@ function showContracts() {
 
     offerPool = shuffle(offerPool);
     let finalOffers = [];
+
+    // GARANTIZAR asiento del némesis si nos llamaron
+    if (G._nemesisSeatTarget) {
+      const nemesisTargetTeam = offerPool.find(t => t.name === G._nemesisSeatTarget);
+      if (nemesisTargetTeam) {
+        finalOffers.push(nemesisTargetTeam);
+        offerPool = offerPool.filter(t => t.name !== G._nemesisSeatTarget);
+      }
+    }
+
     const renewalTeam = offerPool.find(t => G.team && t.name === G.team.name);
     if (renewalTeam) {
       finalOffers.push(renewalTeam);
@@ -7065,12 +7349,18 @@ function showContracts() {
     let badges = '';
     if (isRenewal) badges += '<span class="badge badge-green" style="font-size:10px;margin-left:6px;vertical-align:middle">Renovación</span>';
     if (isOpportunity) badges += '<span class="badge" style="background-color:#fbbf24;color:#000;font-size:10px;margin-left:6px;vertical-align:middle;padding:2px 6px;border-radius:4px;font-weight:bold">OPORTUNIDAD</span>';
+    if (G._nemesisSeatTarget && team.name === G._nemesisSeatTarget) badges += '<span class="badge" style="background-color:#ef4444;color:#fff;font-size:10px;margin-left:6px;vertical-align:middle;padding:2px 6px;border-radius:4px;font-weight:bold">⚔️ CODICIADO</span>';
     
     let prospectiveTeammate = null;
     let prospectiveSkill = null;
     let isNemesisTeammate = false;
     if (isF1 && G.aiRoster) {
-      const teamDrivers = G.aiRoster.filter(d => d.cat === 'F1' && d.team === team.name);
+      let teamDrivers = G.aiRoster.filter(d => d.cat === 'F1' && d.team === team.name);
+      
+      if (G._nemesisSeatTarget && team.name === G._nemesisSeatTarget && G.nemesis) {
+        teamDrivers = teamDrivers.filter(d => d.id !== G.nemesis.id);
+      }
+      
       if (teamDrivers.length > 0) {
         // Sort highest skill first
         teamDrivers.sort((a,b) => b.skill - a.skill);
@@ -7196,8 +7486,12 @@ function showContracts() {
         G.renewalsCount = 0;
       }
       const oldTeamName = G.team ? G.team.name : null;
+      if (G._nemesisSeatTarget === team.name) {
+        G._stoleNemesisSeatThisYear = true;
+      }
       G.team = team;
       G.academyPromisedTeam = null;
+      G._nemesisSeatTarget = null; // Clear seat steal target once signed
       
       const wasInF1 = G.seasons.length > 0 && G.seasons[G.seasons.length - 1].cat === 'F1';
       
@@ -7253,6 +7547,7 @@ function showContracts() {
             }
           }
         }
+        G._stoleNemesisSeatThisYear = false; // Reset the flag
       }
       if (isLockedShadowMarket) {
         // The secret pre-contract is now official — set up next season's "was it worth it" reveal
@@ -7753,8 +8048,14 @@ const LAST_NAMES = ["Smith", "Jones", "Taylor", "Brown", "Williams", "Wilson", "
 
 function refreshTeammate() {
   if (!G.aiRoster || !G.team) return;
-  const catDrivers = G.aiRoster.filter(d => d.cat === 'F1' && d.team === G.team.name);
+  let catDrivers = G.aiRoster.filter(d => d.cat === 'F1' && d.team === G.team.name);
   if (catDrivers.length === 0) { G.peer = null; return; }
+
+  // If the player explicitly stole the nemesis's seat, exclude the nemesis from being a candidate for teammate
+  if (G._stoleNemesisSeatThisYear && G.nemesis) {
+    catDrivers = catDrivers.filter(d => d.id !== G.nemesis.id);
+    if (catDrivers.length === 0) { G.peer = null; return; }
+  }
 
   // Pick highest-skill teammate
   catDrivers.sort((a, b) => b.skill - a.skill);
@@ -8011,7 +8312,7 @@ const ACHIEVEMENTS = [
 ];
 
 let G_unlockedAchievements = [];
-let _lastStandings = null; // cache de la clasificación generada para el resumen actual
+
 
 // ═══════════════════════════════════════════════════════════
 //  CLASIFICACIÓN DEL CAMPEONATO (modal opcional en el resumen)
@@ -8404,6 +8705,13 @@ function simulateDriverMarket() {
     if (d.cat === 'F1') {
       d.contractYearsLeft = (d.contractYearsLeft || 1) - 1;
 
+      // NEMESIS ULTIMATUM LOCK: If ultimatum is active, force nemesis to stay and not retire/be fired
+      if (G.nemesis && d.id === G.nemesis.id && G.nemesis.ultimatumActive) {
+        d.contractYearsLeft = Math.max(d.contractYearsLeft, 1);
+        d.consecutiveLosses = 0; // prevent firing
+        return true;
+      }
+
       // Retirement (age)
       if (d.age >= 40 || (d.age >= 37 && Math.random() < 0.4)) {
         if (!isDisplacedByPlayer) openF1Seats.push(d.team);
@@ -8553,7 +8861,7 @@ function processF1TeammateBattles() {
         // Let's just compare their standings in the current season.
         if (_lastStandings && _lastStandings.rows) {
           const myRow = _lastStandings.rows.find(r => r.isPlayer);
-          const peerRow = _lastStandings.rows.find(r => r.name.includes(G.peer.name));
+          const peerRow = _lastStandings.rows.find(r => r.isPeer);
           if (myRow && peerRow) {
             if (myRow.rank < peerRow.rank) {
               peerInRoster.consecutiveLosses = (peerInRoster.consecutiveLosses || 0) + 1;

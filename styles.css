@@ -167,7 +167,7 @@
     box-shadow: 0 4px 15px -5px var(--team-color-shadow, transparent);
   }
   .topbar .pilot-name { font-family: 'Barlow Condensed',sans-serif; font-weight: 700; font-size: 17px; letter-spacing: .5px; }
-  .topbar .money { font-family: 'Barlow Condensed',sans-serif; font-size: 17px; font-weight: 600; color: var(--accent); }
+  .topbar .money { font-variant-numeric: tabular-nums; font-family: 'Barlow Condensed',sans-serif; font-size: 17px; font-weight: 600; color: var(--accent); }
 
   /* ── PROGRESS PATH ── */
   .path-row { display: flex; gap: 4px; align-items: center; justify-content: space-evenly; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
@@ -1089,3 +1089,4 @@
 .img-seq-btn.correct { border-color: #4ade80; background: rgba(74,222,128,0.12); }
 .img-seq-btn.wrong { border-color: #f87171; background: rgba(248,113,113,0.12); animation: img-shake .2s ease; }
 @keyframes img-shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+

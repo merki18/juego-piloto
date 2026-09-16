@@ -3659,7 +3659,7 @@ function buildSummary() {
             </div>
             <div>
               <div style="font-weight:bold">${G.peer.name} <span style="font-size:12px; color:var(--muted); font-weight:normal">(${G.peer.nat.flag} OVR ${Math.round(G.peer.skill || 50)})</span></div>
-              <div style="font-size:12px; color:var(--muted); font-weight:normal">${G.peer.h2hWins} victorias, ${G.peer.h2hLosses} derrotas</div>
+              <div style="font-size:12px; color:var(--muted); font-weight:normal">${G.peer.h2hLosses} victorias, ${G.peer.h2hWins} derrotas</div>
             </div>
           </div>
           <div style="font-size:12px; color:${relColor}; font-weight:bold; text-align:right">${relLabel}</div>

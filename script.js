@@ -1,4 +1,4 @@
-// ═══════════════════════════════════════════════════════════
+﻿// ═══════════════════════════════════════════════════════════
 //  GAME DATA
 // ═══════════════════════════════════════════════════════════
 
@@ -56,7 +56,12 @@ const TEAM_COLORS = {
   'McLaren': '#ff8000',
   'Mercedes': '#00d2be',
   'Ferrari': '#dc0000',
-  'Red Bull': '#3671c6'
+  'Red Bull': '#3671c6',
+  'BYD': '#15b972ff',
+  'Porsche': '#454545',
+  'Toyota': '#eb0a1e',
+  'Andretti': '#00509a',
+  'Hyundai': '#002c5f'
 };
 const TEAMS = {
   'Karting': [
@@ -738,7 +743,27 @@ const INTERVIEWS = [
         { text: '“A mí me encanta. Gané dos campeonatos con ellas.”', pers: 'media', delta: 5, hint: '🏆 Defendés las reglas desde la perspectiva del campeón.', fixedDesc: '“Para mí han sido fantásticas. He ganado dos campeonatos y disfruto muchísimo pilotando estos autos. Entiendo que haya opiniones diferentes, pero desde dentro del cockpit puedo decir que estas máquinas siguen siendo increíbles.”' }
       ]
     },
-{
+    {
+      id: 'f1_new_brand_expansion',
+      title: 'Expansión en la Parrilla',
+      desc: 'Con la noticia de que una nueva marca histórica se une a la Fórmula 1 la próxima temporada, ¿qué opinas de tener más autos compitiendo en la pista?',
+      choices: [
+        { text: '"Es fantástico para el deporte."', pers: 'team', delta: 15, hint: 'Das la bienvenida a la competencia y cuidás la imagen (+Equipo).', fixedDesc: '"Más competencia siempre es bienvenida. Va a ser genial para los fans tener a otro gigante histórico peleando por puntos."' },
+        { text: '"La F1 no perdona a los novatos."', pers: 'aggressiveness', delta: 15, hint: 'Dudás del potencial del nuevo equipo (+Agresividad).', fixedDesc: '"Habrá que ver si están al nivel. Fabricar autos de calle es una cosa, sobrevivir en la F1 es otra historia."' },
+        { text: '"Solo es más tráfico en clasificación."', pers: 'media', delta: -10, pers2: 'aggressiveness', delta2: 10, hint: 'Comentario sarcástico que desestima la noticia (+Agresividad, -Medios).', fixedDesc: '"No me cambia mucho la vida, la verdad. Supongo que ahora habrá que esquivar más tráfico en la Q1."' }
+      ]
+    },
+    {
+      id: 'f1_new_brand_takeover',
+      title: 'Terremoto Corporativo',
+      desc: 'Una de las escuderías históricas acaba de ser comprada por un gigante automotriz de cara a la próxima temporada. ¿Cómo crees que afectará esto al balance de poder?',
+      choices: [
+        { text: '"Darán un salto de calidad increíble."', pers: 'team', delta: 10, pers2: 'media', delta2: 10, hint: 'Elogias el potencial del nuevo proyecto (+Equipo, +Medios).', fixedDesc: '"Con esa inyección de capital e infraestructura, seguro darán un salto enorme. Tenemos que estar preparados."' },
+        { text: '"El dinero no compra campeonatos."', pers: 'aggressiveness', delta: 20, hint: 'Desafiás a los nuevos dueños (+Agresividad).', fixedDesc: '"Pueden poner todo el dinero que quieran, pero la experiencia en pista no se compra de la noche a la mañana. Tienen mucho que demostrar."' },
+        { text: '"Solo me enfoco en mi auto."', pers: 'team', delta: 15, hint: 'Mostrás enfoque y lealtad total a tu equipo (+Equipo).', fixedDesc: '"Para ser honesto, no me importa quién compre a quién. Mi trabajo es exprimir al máximo nuestro auto, lo demás es ruido."' }
+      ]
+    },
+    {
       id: 'f1_constructors_champ',
       title: '¡Campeones de Constructores!',
       desc: 'Tu escudería ha asegurado el Mundial de Constructores gracias a los puntos sumados a lo largo del año.',
@@ -1096,7 +1121,7 @@ function getInterviewPool(postSeasonId = null) {
       return true;
     }
     
-    const psIds = ['first_win', 'f1_overpaid', 'f1_fallen_champion', 'f1_carried_by_car', 'f1_shadow_contract_good', 'f1_shadow_contract_bad', 'f1_beaten_by_young_peer', 'f1_epic_champion', 'f1_championship_contender', 'f1_retirement_talk', 'f1_win_record', 'f1_teammate_destroyed', 'f1_first_title', 'f1_title_lost', 'f1_title_record_broken', 'f1_constructors_champ', 'f1_teammate_champ', 'f1_reg_change_better', 'f1_reg_change_worse', 'f1_underperform', 'f1_regulations_criticism', 'f1_academy_sign_filial', 'f1_academy_sign_main', 'f1_academy_leave', 'f1_academy_dropped', 'f1_academy_promoted_main', 'f1_h2h_domination', 'f1_h2h_getting_destroyed'];
+    const psIds = ['first_win', 'f1_overpaid', 'f1_fallen_champion', 'f1_carried_by_car', 'f1_shadow_contract_good', 'f1_shadow_contract_bad', 'f1_beaten_by_young_peer', 'f1_epic_champion', 'f1_championship_contender', 'f1_retirement_talk', 'f1_win_record', 'f1_teammate_destroyed', 'f1_first_title', 'f1_title_lost', 'f1_title_record_broken', 'f1_constructors_champ', 'f1_teammate_champ', 'f1_reg_change_better', 'f1_reg_change_worse', 'f1_underperform', 'f1_regulations_criticism', 'f1_academy_sign_filial', 'f1_academy_sign_main', 'f1_academy_leave', 'f1_academy_dropped', 'f1_academy_promoted_main', 'f1_h2h_domination', 'f1_h2h_getting_destroyed', 'f1_new_brand_expansion', 'f1_new_brand_takeover'];
     if (!postSeasonId && (psIds.includes(iv.id) || iv.id.startsWith('ev_') || iv.nemesisInterview)) return false; // Hide post-season interviews from mid-season
     if (iv.nemesisInterview) {
       if (!G.nemesis) return false;
@@ -1490,6 +1515,11 @@ function showPressConference(queue, logs = [], isIntro = true) {
             if (d2 < 0 && G.upgrades.includes('pr_team')) d2 = Math.round(d2 * 0.5);
             G.personality[c.pers2] = clamp(G.personality[c.pers2] + d2, -100, 100);
           }
+          
+          if (c.repDelta) {
+            G.reputation += c.repDelta;
+          }
+          
           let logText = c.logText || `"${c.text}"`;
           if (G.nemesis) {
             const nStyle = `<span style="color:#ef4444;font-weight:bold">${G.nemesis.name}</span>`;
@@ -1506,6 +1536,49 @@ function showPressConference(queue, logs = [], isIntro = true) {
   }
 
   goto('screen-interview');
+}
+
+function showBrandArrivalScreen(brand, type, oldTeam) {
+    document.getElementById('ev-icon').innerHTML = '🚨';
+    document.getElementById('ev-title').innerHTML = 'ÚLTIMA HORA EN LA F1';
+    
+    const cardDiv = document.querySelector('#screen-event .card');
+    if (cardDiv) {
+        cardDiv.style.borderLeft = '4px solid #ef4444';
+        cardDiv.style.background = 'linear-gradient(135deg, rgba(239,68,68,0.1) 0%, rgba(15,23,42,0.6) 100%)';
+    }
+
+    let subtitle = '';
+    let msg = '';
+    if (type === 'expansion') {
+        subtitle = `¡${brand} entra a la Fórmula 1!`;
+        msg = `La histórica marca ha anunciado la creación de un nuevo equipo oficial. Se suman a la parrilla como el equipo N° ${TEAMS['F1'].length}, listos para competir al máximo nivel a partir de la siguiente temporada.`;
+    } else {
+        subtitle = `¡${brand} compra ${oldTeam}!`;
+        msg = `¡Terremoto en el paddock! ${brand} ha adquirido las instalaciones de ${oldTeam} y competirá bajo su propio nombre a partir de la próxima temporada, heredando todo su desarrollo y personal.`;
+        if (G.team && G.team.name === brand) {
+            msg += `<br><br><span style="color:var(--accent)"><strong>Eres piloto oficial de ${brand} ahora.</strong></span>`;
+        }
+    }
+    
+    document.getElementById('ev-desc').innerHTML = `<strong style="font-size:18px; color:#fff">${subtitle}</strong><br><br>${msg}`;
+    
+    const ch = document.getElementById('ev-choices');
+    ch.innerHTML = '';
+    
+    const btn = document.createElement('div');
+    btn.className = 'minigame-choice';
+    btn.innerHTML = `<h3>Continuar</h3>`;
+    btn.onclick = () => {
+        if (cardDiv) {
+            cardDiv.style.borderLeft = '';
+            cardDiv.style.background = '';
+        }
+        processSeasonStep();
+    };
+    ch.appendChild(btn);
+    
+    goto('screen-event');
 }
 
 function showInterview(postSeasonId = null) {
@@ -2457,8 +2530,8 @@ function processSeasonStep() {
     return;
   }
   
-  // Grouping logic for Press Conference
-  const isPressStep = (s) => s === 'interview' || (typeof s === 'string' && s.startsWith('event:') && !s.split(':')[1].startsWith('ev_'));
+  // Grouping logic for Press Conference (F1 only)
+  const isPressStep = (s) => G.catIndex === 5 && (s === 'interview' || (typeof s === 'string' && s.startsWith('event:') && !s.split(':')[1].startsWith('ev_')));
   
   if (isPressStep(G._seasonSteps[0])) {
     const queue = [];
@@ -2466,6 +2539,63 @@ function processSeasonStep() {
       queue.push(G._seasonSteps.shift());
     }
     showPressConference(queue);
+    return;
+  }
+
+  if (typeof G._seasonSteps[0] === 'string' && G._seasonSteps[0].startsWith('brand_arrival:')) {
+    const stepStr = G._seasonSteps.shift();
+    const parts = stepStr.split(':');
+    const type = parts[1];
+    const brand = parts[2];
+    const target = parts[3];
+
+    if (type === 'expansion') {
+      TEAMS['F1'].push({ name: brand, stars: 2, logo: `assets/images/logos/logo ${brand.toLowerCase()}.png` });
+      let maxId = Math.max(...G.aiRoster.map(d => parseInt(d.id.split('_')[1]) || 0)) + 1;
+      const getSkill = () => 65 + Math.floor(Math.random() * 10);
+      const avatars = typeof EMOJI_AVATARS !== 'undefined' ? EMOJI_AVATARS : ['👨','👦','🧔','👱‍♂️','👨‍🦱'];
+      
+      const genDriver = (age) => {
+        const nat = NATIONALITIES[Math.floor(Math.random() * NATIONALITIES.length)];
+        const fName = FIRST_NAMES[Math.floor(Math.random() * FIRST_NAMES.length)];
+        const lName = LAST_NAMES[Math.floor(Math.random() * LAST_NAMES.length)];
+        const av = avatars[Math.floor(Math.random() * avatars.length)];
+        return {
+          id: 'ai_' + maxId++, 
+          name: `${fName} ${lName}`, 
+          team: brand, 
+          age: age, 
+          flag: nat ? nat.flag : '❓', 
+          cat: 'F1', 
+          skill: getSkill(), 
+          contractYearsLeft: 2, 
+          consecutiveLosses: 0, 
+          avatar: av
+        };
+      };
+      
+      G.aiRoster.push(genDriver(24));
+      G.aiRoster.push(genDriver(26));
+      showBrandArrivalScreen(brand, 'expansion', null);
+    } else {
+      const oldTeam = TEAMS['F1'].find(t => t.name === target);
+      if (oldTeam) {
+        oldTeam.name = brand;
+        oldTeam.logo = `assets/images/logos/logo ${brand.toLowerCase()}.png`;
+        G.aiRoster.forEach(d => {
+          if (d.cat === 'F1' && d.team === target) d.team = brand;
+        });
+        if (G.team && G.team.name === target) {
+          G.team = oldTeam;
+        }
+        if (G.peer && G.peer.team === target) {
+           G.peer.team = brand;
+        }
+        showBrandArrivalScreen(brand, 'takeover', target);
+      } else {
+        processSeasonStep();
+      }
+    }
     return;
   }
 
@@ -2866,6 +2996,38 @@ function computeSeasonResult() {
 
     } else if (nemDriver) {
       G.nemesis.cat = nemDriver.cat; // Keep cat updated even in different categories
+    }
+    
+    // Brand Arrivals (Expansion & Takeover)
+    if (G.catIndex === 5 && G.seasons.filter(s => s.cat === 'F1').length >= 1) {
+      if (!G.pendingBrands) G.pendingBrands = ['BYD', 'Porsche', 'Toyota', 'Andretti', 'Hyundai'];
+      if (G.brandEventsCount === undefined) G.brandEventsCount = 0;
+      if (G.hasExpanded === undefined) G.hasExpanded = false;
+
+      if (G.brandEventsCount < 2 && G.pendingBrands.length > 0 && Math.random() < 0.05) {
+        let type = (G.hasExpanded) ? 'takeover' : (Math.random() < 0.5 ? 'expansion' : 'takeover');
+        
+        let brandName = G.pendingBrands.splice(Math.floor(Math.random() * G.pendingBrands.length), 1)[0];
+        
+        if (type === 'takeover') {
+          const possibleTargets = ['Alpine', 'Haas', 'Racing Bulls', 'Williams'];
+          const availableTargets = TEAMS['F1'].filter(t => possibleTargets.includes(t.name));
+          if (availableTargets.length > 0) {
+            const target = availableTargets[Math.floor(Math.random() * availableTargets.length)].name;
+            G._seasonSteps.push(`brand_arrival:takeover:${brandName}:${target}`);
+            G._seasonSteps.push('event:f1_new_brand_takeover');
+          } else {
+            G._seasonSteps.push(`brand_arrival:expansion:${brandName}`);
+            G._seasonSteps.push('event:f1_new_brand_expansion');
+            G.hasExpanded = true;
+          }
+        } else {
+          G._seasonSteps.push(`brand_arrival:expansion:${brandName}`);
+          G._seasonSteps.push('event:f1_new_brand_expansion');
+          G.hasExpanded = true;
+        }
+        G.brandEventsCount++;
+      }
     }
     // Check nemesis retirement (age >= 40 or past prime)
     if (nemDriver && !G.nemesis.retired && nemDriver.age >= 40) {
@@ -8626,7 +8788,7 @@ let G_unlockedAchievements = [];
 //  para que el modal siempre muestre lo mismo que dice el resumen.
 // ═══════════════════════════════════════════════════════════
 function generateStandingsTable(r) {
-  const sizes = { 'Karting': 24, 'F4': 24, 'Formula Regional': 24, 'F3': 30, 'F2': 22, 'F1': 22 };
+  const sizes = { 'Karting': 24, 'F4': 24, 'Formula Regional': 24, 'F3': 30, 'F2': 22, 'F1': TEAMS['F1'].length * 2 };
   const N = sizes[r.cat] || 20;
   //    Points calibration                                                                  
   // F1: 24 GP × 101 pts + 6 Sprints × 36 pts = 2,640 total available.

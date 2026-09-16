@@ -1,4 +1,4 @@
-﻿// ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
 //  GAME DATA
 // ═══════════════════════════════════════════════════════════
 
@@ -1085,9 +1085,8 @@ const INTERVIEWS = [
 // F1 Car Rating Helper
 const getF1CarRating = (stars) => stars === 1 ? 15 : stars === 2 ? 30 : stars === 3 ? 55 : stars === 4 ? 78 : 92;
 
-function showInterview(postSeasonId = null) {
-  // Select an interview
-  let pool = INTERVIEWS.filter(iv => {
+function getInterviewPool(postSeasonId = null) {
+  return INTERVIEWS.filter(iv => {
     if (iv.requireAcademy && !G.academy) return false;
     
     // Fix: If a specific interview is requested, ensure we haven't seen it yet.
@@ -1219,6 +1218,299 @@ function showInterview(postSeasonId = null) {
     if (iv.id === 'bad_streak' && (G.wins > 0 || G.podiums > 0)) return false;
     return true;
   });
+}
+
+function injectPressAnimations() {
+  if (document.getElementById('press-animations')) return;
+  const style = document.createElement('style');
+  style.id = 'press-animations';
+  style.innerHTML = `
+    .anim-intro-enter { animation: pressIntroEntry 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+    .anim-intro-exit { animation: pressIntroExit 0.4s ease-in forwards; }
+    .anim-card-enter { animation: pressCardEntry 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+    .anim-card-exit { animation: pressCardExit 0.3s ease-in forwards; }
+    @keyframes pressIntroEntry {
+      0% { opacity: 0; transform: scale(0.9) translateY(20px); }
+      100% { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    @keyframes pressIntroExit {
+      0% { opacity: 1; transform: scale(1) translateY(0); }
+      100% { opacity: 0; transform: scale(1.1) translateY(-20px); }
+    }
+    @keyframes pressCardEntry {
+      0% { opacity: 0; transform: translateX(30px); }
+      100% { opacity: 1; transform: translateX(0); }
+    }
+    @keyframes pressCardExit {
+      0% { opacity: 1; transform: translateX(0); }
+      100% { opacity: 0; transform: translateX(-30px); }
+    }
+  `;
+  document.head.appendChild(style);
+}
+
+function playPressFlashes(targetElement = null) {
+  const container = document.createElement('div');
+  container.style.position = 'absolute';
+  container.style.top = '0'; container.style.left = '0';
+  container.style.width = '100%'; container.style.height = '100%';
+  container.style.zIndex = '0'; // Behind the cards
+  container.style.pointerEvents = 'none';
+  container.style.overflow = 'hidden';
+  
+  const target = targetElement || document.getElementById('screen-interview');
+  if (target.firstChild) {
+    target.insertBefore(container, target.firstChild);
+  } else {
+    target.appendChild(container);
+  }
+  
+  // Bring content to the front
+  Array.from(target.children).forEach(child => {
+    if (child !== container && child.style) {
+      child.style.position = 'relative';
+      child.style.zIndex = '10';
+    }
+  });
+
+  let flashCount = 0;
+  const maxFlashes = 40; 
+  
+  const spawnFlash = () => {
+    if (flashCount >= maxFlashes) {
+      if (flashCount === maxFlashes) {
+        flashCount++;
+        setTimeout(() => container.remove(), 1000);
+      }
+      return;
+    }
+    
+    const f = document.createElement('div');
+    const size = 60 + Math.random() * 150;
+    f.style.position = 'absolute';
+    
+    // Spread slightly wider for the intro
+    f.style.left = (5 + Math.random() * 90) + '%';
+    f.style.top = (40 + Math.random() * 60) + '%';
+    
+    f.style.width = size + 'px';
+    f.style.height = size + 'px';
+    f.style.transform = 'translate(-50%, -50%) scale(0.5)';
+    f.style.background = 'radial-gradient(circle, rgba(255,255,255,0.7) 0%, rgba(255,255,255,0) 70%)';
+    f.style.borderRadius = '50%';
+    f.style.opacity = '1';
+    f.style.transition = 'all 0.4s ease-out';
+    
+    container.appendChild(f);
+    void f.offsetWidth;
+    
+    f.style.transform = 'translate(-50%, -50%) scale(1.5)';
+    f.style.opacity = '0';
+    
+    setTimeout(() => f.remove(), 400);
+    
+    flashCount++;
+    setTimeout(spawnFlash, 25 + Math.random() * 60);
+  };
+  
+  for(let i=0; i<4; i++) spawnFlash();
+}
+
+function showPressConference(queue, logs = [], isIntro = true) {
+  injectPressAnimations();
+
+  if (isIntro && queue.length > 0) {
+    const overlay = document.createElement('div');
+    overlay.id = 'press-intro-overlay';
+    overlay.style.position = 'fixed';
+    overlay.style.inset = '0';
+    overlay.style.backgroundColor = 'var(--bg, #0f172a)'; 
+    overlay.style.zIndex = '10000';
+    overlay.style.display = 'flex';
+    overlay.style.flexDirection = 'column';
+    overlay.style.alignItems = 'center';
+    overlay.style.justifyContent = 'center';
+    overlay.innerHTML = `
+        <div id="press-intro-content" class="anim-intro-enter" style="text-align:center;">
+            <div style="font-size: 80px; margin-bottom: 20px;">🎙️</div>
+            <h1 style="font-size: 32px; font-weight: 900; color: #fff; letter-spacing: 2px; margin-bottom: 10px; text-transform:uppercase;">Conferencia de Prensa</h1>
+            <p style="color: #94a3b8; font-size: 16px;">Los medios esperan tus declaraciones...</p>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+    
+    playPressFlashes(overlay);
+    
+    setTimeout(() => {
+        const content = document.getElementById('press-intro-content');
+        if (content) content.className = 'anim-intro-exit';
+        setTimeout(() => {
+            overlay.remove();
+            showPressConference(queue, logs, false);
+        }, 400);
+    }, 1400); // Intro más corta
+    return;
+  }
+
+  if (queue.length === 0) {
+    if (logs.length === 0) {
+      processSeasonStep();
+      return;
+    }
+    
+    document.getElementById('int-title').innerHTML = "Titulares de la Rueda de Prensa";
+    document.getElementById('int-desc').innerHTML = "La sesión de preguntas ha terminado. Esto es lo que recogen los medios:";
+    
+    let summaryHtml = '<div class="press-summary-list" style="display:flex; flex-direction:column; gap:16px; margin-bottom:20px; max-height: 50vh; overflow-y:auto; padding-right:8px;">';
+    logs.forEach(l => {
+      if (l.isMonologue) {
+         summaryHtml += `
+          <div style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); border-left:4px solid var(--accent2); padding:16px; border-radius:8px; text-align:left;">
+            <div style="font-size:11px; text-transform:uppercase; color:var(--muted); margin-bottom:6px; letter-spacing:1px;">🎙️ Declaración Externa</div>
+            <div style="font-size:15px; font-weight:bold; color:var(--text); line-height:1.4;">${l.a}</div>
+          </div>`;
+      } else {
+         summaryHtml += `
+          <div style="background:linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%); border:1px solid rgba(255,255,255,0.1); border-left:4px solid var(--blue); padding:16px; border-radius:8px; text-align:left; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
+            <div style="font-size:13px; color:var(--blue); font-weight:bold; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+              <span style="font-size:16px;">📰</span> ${l.q}
+            </div>
+            <div style="font-size:15px; color:var(--text); line-height:1.5; font-style:italic;">
+              “${l.a.replace(/^"|"$/g, '')}”
+            </div>
+          </div>`;
+      }
+    });
+    summaryHtml += '</div><button class="btn btn-primary" style="width:100%; font-size:16px; padding:14px;" onclick="processSeasonStep()">Finalizar Rueda de Prensa</button>';
+    
+    const ch = document.getElementById('int-choices');
+    ch.className = 'anim-card-enter'; // Fix animation lock
+    ch.innerHTML = summaryHtml;
+    
+    const screenInt = document.getElementById('screen-interview');
+    const labelDiv = screenInt.querySelector('.label');
+    const cardDiv = screenInt.querySelector('.card');
+    screenInt.style.background = 'radial-gradient(ellipse at top, rgba(74, 144, 232, 0.1) 0%, transparent 60%)';
+    if (labelDiv) {
+        labelDiv.style.color = 'var(--blue)';
+        labelDiv.innerHTML = '📰 Portadas de los Diarios';
+    }
+    if (cardDiv) {
+        cardDiv.style.borderColor = 'var(--blue)';
+        cardDiv.className = 'card anim-card-enter';
+    }
+    goto('screen-interview');
+    return;
+  }
+
+  const step = queue.shift();
+  const postSeasonId = step.startsWith('event:') ? step.split(':')[1] : null;
+  let pool = getInterviewPool(postSeasonId);
+
+  if (pool.length === 0) {
+    showPressConference(queue, logs, false);
+    return;
+  }
+  
+  let ivTemplate = pool.length > 1 ? randFrom(pool) : pool[0];
+  const iv = JSON.parse(JSON.stringify(ivTemplate));
+
+  let ivTitle = iv.title;
+  let ivDesc = iv.desc;
+  if (G.nemesis) {
+    const nStyle = `<span style="color:#ef4444;font-weight:bold">${G.nemesis.name}</span>`;
+    const nemRegex = /tu n[éè]mesis/gi;
+    ivTitle = ivTitle.replace(/\{\{NEMESIS_NAME\}\}/g, nStyle).replace(nemRegex, nStyle);
+    ivDesc = ivDesc.replace(/\{\{NEMESIS_NAME\}\}/g, nStyle)
+                   .replace(/\{\{NEMESIS_CAT\}\}/g, G.nemesis.cat || 'otra categoría')
+                   .replace(nemRegex, nStyle);
+  }
+
+  document.getElementById('int-title').innerHTML = ivTitle;
+  document.getElementById('int-desc').innerHTML = ivDesc;
+  
+  const screenInt = document.getElementById('screen-interview');
+  const labelDiv = screenInt.querySelector('.label');
+  const cardDiv = screenInt.querySelector('.card');
+  screenInt.style.background = 'radial-gradient(ellipse at top, rgba(74, 144, 232, 0.1) 0%, transparent 60%)';
+  if (labelDiv) {
+      labelDiv.style.color = 'var(--blue)';
+      labelDiv.innerHTML = '🎙️ Rueda de Prensa' + (logs.length > 0 ? ' (Continuación)' : '');
+  }
+  if (cardDiv) {
+      cardDiv.style.borderColor = 'var(--blue)';
+      cardDiv.className = 'card anim-card-enter';
+  }
+
+  const ch = document.getElementById('int-choices');
+  ch.className = 'anim-card-enter';
+  ch.innerHTML = '';
+
+  const animateOutAndNext = (callback) => {
+    if (cardDiv) cardDiv.classList.replace('anim-card-enter', 'anim-card-exit');
+    if (ch) ch.classList.replace('anim-card-enter', 'anim-card-exit');
+    setTimeout(callback, 300);
+  };
+
+  if (iv.nemesisMonologue) {
+    G.storyFlags['interview_' + iv.id] = true;
+    const btn = document.createElement('div');
+    btn.className = 'minigame-choice';
+    btn.innerHTML = `<h3>Siguiente Pregunta</h3>`;
+    btn.onclick = () => {
+      let logText = iv.desc;
+      if (G.nemesis) {
+        const nStyle = `<span style="color:#ef4444;font-weight:bold">${G.nemesis.name}</span>`;
+        const nemRegex = /tu n[éè]mesis/gi;
+        logText = logText.replace(/\{\{NEMESIS_NAME\}\}/g, nStyle).replace(nemRegex, nStyle);
+      }
+      logs.push({ q: ivTitle, a: logText, isMonologue: true });
+      animateOutAndNext(() => showPressConference(queue, logs, false));
+    };
+    ch.appendChild(btn);
+  } else {
+    iv.choices.forEach(c => {
+      const b = document.createElement('div');
+      b.className = 'minigame-choice';
+      if (c.reqStars && G.team.stars < c.reqStars) {
+        b.classList.add('locked');
+        b.innerHTML = `<h3 style="color:var(--muted)">${c.text} 🔒 (Req: ${c.reqStars}⭐)</h3>`;
+      } else {
+        b.innerHTML = `<h3>${c.text}</h3>`;
+        b.onclick = () => {
+          G.storyFlags['interview_' + iv.id] = true;
+          if (c.wasEscudero) G.wasEscudero = true;
+          if (c.pers) {
+            let d = c.delta;
+            if (d < 0 && G.upgrades.includes('pr_team')) d = Math.round(d * 0.5);
+            G.personality[c.pers] = clamp(G.personality[c.pers] + d, -100, 100);
+          }
+          if (c.pers2) {
+            let d2 = c.delta2;
+            if (d2 < 0 && G.upgrades.includes('pr_team')) d2 = Math.round(d2 * 0.5);
+            G.personality[c.pers2] = clamp(G.personality[c.pers2] + d2, -100, 100);
+          }
+          let logText = c.logText || `"${c.text}"`;
+          if (G.nemesis) {
+            const nStyle = `<span style="color:#ef4444;font-weight:bold">${G.nemesis.name}</span>`;
+            const nemRegex = /tu n[éè]mesis/gi;
+            logText = logText.replace(/\{\{NEMESIS_NAME\}\}/g, nStyle).replace(nemRegex, nStyle);
+          }
+          
+          logs.push({ q: ivTitle, a: logText, isMonologue: false });
+          animateOutAndNext(() => showPressConference(queue, logs, false));
+        };
+      }
+      ch.appendChild(b);
+    });
+  }
+
+  goto('screen-interview');
+}
+
+function showInterview(postSeasonId = null) {
+  // Select an interview
+  let pool = getInterviewPool(postSeasonId);
   
   if (pool.length === 0) {
     processSeasonStep();
@@ -2164,6 +2456,19 @@ function processSeasonStep() {
     goto('screen-summary');
     return;
   }
+  
+  // Grouping logic for Press Conference
+  const isPressStep = (s) => s === 'interview' || (typeof s === 'string' && s.startsWith('event:') && !s.split(':')[1].startsWith('ev_'));
+  
+  if (isPressStep(G._seasonSteps[0])) {
+    const queue = [];
+    while (G._seasonSteps.length > 0 && isPressStep(G._seasonSteps[0])) {
+      queue.push(G._seasonSteps.shift());
+    }
+    showPressConference(queue);
+    return;
+  }
+
   const step = G._seasonSteps.shift();
   if (step === 'sponsor_selection') showSponsorEvent();
   else if (step === 'shadow_offer') showShadowOfferEvent();
@@ -3658,7 +3963,7 @@ function buildSummary() {
               <img src="assets/images/caras/cara ${G.peer.name.split(' ').pop().toLowerCase()}.png" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'" style="width:100%; height:100%; object-fit:cover; position:absolute; top:0; left:0; z-index:2;" />
             </div>
             <div>
-              <div style="font-weight:bold">${G.peer.name} <span style="font-size:12px; color:var(--muted); font-weight:normal">(${G.peer.nat.flag} OVR ${Math.round(G.peer.skill || 50)})</span></div>
+              <div style="font-weight:bold">${G.peer.name} <span style="font-size:12px; color:var(--muted); font-weight:normal">(${G.peer.flag || (G.peer.nat && G.peer.nat.flag) || '❓'} OVR ${Math.round(G.peer.skill || 50)})</span></div>
               <div style="font-size:12px; color:var(--muted); font-weight:normal">${G.peer.h2hLosses} victorias, ${G.peer.h2hWins} derrotas</div>
             </div>
           </div>

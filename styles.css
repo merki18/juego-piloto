@@ -8,9 +8,9 @@
     --accent:   #e8c84a;
     --accent2:  #e84a4a;
     --text:     #f0f0f8;
-    --muted:    #7070a0;
-    --green:    #4ae87a;
-    --blue:     #4a90e8;
+    --muted:    #9ca3af;
+    --green:    #4ade80; --success: #4ade80;
+    --blue:     #60a5fa; --danger: #ef4444; --warning: #facc15; --fail: #f87171;
     --r: 10px;
   }
 
@@ -1197,4 +1197,135 @@
   0% { box-shadow: 0 0 0 rgba(255,255,255,0); background-color: var(--accent); }
   25% { box-shadow: 0 0 24px rgba(255,255,255,1); background-color: #ffffff; }
   100% { box-shadow: 0 0 0 rgba(232,200,74,0); background-color: var(--accent); }
+}
+/* ---- UTILITY CLASSES ---- */
+.text-danger { color: var(--danger, #ef4444); }
+.text-success { color: var(--success, #4ade80); }
+.text-warning { color: var(--warning, #facc15); }
+.text-info { color: var(--blue, #4a90e8); }
+.text-accent { color: var(--accent, #e8c84a); }
+
+.bg-danger { background-color: var(--danger, #ef4444); }
+.bg-success { background-color: var(--success, #4ade80); }
+.bg-warning { background-color: var(--warning, #facc15); }
+.bg-info { background-color: var(--blue, #4a90e8); }
+
+.narrative-box {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text);
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  text-align: left;
+  border-left: 3px solid var(--border);
+}
+.narrative-box.success { border-left-color: var(--success, #4ade80); }
+.narrative-box.danger { border-left-color: var(--danger, #ef4444); }
+.narrative-box.fail { border-left-color: #f87171; }
+.narrative-box.warning { border-left-color: var(--warning, #facc15); }
+.narrative-box.info { border-left-color: var(--blue, #4a90e8); }
+.narrative-box.accent { border-left-color: var(--accent, #e8c84a); }
+.narrative-box.neutral { border-left-color: var(--muted, #9ca3af); }
+
+.terminal-box {
+  font-family: monospace;
+  font-size: 12px;
+  background: #0a1a0a;
+  border: 1px solid #1a3a1a;
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+  text-align: left;
+}
+.terminal-box.success { color: var(--success, #4ade80); }
+.terminal-box.danger { color: var(--danger, #ef4444); background: #1a0a0a; border-color: #3a1a1a; }
+
+
+.press-summary-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 20px;
+  max-height: 50vh;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.press-log-external {
+  background: var(--dangerBg, rgba(239,68,68,0.1));
+  border: 1px solid rgba(239,68,68,0.3);
+  border-left: 4px solid var(--accent2);
+  padding: 16px;
+  border-radius: 8px;
+  text-align: left;
+}
+.press-log-external .log-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 6px;
+  letter-spacing: 1px;
+}
+.press-log-external .log-text {
+  font-size: 15px;
+  font-weight: bold;
+  color: var(--text);
+  line-height: 1.4;
+}
+
+.press-log-question {
+  background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-left: 4px solid var(--blue);
+  padding: 16px;
+  border-radius: 8px;
+  text-align: left;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+.press-log-question .q-text {
+  font-size: 13px;
+  color: var(--blue);
+  font-weight: bold;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.press-log-question .q-icon { font-size: 16px; }
+.press-log-question .a-text {
+  font-size: 15px;
+  color: var(--text);
+  line-height: 1.5;
+  font-style: italic;
+}
+
+.card-center {
+  padding: 24px;
+  text-align: center;
+}
+.mb-24 { margin-bottom: 24px; }
+.mb-16 { margin-bottom: 16px; }
+/* ---- PRESS & EVENT ANIMATIONS ---- */
+.anim-intro-enter { animation: pressIntroEntry 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+.anim-intro-exit { animation: pressIntroExit 0.4s ease-in forwards; }
+.anim-card-enter { animation: pressCardEntry 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
+.anim-card-exit { animation: pressCardExit 0.3s ease-in forwards; }
+
+@keyframes pressIntroEntry {
+  0% { opacity: 0; transform: scale(0.9) translateY(20px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes pressIntroExit {
+  0% { opacity: 1; transform: scale(1) translateY(0); }
+  100% { opacity: 0; transform: scale(1.1) translateY(-20px); }
+}
+@keyframes pressCardEntry {
+  0% { opacity: 0; transform: translateX(30px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+@keyframes pressCardExit {
+  0% { opacity: 1; transform: translateX(0); }
+  100% { opacity: 0; transform: translateX(-30px); }
 }

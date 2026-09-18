@@ -1,6 +1,19 @@
-﻿// ═══════════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════
 //  GAME DATA
 // ═══════════════════════════════════════════════════════════
+
+const UI_COLORS = {
+  danger: '#ef4444',
+  dangerBg: 'rgba(239,68,68,0.1)',
+  success: '#4ade80',
+  successBg: 'rgba(74,222,128,0.1)',
+  fail: '#f87171',
+  info: '#60a5fa',
+  warning: '#facc15',
+  gray: '#9ca3af',
+  accent: '#e8c84a',
+  blue: '#4a90e8'
+};
 
 const CATEGORIES = ['Karting', 'F4', 'Formula Regional', 'F3', 'F2', 'F1'];
 
@@ -12,6 +25,147 @@ const SEAT_COSTS = [
   [400000, 500000, 600000],     // F3
   [800000, 1000000, 1200000],   // F2
 ];
+
+function getSeatCost(catIdx, teamStars, hasAcademy) {
+  if (catIdx >= 5) return 0; // F1 is free (paid via salary instead)
+  const si = clamp((teamStars || 3) - 3, 0, 2);
+  const baseCost = (SEAT_COSTS[catIdx] || SEAT_COSTS[4])[si];
+  const discount = hasAcademy ? 0.5 : 1.0;
+  return Math.round(baseCost * discount);
+}
+
+function getTeamRequirements(stars, catIndex) {
+  const baseRep = [0, 100, 250, 400, 700, 1200][catIndex] || 1200;
+  const baseOvr = [40, 45, 50, 55, 65, 75][catIndex] || 75;
+  const repStep = [40, 80, 100, 150, 200, 200][catIndex] || 200;
+  const ovrStep = [3, 4, 4, 5, 5, 5][catIndex] || 5;
+  
+  const agentModOvr = G.upgrades.includes('agent') ? -2 : 0;
+  const agentModRep = G.upgrades.includes('agent') ? 0.9 : 1;
+  const academyModOvr = G.academy ? -3 : 0;
+  const academyModRep = G.academy ? 0.8 : 1;
+
+  if (stars === 5) return { rep: (baseRep + repStep * 2) * agentModRep * academyModRep, ovr: baseOvr + ovrStep * 2 + agentModOvr + academyModOvr };
+  if (stars === 4) return { rep: (baseRep + repStep) * agentModRep * academyModRep, ovr: baseOvr + ovrStep + agentModOvr + academyModOvr };
+  if (stars === 3) return { rep: baseRep * agentModRep * academyModRep, ovr: baseOvr + agentModOvr + academyModOvr };
+  if (stars === 2) return { rep: Math.max(0, baseRep - repStep) * agentModRep * academyModRep, ovr: Math.max(0, baseOvr - ovrStep) + agentModOvr + academyModOvr };
+  return { rep: Math.max(0, baseRep - repStep * 2) * agentModRep * academyModRep, ovr: Math.max(0, baseOvr - ovrStep * 2) + agentModOvr + academyModOvr };
+}
+
+function generateOfferPool(cat, ovr, allTeams) {
+  if (G.blacklistedTeams && G.blacklistedTeams.length) {
+    allTeams = allTeams.filter(t => !G.blacklistedTeams.includes(t.name));
+  }
+
+  let offerPool = allTeams.filter(t => {
+    if (G.academyPromisedTeam === t.name) return true;
+    if (G._nemesisSeatTarget === t.name) return true;
+
+    if (cat === 'F1') {
+      const allBans = [...(G.academyBans || []), ...(G.academyTempBans || [])];
+      if (allBans.length > 0) {
+        for (const banId of allBans) {
+          const bannedAc = ACADEMIES.find(a => a.id === banId);
+          if (bannedAc && bannedAc.f1Teams.includes(t.name)) return false;
+        }
+      }
+    }
+    const reqs = getTeamRequirements(t.stars, G.catIndex);
+    return G.reputation >= reqs.rep && ovr >= reqs.ovr;
+  });
+
+  if (offerPool.length === 0) {
+    const minStars = Math.min(...allTeams.map(t => t.stars));
+    offerPool = allTeams.filter(t => t.stars === minStars);
+  }
+
+  let isLockedShadowMarket = false;
+  if (cat === 'F1' && G._shadowSecretTeam) {
+    const secretTeam = TEAMS['F1'].find(t => t.name === G._shadowSecretTeam);
+    if (secretTeam) {
+      offerPool = [secretTeam];
+      isLockedShadowMarket = true;
+    }
+  }
+
+  let isAcademyLocked = false;
+  if (!isLockedShadowMarket && cat === 'F1' && G.academy) {
+    const academy = ACADEMIES.find(a => a.id === G.academy);
+    if (academy) {
+      offerPool = offerPool.filter(t => academy.f1Teams.includes(t.name));
+      isAcademyLocked = true;
+    }
+  }
+
+  const wasInF1 = G.lastResult && G.lastResult.cat === 'F1';
+  if (!isLockedShadowMarket && cat === 'F1' && wasInF1) {
+    const prevChamp = (G.lastResult && G.lastResult.cat === 'F1') ? G.lastResult.champ : 20;
+    const hasH2HWins = G.f1ContractH2HWins === undefined ? true : G.f1ContractH2HWins > 0;
+    const wonH2H = (G.f1ContractH2HWins || 0) > (G.f1ContractH2HLosses || 0);
+    const myCurrentStars = G.team ? (G.team.stars || 3) : 3;
+    const currentTeamInPool = allTeams.find(t => G.team && t.name === G.team.name);
+    const renewalChampReq = G.team ? (G.team.stars >= 5 ? 8 : G.team.stars >= 4 ? 12 : G.team.stars >= 3 ? 18 : 20) : 20;
+    
+    const forceRenewal = currentTeamInPool && prevChamp <= renewalChampReq && hasH2HWins;
+    if (forceRenewal && !offerPool.find(t => t.name === G.team.name)) {
+      offerPool.push(currentTeamInPool);
+    }
+
+    offerPool = offerPool.filter(t => {
+      if (G._nemesisSeatTarget === t.name) return true;
+      if (G.team && t.name === G.team.name) return forceRenewal || (prevChamp <= 15 && hasH2HWins);
+      if (wonH2H && t.stars === myCurrentStars + 1) return true;
+      if (t.stars === 5) return prevChamp <= 8;
+      if (t.stars === 4) return prevChamp <= 12;
+      if (t.stars === 3) return prevChamp <= 18;
+      return true;
+    });
+
+    offerPool = shuffle(offerPool);
+    let finalOffers = [];
+
+    if (G._nemesisSeatTarget) {
+      const nemesisTargetTeam = offerPool.find(t => t.name === G._nemesisSeatTarget);
+      if (nemesisTargetTeam) {
+        finalOffers.push(nemesisTargetTeam);
+        offerPool = offerPool.filter(t => t.name !== G._nemesisSeatTarget);
+      }
+    }
+
+    const renewalTeam = offerPool.find(t => G.team && t.name === G.team.name);
+    if (renewalTeam) {
+      finalOffers.push(renewalTeam);
+      offerPool = offerPool.filter(t => t.name !== renewalTeam.name);
+    }
+
+    if (wonH2H && myCurrentStars < 5) {
+      const upgradeTeam = offerPool.find(t => t.stars > myCurrentStars);
+      if (upgradeTeam) {
+        finalOffers.push(upgradeTeam);
+        offerPool = offerPool.filter(t => t.name !== upgradeTeam.name);
+      }
+    }
+
+    const needed = Math.max(4 - finalOffers.length, 0);
+    finalOffers.push(...offerPool.slice(0, needed));
+    offerPool = finalOffers;
+  } else {
+    offerPool = shuffle(offerPool);
+    const selectedOffers = [];
+    ['desarrollo', 'equilibrado', 'ganar'].forEach(focusType => {
+      const teamOfFocus = offerPool.find(t => t.focus === focusType);
+      if (teamOfFocus) selectedOffers.push(teamOfFocus);
+    });
+    while (selectedOffers.length < 3 && selectedOffers.length < offerPool.length) {
+      const extraTeam = offerPool.find(t => !selectedOffers.includes(t));
+      if (extraTeam) selectedOffers.push(extraTeam);
+      else break;
+    }
+    offerPool = selectedOffers;
+  }
+
+  return { offerPool, isLockedShadowMarket, isAcademyLocked };
+}
 
 const NATIONALITIES = [
   { flag: '🇦🇷', name: 'Argentina' }, { flag: '🇧🇷', name: 'Brasil' },
@@ -1110,6 +1264,35 @@ const INTERVIEWS = [
 // F1 Car Rating Helper
 const getF1CarRating = (stars) => stars === 1 ? 15 : stars === 2 ? 30 : stars === 3 ? 55 : stars === 4 ? 78 : 92;
 
+// Shared power calculation for F1 drivers and player
+function getF1DriverPower(skill, carStars) {
+  return (skill * 0.25) + (getF1CarRating(carStars) * 0.75);
+}
+
+// Helper to apply consequences consistently for both single interviews and grouped press conferences
+function applyInterviewConsequences(c, ivId) {
+  if (ivId) G.storyFlags['interview_' + ivId] = true;
+  if (c.wasEscudero) G.wasEscudero = true;
+  
+  if (c.pers) {
+    let d = c.delta;
+    if (d < 0 && G.upgrades.includes('pr_team')) d = Math.round(d * 0.5);
+    G.personality[c.pers] = clamp(G.personality[c.pers] + d, -100, 100);
+  }
+  if (c.pers2) {
+    let d2 = c.delta2;
+    if (d2 < 0 && G.upgrades.includes('pr_team')) d2 = Math.round(d2 * 0.5);
+    G.personality[c.pers2] = clamp(G.personality[c.pers2] + d2, -100, 100);
+  }
+  
+  let actualRepDelta = c.repDelta || 0;
+  if (actualRepDelta !== 0) {
+    G.reputation += actualRepDelta;
+  }
+  
+  return actualRepDelta; // return for logging purposes
+}
+
 function getInterviewPool(postSeasonId = null) {
   return INTERVIEWS.filter(iv => {
     if (iv.requireAcademy && !G.academy) return false;
@@ -1125,8 +1308,18 @@ function getInterviewPool(postSeasonId = null) {
     if (!postSeasonId && (psIds.includes(iv.id) || iv.id.startsWith('ev_') || iv.nemesisInterview)) return false; // Hide post-season interviews from mid-season
     if (iv.nemesisInterview) {
       if (!G.nemesis) return false;
+      // nemesis_ahead_comment: makes sense only when nemesis is in a higher cat than us
+      if (iv.id === 'nemesis_ahead_comment') {
+        const nemDrv = G.aiRoster && G.aiRoster.find(d => d.id === G.nemesis.id);
+        if (!nemDrv) return false;
+        const CAT_ORDER = ['Karting','F4','Formula Regional','F3','F2','F1'];
+        const nemCatIdx = CAT_ORDER.indexOf(nemDrv.cat);
+        if (nemCatIdx <= G.catIndex) return false; // Nemesis must be in a higher category
+        if (G.storyFlags['interview_nemesis_ahead_comment']) return false; // No repeats
+      }
       // nemesis_champ: only if nemesis is in same cat and they did better than us this season
       if (iv.id === 'nemesis_champ') {
+        if (G.catIndex < 5) return false; // F1 only
         if (!G.lastResult) return false;
         const nemDriver = G.aiRoster && G.aiRoster.find(d => d.id === G.nemesis.id);
         if (!nemDriver || nemDriver.cat !== G.lastResult.cat) return false;
@@ -1135,6 +1328,7 @@ function getInterviewPool(postSeasonId = null) {
         if (approxNemRank !== 1) return false; // Nemesis must be champion
       }
       if (iv.id === 'nemesis_retired_comment') {
+        if (G.catIndex < 5) return false; // F1 only — retired nemesis commentary only makes sense in F1
         if (!G.nemesis.retired) return false;
         if (G.storyFlags['interview_nemesis_retired_comment']) return false;
       }
@@ -1245,34 +1439,7 @@ function getInterviewPool(postSeasonId = null) {
   });
 }
 
-function injectPressAnimations() {
-  if (document.getElementById('press-animations')) return;
-  const style = document.createElement('style');
-  style.id = 'press-animations';
-  style.innerHTML = `
-    .anim-intro-enter { animation: pressIntroEntry 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
-    .anim-intro-exit { animation: pressIntroExit 0.4s ease-in forwards; }
-    .anim-card-enter { animation: pressCardEntry 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) forwards; }
-    .anim-card-exit { animation: pressCardExit 0.3s ease-in forwards; }
-    @keyframes pressIntroEntry {
-      0% { opacity: 0; transform: scale(0.9) translateY(20px); }
-      100% { opacity: 1; transform: scale(1) translateY(0); }
-    }
-    @keyframes pressIntroExit {
-      0% { opacity: 1; transform: scale(1) translateY(0); }
-      100% { opacity: 0; transform: scale(1.1) translateY(-20px); }
-    }
-    @keyframes pressCardEntry {
-      0% { opacity: 0; transform: translateX(30px); }
-      100% { opacity: 1; transform: translateX(0); }
-    }
-    @keyframes pressCardExit {
-      0% { opacity: 1; transform: translateX(0); }
-      100% { opacity: 0; transform: translateX(-30px); }
-    }
-  `;
-  document.head.appendChild(style);
-}
+
 
 function playPressFlashes(targetElement = null) {
   const container = document.createElement('div');
@@ -1283,12 +1450,14 @@ function playPressFlashes(targetElement = null) {
   container.style.pointerEvents = 'none';
   container.style.overflow = 'hidden';
   
-  const target = targetElement || document.getElementById('screen-interview');
-  if (target.firstChild) {
+  const target = targetElement || document.getElementById('screen-event');
+  if (target && target.firstChild) {
     target.insertBefore(container, target.firstChild);
-  } else {
+  } else if (target) {
     target.appendChild(container);
   }
+  
+  if (!target) return container;
   
   // Bring content to the front
   Array.from(target.children).forEach(child => {
@@ -1342,7 +1511,6 @@ function playPressFlashes(targetElement = null) {
 }
 
 function showPressConference(queue, logs = [], isIntro = true) {
-  injectPressAnimations();
 
   if (isIntro && queue.length > 0) {
     const overlay = document.createElement('div');
@@ -1373,7 +1541,7 @@ function showPressConference(queue, logs = [], isIntro = true) {
             overlay.remove();
             showPressConference(queue, logs, false);
         }, 400);
-    }, 1400); // Intro más corta
+    }, 1400);
     return;
   }
 
@@ -1383,48 +1551,37 @@ function showPressConference(queue, logs = [], isIntro = true) {
       return;
     }
     
-    document.getElementById('int-title').innerHTML = "Titulares de la Rueda de Prensa";
-    document.getElementById('int-desc').innerHTML = "La sesión de preguntas ha terminado. Esto es lo que recogen los medios:";
-    
-    let summaryHtml = '<div class="press-summary-list" style="display:flex; flex-direction:column; gap:16px; margin-bottom:20px; max-height: 50vh; overflow-y:auto; padding-right:8px;">';
+    let summaryHtml = '<div class="press-summary-list">';
     logs.forEach(l => {
       if (l.isMonologue) {
          summaryHtml += `
-          <div style="background:rgba(239,68,68,0.1); border:1px solid rgba(239,68,68,0.3); border-left:4px solid var(--accent2); padding:16px; border-radius:8px; text-align:left;">
-            <div style="font-size:11px; text-transform:uppercase; color:var(--muted); margin-bottom:6px; letter-spacing:1px;">🎙️ Declaración Externa</div>
-            <div style="font-size:15px; font-weight:bold; color:var(--text); line-height:1.4;">${l.a}</div>
+          <div class="press-log-external">
+            <div class="log-label">🎙️ Declaración Externa</div>
+            <div class="log-text">${l.a}</div>
           </div>`;
       } else {
          summaryHtml += `
-          <div style="background:linear-gradient(135deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.02) 100%); border:1px solid rgba(255,255,255,0.1); border-left:4px solid var(--blue); padding:16px; border-radius:8px; text-align:left; box-shadow: 0 4px 12px rgba(0,0,0,0.2);">
-            <div style="font-size:13px; color:var(--blue); font-weight:bold; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
-              <span style="font-size:16px;">📰</span> ${l.q}
+          <div class="press-log-question">
+            <div class="q-text">
+              <span class="q-icon">📸</span> ${l.q}
             </div>
-            <div style="font-size:15px; color:var(--text); line-height:1.5; font-style:italic;">
-              “${l.a.replace(/^"|"$/g, '')}”
+            <div class="a-text">
+              "${l.a.replace(/^"|"$/g, '')}"
             </div>
           </div>`;
       }
     });
-    summaryHtml += '</div><button class="btn btn-primary" style="width:100%; font-size:16px; padding:14px;" onclick="processSeasonStep()">Finalizar Rueda de Prensa</button>';
+    summaryHtml += '</div>';
     
-    const ch = document.getElementById('int-choices');
-    ch.className = 'anim-card-enter'; // Fix animation lock
-    ch.innerHTML = summaryHtml;
-    
-    const screenInt = document.getElementById('screen-interview');
-    const labelDiv = screenInt.querySelector('.label');
-    const cardDiv = screenInt.querySelector('.card');
-    screenInt.style.background = 'radial-gradient(ellipse at top, rgba(74, 144, 232, 0.1) 0%, transparent 60%)';
-    if (labelDiv) {
-        labelDiv.style.color = 'var(--blue)';
-        labelDiv.innerHTML = '📰 Portadas de los Diarios';
-    }
-    if (cardDiv) {
-        cardDiv.style.borderColor = 'var(--blue)';
-        cardDiv.className = 'card anim-card-enter';
-    }
-    goto('screen-interview');
+    showEventScene({
+      icon: '📸',
+      title: 'Portadas de los Diarios',
+      subtitle: 'La sesión ha terminado. Esto recogen los medios:',
+      desc: summaryHtml,
+      borderColor: UI_COLORS.blue,
+      animate: true,
+      choices: [{ text: 'Finalizar Rueda de Prensa' }]
+    });
     return;
   }
 
@@ -1443,116 +1600,280 @@ function showPressConference(queue, logs = [], isIntro = true) {
   let ivTitle = iv.title;
   let ivDesc = iv.desc;
   if (G.nemesis) {
-    const nStyle = `<span style="color:#ef4444;font-weight:bold">${G.nemesis.name}</span>`;
-    const nemRegex = /tu n[éè]mesis/gi;
+    const nStyle = `<span style="color:${UI_COLORS.danger};font-weight:bold">${G.nemesis.name}</span>`;
+    const nemRegex = /tu n[éèe]mesis/gi;
     ivTitle = ivTitle.replace(/\{\{NEMESIS_NAME\}\}/g, nStyle).replace(nemRegex, nStyle);
     ivDesc = ivDesc.replace(/\{\{NEMESIS_NAME\}\}/g, nStyle)
                    .replace(/\{\{NEMESIS_CAT\}\}/g, G.nemesis.cat || 'otra categoría')
                    .replace(nemRegex, nStyle);
   }
 
-  document.getElementById('int-title').innerHTML = ivTitle;
-  document.getElementById('int-desc').innerHTML = ivDesc;
-  
-  const screenInt = document.getElementById('screen-interview');
-  const labelDiv = screenInt.querySelector('.label');
-  const cardDiv = screenInt.querySelector('.card');
-  screenInt.style.background = 'radial-gradient(ellipse at top, rgba(74, 144, 232, 0.1) 0%, transparent 60%)';
-  if (labelDiv) {
-      labelDiv.style.color = 'var(--blue)';
-      labelDiv.innerHTML = '🎙️ Rueda de Prensa' + (logs.length > 0 ? ' (Continuación)' : '');
-  }
-  if (cardDiv) {
-      cardDiv.style.borderColor = 'var(--blue)';
-      cardDiv.className = 'card anim-card-enter';
-  }
-
-  const ch = document.getElementById('int-choices');
-  ch.className = 'anim-card-enter';
-  ch.innerHTML = '';
-
-  const animateOutAndNext = (callback) => {
-    if (cardDiv) cardDiv.classList.replace('anim-card-enter', 'anim-card-exit');
-    if (ch) ch.classList.replace('anim-card-enter', 'anim-card-exit');
-    setTimeout(callback, 300);
-  };
-
   if (iv.nemesisMonologue) {
     G.storyFlags['interview_' + iv.id] = true;
-    const btn = document.createElement('div');
-    btn.className = 'minigame-choice';
-    btn.innerHTML = `<h3>Siguiente Pregunta</h3>`;
-    btn.onclick = () => {
-      let logText = iv.desc;
-      if (G.nemesis) {
-        const nStyle = `<span style="color:#ef4444;font-weight:bold">${G.nemesis.name}</span>`;
-        const nemRegex = /tu n[éè]mesis/gi;
-        logText = logText.replace(/\{\{NEMESIS_NAME\}\}/g, nStyle).replace(nemRegex, nStyle);
-      }
-      logs.push({ q: ivTitle, a: logText, isMonologue: true });
-      animateOutAndNext(() => showPressConference(queue, logs, false));
-    };
-    ch.appendChild(btn);
-  } else {
-    iv.choices.forEach(c => {
-      const b = document.createElement('div');
-      b.className = 'minigame-choice';
-      if (c.reqStars && G.team.stars < c.reqStars) {
-        b.classList.add('locked');
-        b.innerHTML = `<h3 style="color:var(--muted)">${c.text} 🔒 (Req: ${c.reqStars}⭐)</h3>`;
-      } else {
-        b.innerHTML = `<h3>${c.text}</h3>`;
-        b.onclick = () => {
-          G.storyFlags['interview_' + iv.id] = true;
-          if (c.wasEscudero) G.wasEscudero = true;
-          if (c.pers) {
-            let d = c.delta;
-            if (d < 0 && G.upgrades.includes('pr_team')) d = Math.round(d * 0.5);
-            G.personality[c.pers] = clamp(G.personality[c.pers] + d, -100, 100);
-          }
-          if (c.pers2) {
-            let d2 = c.delta2;
-            if (d2 < 0 && G.upgrades.includes('pr_team')) d2 = Math.round(d2 * 0.5);
-            G.personality[c.pers2] = clamp(G.personality[c.pers2] + d2, -100, 100);
-          }
-          
-          if (c.repDelta) {
-            G.reputation += c.repDelta;
-          }
-          
-          let logText = c.logText || `"${c.text}"`;
+    showEventScene({
+      icon: '🎙️',
+      title: 'Rueda de Prensa' + (logs.length > 0 ? '' : ''),
+      subtitle: ivTitle,
+      desc: ivDesc,
+      borderColor: UI_COLORS.danger,
+      animate: true,
+      choices: [{
+        text: 'Siguiente Pregunta',
+        onClick: () => {
+          let logText = iv.desc;
           if (G.nemesis) {
-            const nStyle = `<span style="color:#ef4444;font-weight:bold">${G.nemesis.name}</span>`;
-            const nemRegex = /tu n[éè]mesis/gi;
+            const nStyle = `<span style="color:${UI_COLORS.danger};font-weight:bold">${G.nemesis.name}</span>`;
+            const nemRegex = /tu n[éèe]mesis/gi;
             logText = logText.replace(/\{\{NEMESIS_NAME\}\}/g, nStyle).replace(nemRegex, nStyle);
           }
-          
-          logs.push({ q: ivTitle, a: logText, isMonologue: false });
-          animateOutAndNext(() => showPressConference(queue, logs, false));
-        };
+          logs.push({ q: ivTitle, a: logText, isMonologue: true });
+          showPressConference(queue, logs, false);
+        }
+      }]
+    });
+    return;
+  }
+
+  const choices = iv.choices.map(c => {
+    let cText = c.text;
+    if (G.nemesis) {
+      const nStyle = `<span style="color:${UI_COLORS.danger};font-weight:bold">${G.nemesis.name}</span>`;
+      const nemRegex = /tu n[éèe]mesis/gi;
+      cText = cText.replace(/\{\{NEMESIS_NAME\}\}/g, nStyle).replace(nemRegex, nStyle);
+    }
+    
+    return {
+      text: cText,
+      subtitle: c.hint ? `<span style="color:var(--blue)">${c.hint}</span>` : null,
+      reqStars: c.reqStars,
+      onClick: () => {
+        applyInterviewConsequences(c, iv.id);
+        
+        let logText = c.logText || `"${cText}"`;
+        if (G.nemesis) {
+          const nStyle = `<span style="color:${UI_COLORS.danger};font-weight:bold">${G.nemesis.name}</span>`;
+          const nemRegex = /tu n[éèe]mesis/gi;
+          logText = logText.replace(/\{\{NEMESIS_NAME\}\}/g, nStyle).replace(nemRegex, nStyle);
+        }
+        
+        logs.push({ q: ivTitle, a: logText, isMonologue: false });
+        showPressConference(queue, logs, false);
       }
-      ch.appendChild(b);
+    };
+  });
+
+  showEventScene({
+    icon: '🎙️',
+    title: 'Rueda de Prensa' + (logs.length > 0 ? '' : ''),
+    subtitle: ivTitle,
+    desc: ivDesc,
+    borderColor: UI_COLORS.blue,
+    animate: true,
+    choices: choices
+  });
+}
+
+/**
+ * Helper unificado para mostrar eventos narrativos en el DOM.
+ * @param {Object} config - { icon, title, subtitle, desc, choices, borderColor, bgGradient }
+ */
+function showEventScene(config) {
+  resetEventChrome(); // Clean up previous styles
+
+  document.getElementById('ev-icon').innerHTML = config.icon || '🚨';
+  document.getElementById('ev-title').innerHTML = config.title || 'Evento';
+
+  const cardDiv = document.querySelector('#screen-event .card');
+  if (cardDiv) {
+    if (config.borderColor) cardDiv.style.borderLeft = `4px solid ${config.borderColor}`;
+    if (config.bgGradient) cardDiv.style.background = `linear-gradient(135deg, ${config.bgGradient} 0%, rgba(15,23,42,0.6) 100%)`;
+  }
+
+  let content = '';
+  if (config.subtitle) {
+    content += `<strong style="font-size:18px; color:#fff">${config.subtitle}</strong><br><br>`;
+  }
+  if (config.desc) content += config.desc;
+  document.getElementById('ev-desc').innerHTML = content;
+
+  const ch = document.getElementById('ev-choices');
+  ch.innerHTML = '';
+
+  // The cleanup of previous animations is now handled globally in resetEventChrome()
+  if (config.animate) {
+    if (cardDiv) cardDiv.classList.add('anim-card-enter');
+    ch.classList.add('anim-card-enter');
+  }
+
+  const choices = config.choices || [{ text: 'Continuar', onClick: () => processSeasonStep() }];
+
+  choices.forEach(c => {
+    const btn = document.createElement('div');
+    btn.className = 'minigame-choice';
+    if (c.style) Object.assign(btn.style, c.style);
+
+    const isLocked = c.reqStars && G.team && G.team.stars < c.reqStars;
+
+    if (isLocked) {
+      btn.classList.add('locked');
+      btn.innerHTML = `<h3 style="color:var(--muted)">${c.text} 🔒 (Req: ${c.reqStars}⭐)</h3>`;
+    } else {
+      btn.innerHTML = c.html ? c.html : `<h3>${c.text}</h3>`;
+      if (c.subtitle) {
+        const sub = document.createElement('p');
+        sub.innerHTML = c.subtitle;
+        btn.appendChild(sub);
+      }
+      btn.onclick = () => {
+        const doAction = () => {
+          if (cardDiv) {
+            cardDiv.style.borderLeft = '';
+            cardDiv.style.background = '';
+          }
+          if (c.onClick) c.onClick();
+          else processSeasonStep();
+        };
+        if (config.animate) {
+          if (cardDiv) {
+            cardDiv.classList.remove('anim-card-enter');
+            cardDiv.classList.add('anim-card-exit');
+          }
+          ch.classList.remove('anim-card-enter');
+          ch.classList.add('anim-card-exit');
+          setTimeout(doAction, 280);
+        } else {
+          doAction();
+        }
+      };
+    }
+    ch.appendChild(btn);
+  });
+
+  goto('screen-event');
+}
+
+function updateRivalries(cat, champ) {
+  if (!G.nemesis && G.aiRoster) {
+    G.nemesisHeat = G.nemesisHeat || {};
+    // Passive heat: being teammates each season
+    if (G.peer && G.catIndex === 5) {
+      const peerDriver = G.aiRoster.find(d => d.id === G.peer.id);
+      if (peerDriver) addNemesisHeat(peerDriver, 15);
+    }
+    // Accurate championship positions (within 2 places of each other in same category)
+    const catDrivers = G.aiRoster.filter(d => d.cat === cat);
+    // Sort by _power (simulated performance including car)
+    catDrivers.sort((a,b) => (b._power || 0) - (a._power || 0));
+    let currentRank = 1;
+    catDrivers.forEach(d => {
+      if (currentRank === champ) currentRank++; // Skip the player's slot
+      d._finalRank = currentRank;
+      
+      const diff = Math.abs(d._finalRank - champ);
+      if (G.catIndex < 5) {
+        if (diff === 0) addNemesisHeat(d, 70);
+        else if (diff === 1) addNemesisHeat(d, 60);
+        else if (diff === 2) addNemesisHeat(d, 35);
+      } else {
+        if (diff === 0) addNemesisHeat(d, 40);
+        else if (diff === 1) addNemesisHeat(d, 30);
+        else if (diff === 2) addNemesisHeat(d, 15);
+      }
+      currentRank++;
     });
   }
 
-  goto('screen-interview');
+  // Nemesis H2H Tracking
+  if (G.nemesis && G.aiRoster) {
+    const nemDriver = G.aiRoster.find(d => d.id === G.nemesis.id);
+    if (nemDriver && nemDriver.cat === cat) {
+      G.nemesis.cat = nemDriver.cat;
+      // Fallback if _finalRank missing (shouldn't happen)
+      const approxNemRank = nemDriver._finalRank || Math.max(1, Math.round((1 - nemDriver.skill / 99) * 20) + 1);
+      if (champ < approxNemRank) G.nemesis.h2hWins = (G.nemesis.h2hWins || 0) + 1;
+      else if (champ > approxNemRank) G.nemesis.h2hLosses = (G.nemesis.h2hLosses || 0) + 1;
+      // Nemesis champion interview (if he won and we didn't)
+      if (approxNemRank === 1 && champ > 1 && !G.storyFlags['interview_nemesis_champ']) {
+        G._seasonSteps = G._seasonSteps || [];
+        G._seasonSteps.push('event:nemesis_champ');
+      }
+
+      // Feature 1: Seat Steal
+      if (cat === 'F1' && G.f1ContractYearsLeft === 0 && !G.nemesis.retired) {
+        const myStars = G.team ? G.team.stars : 0;
+        const nemTeam = TEAMS['F1'] && TEAMS['F1'].find(t => t.name === nemDriver.team);
+        const nemStars = nemTeam ? nemTeam.stars : 0;
+        if (nemStars > myStars && approxNemRank > champ && !G.storyFlags['nemesis_seat_steal_offered']) {
+          G._seasonSteps = G._seasonSteps || [];
+          G._seasonSteps.push('nemesis_steal_seat');
+        }
+      }
+
+      // Feature 2: H2H Ultimatum
+      if (cat === 'F1' && G.peer && G.peer.id === G.nemesis.id && !G.nemesis.retired) {
+        G.nemesis.teammateSeasons = (G.nemesis.teammateSeasons || 0) + 1;
+        if (G.nemesis.ultimatumActive) {
+          G.nemesis.ultimatumActive = false;
+          G._seasonSteps = G._seasonSteps || [];
+          if (champ < approxNemRank) {
+            G._seasonSteps.push('nemesis_h2h_ultimatum_win'); 
+          } else {
+            G._seasonSteps.push('nemesis_h2h_ultimatum_lose');
+          }
+        } else if (!G.storyFlags['nemesis_ultimatum_used'] && G.nemesis.teammateSeasons >= 2 && Math.random() < 0.5) {
+          G.nemesis.ultimatumActive = true;
+          G._seasonSteps = G._seasonSteps || [];
+          G._seasonSteps.push('nemesis_h2h_ultimatum_warn');
+        }
+      }
+
+      // Press Events
+      if (cat === 'F1' && !G.nemesis.retired) {
+        if (approxNemRank > champ && !G.storyFlags['interview_nemesis_talks_trash'] && Math.random() < 0.4) {
+          G._seasonSteps = G._seasonSteps || [];
+          G._seasonSteps.push('event:nemesis_talks_trash');
+        }
+        if (approxNemRank < champ && !G.storyFlags['interview_nemesis_talks_respect'] && Math.random() < 0.35) {
+          G._seasonSteps = G._seasonSteps || [];
+          G._seasonSteps.push('event:nemesis_talks_respect');
+        }
+        if (!G.storyFlags['interview_nemesis_press_compare'] && Math.random() < 0.3) {
+          G._seasonSteps = G._seasonSteps || [];
+          G._seasonSteps.push('event:nemesis_press_compare');
+        }
+        if (!G.storyFlags['interview_nemesis_press_rivalry'] && Math.random() < 0.3) {
+          G._seasonSteps = G._seasonSteps || [];
+          G._seasonSteps.push('event:nemesis_press_rivalry');
+        }
+      }
+    } else if (nemDriver) {
+      G.nemesis.cat = nemDriver.cat;
+    }
+
+    // Check nemesis retirement
+    if (nemDriver && !G.nemesis.retired && nemDriver.age >= 40) {
+      G.nemesis.retired = true;
+      G._seasonSteps = G._seasonSteps || [];
+      G._seasonSteps.push('nemesis_retired');
+    }
+    // Occasional retired comment
+    if (G.nemesis.retired && Math.random() < 0.15 && !G.storyFlags['interview_nemesis_retired_comment']) {
+      G._seasonSteps = G._seasonSteps || [];
+      G._seasonSteps.push('event:nemesis_retired_comment');
+    }
+    
+    // Add summary log
+    const statusStr = G.nemesis.retired ? 'Retirado' : (G.nemesis.cat ? G.nemesis.cat : '');
+    G._seasonEventLogs.push(`⚔️ Rivalidad Histórica vs ${G.nemesis.name} (${statusStr}): ${G.nemesis.h2hWins || 0} - ${G.nemesis.h2hLosses || 0}`);
+  }
 }
 
 function showBrandArrivalScreen(brand, type, oldTeam) {
-    document.getElementById('ev-icon').innerHTML = '🚨';
-    document.getElementById('ev-title').innerHTML = 'ÚLTIMA HORA EN LA F1';
-    
-    const cardDiv = document.querySelector('#screen-event .card');
-    if (cardDiv) {
-        cardDiv.style.borderLeft = '4px solid #ef4444';
-        cardDiv.style.background = 'linear-gradient(135deg, rgba(239,68,68,0.1) 0%, rgba(15,23,42,0.6) 100%)';
-    }
-
     let subtitle = '';
     let msg = '';
     if (type === 'expansion') {
         subtitle = `¡${brand} entra a la Fórmula 1!`;
-        msg = `La histórica marca ha anunciado la creación de un nuevo equipo oficial. Se suman a la parrilla como el equipo N° ${TEAMS['F1'].length}, listos para competir al máximo nivel a partir de la siguiente temporada.`;
+        msg = `La histórica marca ha anunciado la creación de un nuevo equipo oficial. Se suman a la parrilla como el equipo N° ${TEAMS['F1'].length}, listos para competir al máximo nivel.`;
     } else {
         subtitle = `¡${brand} compra ${oldTeam}!`;
         msg = `¡Terremoto en el paddock! ${brand} ha adquirido las instalaciones de ${oldTeam} y competirá bajo su propio nombre a partir de la próxima temporada, heredando todo su desarrollo y personal.`;
@@ -1561,48 +1882,32 @@ function showBrandArrivalScreen(brand, type, oldTeam) {
         }
     }
     
-    document.getElementById('ev-desc').innerHTML = `<strong style="font-size:18px; color:#fff">${subtitle}</strong><br><br>${msg}`;
-    
-    const ch = document.getElementById('ev-choices');
-    ch.innerHTML = '';
-    
-    const btn = document.createElement('div');
-    btn.className = 'minigame-choice';
-    btn.innerHTML = `<h3>Continuar</h3>`;
-    btn.onclick = () => {
-        if (cardDiv) {
-            cardDiv.style.borderLeft = '';
-            cardDiv.style.background = '';
-        }
-        processSeasonStep();
-    };
-    ch.appendChild(btn);
-    
-    goto('screen-event');
+    showEventScene({
+      icon: '🚨',
+      title: 'ÚLTIMA HORA EN LA F1',
+      subtitle: subtitle,
+      desc: msg,
+      borderColor: UI_COLORS.danger,
+      bgGradient: UI_COLORS.dangerBg
+    });
 }
 
 function showInterview(postSeasonId = null) {
-  // Select an interview
   let pool = getInterviewPool(postSeasonId);
-  
   if (pool.length === 0) {
     processSeasonStep();
     return;
   }
   
   let ivTemplate = randFrom(pool);
-  
   const iv = JSON.parse(JSON.stringify(ivTemplate));
   
-  
-
-  
   const isEventMode = iv.id.startsWith('ev_');
-
   let ivTitle = iv.title;
   let ivDesc = iv.desc;
+  
   if (G.nemesis) {
-    const nStyle = `<span style="color:#ef4444;font-weight:bold">${G.nemesis.name}</span>`;
+    const nStyle = `<span style="color:${UI_COLORS.danger};font-weight:bold">${G.nemesis.name}</span>`;
     const nemRegex = /tu n[éèe]mesis/gi;
     ivTitle = ivTitle.replace(/\{\{NEMESIS_NAME\}\}/g, nStyle).replace(nemRegex, nStyle);
     ivDesc = ivDesc.replace(/\{\{NEMESIS_NAME\}\}/g, nStyle)
@@ -1610,111 +1915,64 @@ function showInterview(postSeasonId = null) {
                    .replace(nemRegex, nStyle);
   }
 
-  document.getElementById('int-title').innerHTML = ivTitle;
-  const screenInt = document.getElementById('screen-interview');
-  
-  // The first element is the emoji div
-  
-  const labelDiv = screenInt.querySelector('.label');
-  const cardDiv = screenInt.querySelector('.card');
-
-  if (isEventMode) {
-      screenInt.style.background = 'radial-gradient(ellipse at top, rgba(235, 180, 50, 0.1) 0%, transparent 60%)';
-      if (labelDiv) {
-          labelDiv.style.color = 'var(--accent)';
-          labelDiv.innerHTML = '✨ Evento Exclusivo';
-      }
-      if (cardDiv) {
-          cardDiv.style.borderColor = 'var(--accent)';
-      }
-  } else {
-      screenInt.style.background = 'radial-gradient(ellipse at top, rgba(74, 144, 232, 0.1) 0%, transparent 60%)';
-      if (labelDiv) {
-          labelDiv.style.color = 'var(--blue)';
-          labelDiv.innerHTML = '🎙️ Sala de Prensa';
-      }
-      if (cardDiv) {
-          cardDiv.style.borderColor = 'var(--blue)';
-      }
-  }
-
-
-
-    document.getElementById('int-desc').innerHTML = ivDesc;
-
-  // --- Monologue mode: just show quote and a Continue button ---
-  const ch = document.getElementById('int-choices');
-  ch.innerHTML = '';
+  G.storyFlags['interview_' + iv.id] = true;
 
   if (iv.nemesisMonologue) {
-    G.storyFlags['interview_' + iv.id] = true;
-    const nemColor = '#ef4444';
-    const btn = document.createElement('div');
-    btn.className = 'minigame-choice';
-    btn.innerHTML = `<h3>Continuar</h3>`;
-    btn.onclick = () => {
-      processSeasonStep();
-    };
-    ch.appendChild(btn);
-    goto('screen-interview');
+    showEventScene({
+      icon: '🎙️',
+      title: ivTitle,
+      desc: ivDesc,
+      borderColor: UI_COLORS.danger,
+      bgGradient: 'rgba(239, 68, 68, 0.15)',
+      animate: true,
+      choices: [{ text: 'Continuar' }]
+    });
     return;
   }
-
-  iv.choices.forEach(c => {
-    const b = document.createElement('div');
-    b.className = 'minigame-choice';
-    
+  
+  const choices = iv.choices.map(c => {
     let cText = c.text;
     if (G.nemesis) {
-      const nStyle = `<span style="color:#ef4444;font-weight:bold">${G.nemesis.name}</span>`;
+      const nStyle = `<span style="color:${UI_COLORS.danger};font-weight:bold">${G.nemesis.name}</span>`;
       cText = cText.replace(/\{\{NEMESIS_NAME\}\}/g, nStyle).replace(/tu n[éèe]mesis/gi, nStyle);
     }
     
-    b.innerHTML = `
-      <h3>${cText}</h3>
-      ${c.hint ? `<div style="font-size:12px;color:var(--blue);margin-top:4px">${c.hint}</div>` : ''}
-    `;
-    
-    b.onclick = () => {
-      // Apply personality changes
-      G.storyFlags['interview_' + iv.id] = true;
-      if (c.wasEscudero) G.wasEscudero = true;
-      if (c.pers) {
-          let d = c.delta;
-          if (d < 0 && G.upgrades.includes('pr_team')) d = Math.round(d * 0.5);
-          G.personality[c.pers] = clamp(G.personality[c.pers] + d, -100, 100);
-        }
-        if (c.pers2) {
-          let d2 = c.delta2;
-          if (d2 < 0 && G.upgrades.includes('pr_team')) d2 = Math.round(d2 * 0.5);
-          G.personality[c.pers2] = clamp(G.personality[c.pers2] + d2, -100, 100);
-        }
-      
-      
-      const isEvent = iv.id.startsWith('ev_');
-        let logText = isEvent ? `Evento: ${c.text}` : `Entrevista: "${c.text}"`;
+    return {
+      text: cText,
+      subtitle: c.hint ? `<span style="color:var(--blue)">${c.hint}</span>` : null,
+      reqStars: c.reqStars,
+      onClick: () => {
+        let actualRepDelta = applyInterviewConsequences(c, iv.id);
         
-        let actualRepDelta = c.repDelta || 0;
+        let logText = isEventMode ? `Evento: ${c.text}` : `Entrevista: "${c.text}"`;
         if (actualRepDelta !== 0) {
-           G.reputation += actualRepDelta;
            logText += ` (${actualRepDelta > 0 ? '+' : ''}${actualRepDelta} Reputación)`;
         }
-        
         G._seasonEventLogs.push(logText);
-      
-      ch.innerHTML = `
-        <div class="card" style="padding: 24px; border-color: ${isEvent ? 'var(--accent)' : 'var(--blue)'}">
-          <div style="font-size:32px;margin-bottom:8px;text-align:center">${isEvent ? '✨' : '📸'}</div>
-          <div class="heading" style="font-size:18px;margin-bottom:12px;text-align:center">${isEvent ? 'Resolución del evento' : 'Declaraciones publicadas'}</div>
-          <div style="font-size:14px;line-height:1.6;color:var(--text);background:rgba(255,255,255,0.04);border-radius:10px;padding:14px 16px;margin-bottom:16px;text-align:left;border-left:3px solid ${isEvent ? 'var(--accent)' : 'var(--blue)'}">${c.fixedDesc}</div>
-          <button class="btn btn-primary" style="width:100%" onclick="window._activeStepCallback ? window._activeStepCallback() : processSeasonStep()">Continuar</button>
-        </div>
-      `;
+        
+        showEventScene({
+           icon: isEventMode ? '⚡' : '🎙️',
+           title: isEventMode ? 'Resolución del evento' : 'Declaraciones publicadas',
+           desc: `<div class="narrative-box" style="border-left-color: ${isEventMode ? 'var(--accent)' : 'var(--blue)'};">${c.fixedDesc}</div>`,
+           borderColor: isEventMode ? UI_COLORS.accent : UI_COLORS.blue,
+           bgGradient: isEventMode ? 'rgba(235, 180, 50, 0.15)' : 'rgba(74, 144, 232, 0.15)',
+           animate: true,
+           choices: [{ text: 'Continuar' }]
+        });
+      }
     };
-    ch.appendChild(b);
   });
-  
-  goto('screen-interview');
+
+  showEventScene({
+    icon: isEventMode ? '⚡' : '🎙️',
+    title: isEventMode ? 'Evento Exclusivo' : 'Sala de Prensa',
+    subtitle: ivTitle,
+    desc: ivDesc,
+    borderColor: isEventMode ? UI_COLORS.accent : UI_COLORS.blue,
+    bgGradient: isEventMode ? 'rgba(235, 180, 50, 0.15)' : 'rgba(74, 144, 232, 0.15)',
+    animate: true,
+    choices: choices
+  });
 }
 
 const UPGRADES = [
@@ -2121,7 +2379,7 @@ function buildPreseason() {
 
   let regChangeHtml = '';
   if (isRegChange) {
-    regChangeHtml = `<div style="color:#facc15;font-size:13px;margin-top:4px">⚠️ Nuevo Reglamento: Tu equipo tiene ${effectiveStars} estrellas</div>`;
+    regChangeHtml = `<div style="color:var(--warning);font-size:13px;margin-top:4px">⚠️ Nuevo Reglamento: Tu equipo tiene ${effectiveStars} estrellas</div>`;
   } else if (G._tempStarBonus) {
     const msg = G._tempStarBonus > 0
       ? `🚀 ¡Sorpresa! El auto rinde mejor de lo esperado. (+1 Estrella esta temporada)`
@@ -2620,27 +2878,7 @@ function processSeasonStep() {
   }
 }
 
-function computeSeasonResult() {
-  const cat = CATEGORIES[G.catIndex];
-
-  const effStats = { ...G.stats };
-  let extraDnf = 0;
-  
-  if (cat === 'F1' && G.peer) {
-    if (G.peer.relationship < -30) {
-      effStats.speed = clamp(effStats.speed + 8, 1, 99);
-      effStats.tyres = clamp(effStats.tyres - 10, 1, 99);
-      extraDnf = 1;
-      G._seasonEventLogs.push(`⚡ Tensión en el box con ${G.peer.name}: +Agresividad, -Gestión y +Riesgo.`);
-    } else if (G.peer.relationship > 30) {
-      effStats.tyres = clamp(effStats.tyres + 6, 1, 99);
-      effStats.quali = clamp(effStats.quali + 6, 1, 99);
-      extraDnf = -1;
-      G._seasonEventLogs.push(`🤝 Sintonía con ${G.peer.name}: +Gestión, +Clasificación y -Riesgo.`);
-    }
-  }
-
-  // 1. Weighted base rating
+function calcPlayerRating(cat, effStats) {
   const weightedBase = (
     effStats.speed * 0.35 +
     effStats.quali * 0.25 +
@@ -2649,34 +2887,26 @@ function computeSeasonResult() {
     effStats.rain * 0.05
   );
 
-  // 2. Wet season mechanics
   const wetSeason = Math.random() < 0.30;
   const rainBonus = wetSeason ? (effStats.rain - 50) * 0.15 : 0;
   if (wetSeason) {
-    G._seasonEventLogs.push(`¡Temporada lluviosa! (Bonus por Lluvia: ${rainBonus > 0 ? '+' : ''}${Math.round(rainBonus)})`);
+    G._seasonEventLogs.push(`🌧️ Temporada lluviosa! (Bonus por Lluvia: ${rainBonus > 0 ? '+' : ''}${Math.round(rainBonus)})`);
   }
 
-  // 3. Effective rating (incorporates car performance for F1)
-  // In F1: car is 80%, driver is 20%. Top cars nerfed to keep it competitive.
   let eff = weightedBase + rainBonus;
   if (cat === 'F1') {
-    const effectiveStars = clamp(G.team.stars + (G._tempStarBonus || 0), 1, 5);
-    const carRating = getF1CarRating(effectiveStars);
-    eff = (weightedBase * 0.25) + (carRating * 0.75) + rainBonus + 4; // +4 boost al jugador
-    // Apply regulation bonus if player chose to focus on current season
+    const effectiveStars = clamp((G.team ? G.team.stars : 3) + (G._tempStarBonus || 0), 1, 5);
+    eff = getF1DriverPower(weightedBase, effectiveStars) + rainBonus + 4;
     if (G.regulationBonus) {
       eff += G.regulationBonus;
     }
   }
 
-  // Apply minigame power bonus accumulated this season (applies to all categories)
   if (G._minigamePowerBonus) {
     eff += G._minigamePowerBonus;
   }
 
-  // Team focus: 'ganar' teams boost effective rating in formative categories
   if (cat === 'F3') {
-    // En F3 usamos las estrellas del coche igual que la IA, ignorando el enfoque
     const playerStars = G.team ? G.team.stars : 3;
     eff += (playerStars * 3);
   } else {
@@ -2686,14 +2916,12 @@ function computeSeasonResult() {
     eff += focusRatingBonus;
   }
 
-  // Make formative categories slightly easier
   if (cat !== 'F1') {
     eff += 8;
     if (G.academy) {
-      eff += 5; // Bonus extra por apoyo y recursos de la academia
+      eff += 5;
     }
     
-    // Bonus por experiencia en la categoría
     let repeatedYears = 0;
     if (G.seasons && G.seasons.length > 0) {
       for (let i = G.seasons.length - 1; i >= 0; i--) {
@@ -2707,41 +2935,13 @@ function computeSeasonResult() {
     eff += repeatedYears;
   }
 
-  // 4. Reduced luck factor
   const luck = rand(-10, 10);
   const rating = clamp(eff + luck, 1, 99);
-  const playerPower = rating; // the unified power value
+  
+  return { rating, wetSeason, playerPower: rating };
+}
 
-  // Races per category
-  const races = [12, 14, 14, 16, 14, 24][G.catIndex];
-
-  // 5. Calculate results with specific stat impacts
-  let champ = 1;
-  if (cat === 'Karting') {
-    champ = calcChampPosition(rating);
-  } else {
-    const catDrivers = G.aiRoster.filter(d => d.cat === cat);
-    let rank = 1;
-    catDrivers.forEach(ai => {
-      let aiPower = ai.skill;
-      const tObj = TEAMS[cat].find(t => t.name === ai.team);
-      const aiStars = tObj ? tObj.stars : 3;
-      
-        if (cat === 'F1') {
-          const aiCarRating = getF1CarRating(aiStars);
-          aiPower = (ai.skill * 0.25) + (aiCarRating * 0.75);
-      } else {
-        aiPower = ai.skill + (aiStars * 3);
-      }
-      
-      aiPower += rand(-10, 10);
-      ai._power = aiPower; // Store for later rank estimation
-      if (aiPower > playerPower) rank++;
-    });
-    champ = rank;
-  }
-
-  // Base stat modifiers (0 to 1) to influence where in the range they land
+function calcPlayerSeasonPerformance(cat, champ, effStats, races, teamStars) {
   const overtakeFactor = (effStats.overtake - 1) / 98;
   const consistencyFactor = (effStats.tyres - 1) / 98;
   const qualiFactor = (effStats.quali - 1) / 98;
@@ -2750,25 +2950,20 @@ function computeSeasonResult() {
   let podiums = 0;
   let poles = 0;
 
-  // Helper to pick a number within a range, biased by a factor (0-1)
   const pickRange = (min, max, factor) => {
-    // Add significant random variance so consecutive seasons aren't identical
-    const randomVariance = (Math.random() * 0.5) - 0.25; // -0.25 to +0.25
+    const randomVariance = (Math.random() * 0.5) - 0.25;
     const finalFactor = clamp(factor + randomVariance, 0, 1);
-    
     const base = min + (max - min) * finalFactor;
     return Math.round(base); 
   };
 
   if (champ === 1) {
-    // Campeón: usamos un dominio base y le aplicamos ruido para que haya variabilidad pero manteniendo coherencia
     let baseDom = Math.random();
     let domWins = clamp(baseDom + (Math.random() * 0.4 - 0.2), 0, 1);
     let domPods = clamp(baseDom + (Math.random() * 0.4 - 0.2), 0, 1);
     let domPoles = clamp(baseDom + (Math.random() * 0.4 - 0.2), 0, 1);
     
-    // Si el auto es de 4 estrellas o menos, forzamos un campeonato MUY ajustado
-    if (cat === 'F1' && (G.team.stars + (G._tempStarBonus || 0)) <= 4) {
+    if (cat === 'F1' && teamStars <= 4) {
       baseDom = Math.random() * 0.15;
       domWins = clamp(baseDom + (Math.random() * 0.1 - 0.05), 0, 1);
       domPods = clamp(baseDom + (Math.random() * 0.1 - 0.05), 0, 1);
@@ -2781,10 +2976,10 @@ function computeSeasonResult() {
     let maxPods = races * (0.55 + 0.40 * domPods);
 
     if (cat === 'F1') {
-      minWins *= 0.80; // Reducir victorias base
-      maxWins *= 0.80; // Reducir tope de victorias
-      minPods = races * 0.55; // Aumentar mínimo de podios
-      maxPods = races * (0.65 + 0.35 * domPods); // Podría llegar a casi 100% de podios en dominios altos
+      minWins *= 0.80;
+      maxWins *= 0.80;
+      minPods = races * 0.55;
+      maxPods = races * (0.65 + 0.35 * domPods);
     }
 
     wins = clamp(pickRange(minWins, maxWins, overtakeFactor), 1, races);
@@ -2812,7 +3007,129 @@ function computeSeasonResult() {
     poles = 0;
   }
 
-  podiums = Math.max(podiums, wins); // Sanity check
+  podiums = Math.max(podiums, wins);
+  return { wins, podiums, poles };
+}
+
+function applySeasonRewards(cat, champ, wins, podiums, poles, dnfs, wetSeason, rating, races) {
+  const salary = [10000, 30000, 50000, 100000, 200000, 2000000][G.catIndex];
+  const winBonus = [2000, 5000, 10000, 20000, 40000, 100000][G.catIndex];
+  const mediaMult = 1.0 + (G.personality.media / 200);
+  let earned = (salary + wins * winBonus) * mediaMult;
+
+  if (champ <= 10 && G.catIndex < 5) {
+    const nextCatIdx = G.catIndex + 1;
+    const baseCheapestNextSeat = getSeatCost(nextCatIdx, 3, false);
+    
+    let prizeMoney = 0;
+    if (champ === 1) prizeMoney = baseCheapestNextSeat;
+    else if (champ === 2) prizeMoney = baseCheapestNextSeat * 0.50;
+    else if (champ === 3) prizeMoney = baseCheapestNextSeat * 0.25;
+    else if (champ <= 5) prizeMoney = baseCheapestNextSeat * 0.10;
+    else if (champ <= 10) prizeMoney = baseCheapestNextSeat * 0.05;
+    
+    prizeMoney = Math.round(prizeMoney);
+    if (prizeMoney > 0) {
+      earned += prizeMoney;
+      G._seasonEventLogs.push(`🏆 Premio por terminar ${champ}º en el campeonato: ${fmt$(prizeMoney)}.`);
+    }
+  }
+  
+  const focusRepMult = (G.team && G.team.focus === 'ganar') ? 1.4
+    : (G.team && G.team.focus === 'desarrollo') ? 0.7
+      : 1.0;
+  let rep = Math.round(((100 - champ) * 2 + wins * 5) * focusRepMult);
+
+  if (G.upgrades.includes('photographer') && podiums > 0) {
+    const pBonus = Math.floor(rep * 0.4);
+    if (pBonus > 0) {
+      rep += pBonus;
+      G._seasonEventLogs.push(`📸 Las fotos de tu podio se hicieron virales (+${pBonus} Reputación extra).`);
+    }
+  }
+  
+  if (G.upgrades.includes('charity')) {
+    rep += 15;
+    G._seasonEventLogs.push(`🤝 Tu Fundación Benéfica mejoró tu imagen pública (+15 Reputación).`);
+  }
+  
+  G.reputation += rep;
+  G.money += earned;
+  G.totalMoney += earned;
+  G.wins += wins;
+  if (wetSeason && cat === 'F1') G.wetWins += wins;
+  G.podiums += podiums;
+  G.poles += poles;
+  G.dnfs += dnfs;
+
+  const teamName = G.team ? G.team.name : '❓';
+  const teamLogo = G.team && G.team.logo ? G.team.logo : null;
+  const teamStars = G.team ? G.team.stars : null;
+  const result = { cat, year: G.year, champ, wins, podiums, poles, dnfs, earned, rep, rating, teamName, teamLogo, teamStars, age: G.age, races };
+  G.seasons.push(result);
+  G.lastResult = result;
+
+  return result;
+}
+
+function computeSeasonResult() {
+  const cat = CATEGORIES[G.catIndex];
+
+  const effStats = { ...G.stats };
+  let extraDnf = 0;
+  
+  if (cat === 'F1' && G.peer) {
+    if (G.peer.relationship < -30) {
+      effStats.speed = clamp(effStats.speed + 8, 1, 99);
+      effStats.tyres = clamp(effStats.tyres - 10, 1, 99);
+      extraDnf = 1;
+      G._seasonEventLogs.push(`⚡ Tensión en el box con ${G.peer.name}: +Agresividad, -Gestión y +Riesgo.`);
+    } else if (G.peer.relationship > 30) {
+      effStats.tyres = clamp(effStats.tyres + 6, 1, 99);
+      effStats.quali = clamp(effStats.quali + 6, 1, 99);
+      extraDnf = -1;
+      G._seasonEventLogs.push(`🤝 Sintonía con ${G.peer.name}: +Gestión, +Clasificación y -Riesgo.`);
+    }
+  }
+
+  const ratingData = calcPlayerRating(cat, effStats);
+  const rating = ratingData.rating;
+  const wetSeason = ratingData.wetSeason;
+  const playerPower = ratingData.playerPower;
+
+  // Races per category
+  const races = [12, 14, 14, 16, 14, 24][G.catIndex];
+
+  // 5. Calculate results with specific stat impacts
+  let champ = 1;
+  if (cat === 'Karting') {
+    champ = calcChampPosition(rating);
+  } else {
+    const catDrivers = G.aiRoster.filter(d => d.cat === cat);
+    let rank = 1;
+    catDrivers.forEach(ai => {
+      let aiPower = ai.skill;
+      const tObj = TEAMS[cat].find(t => t.name === ai.team);
+      const aiStars = tObj ? tObj.stars : 3;
+      
+      if (cat === 'F1') {
+        aiPower = getF1DriverPower(ai.skill, aiStars);
+      } else {
+        aiPower = ai.skill + (aiStars * 3);
+      }
+      
+      aiPower += rand(-10, 10);
+      ai._power = aiPower; // Store for later rank estimation
+      if (aiPower > playerPower) rank++;
+    });
+    champ = rank;
+  }
+
+  const teamStars = G.team ? G.team.stars : 3;
+  const performance = calcPlayerSeasonPerformance(cat, champ, effStats, races, teamStars);
+  const wins = performance.wins;
+  const podiums = performance.podiums;
+  const poles = performance.poles;
 
   // Tyres reduces DNFs
   const dnfBase = rand(0, 3) + extraDnf + (G.personality.aggressiveness > 30 ? 1 : 0);
@@ -2834,169 +3151,9 @@ function computeSeasonResult() {
   const tyreFactor = (effStats.tyres - 50) / 100;
   const dnfs = Math.max(0, Math.round(dnfBase - tyreFactor * 2));
 
-  // 6. Financials and Reputation
-  const salary = [10000, 30000, 50000, 100000, 200000, 2000000][G.catIndex];
-  const winBonus = [2000, 5000, 10000, 20000, 40000, 100000][G.catIndex];
-  const mediaMult = 1.0 + (G.personality.media / 200); // -50% to +50%
-  let earned = (salary + wins * winBonus) * mediaMult;
+  const result = applySeasonRewards(cat, champ, wins, podiums, poles, dnfs, wetSeason, rating, races);
 
-  // PRIZE MONEY
-  if (champ <= 10 && G.catIndex < 5) {
-    const nextCatIdx = G.catIndex + 1;
-    // Para F2 (que va a F1) ponemos un valor equivalente
-    const baseCheapestNextSeat = SEAT_COSTS[nextCatIdx] ? SEAT_COSTS[nextCatIdx][0] : 3000000;
-    
-    let prizeMoney = 0;
-    if (champ === 1) prizeMoney = baseCheapestNextSeat;
-    else if (champ === 2) prizeMoney = baseCheapestNextSeat * 0.50;
-    else if (champ === 3) prizeMoney = baseCheapestNextSeat * 0.25;
-    else if (champ <= 5) prizeMoney = baseCheapestNextSeat * 0.10;
-    else if (champ <= 10) prizeMoney = baseCheapestNextSeat * 0.05;
-    
-    prizeMoney = Math.round(prizeMoney);
-    if (prizeMoney > 0) {
-      earned += prizeMoney;
-      G._seasonEventLogs.push(`🏆 Premio por terminar ${champ}º en el campeonato: ${fmt$(prizeMoney)}.`);
-    }
-  }
-  // Team focus: 'ganar' boosts rep, 'desarrollo' reduces it
-  const focusRepMult = (G.team && G.team.focus === 'ganar') ? 1.4
-    : (G.team && G.team.focus === 'desarrollo') ? 0.7
-      : 1.0;
-  let rep = Math.round(((100 - champ) * 2 + wins * 5) * focusRepMult);
-
-  if (G.upgrades.includes('photographer') && podiums > 0) {
-      const pBonus = Math.floor(rep * 0.4);
-      if (pBonus > 0) {
-        rep += pBonus;
-        G._seasonEventLogs.push(`📸 Las fotos de tu podio se hicieron virales (+${pBonus} Reputación extra).`);
-      }
-    }
-    
-    if (G.upgrades.includes('charity')) {
-      rep += 15;
-      G._seasonEventLogs.push(`🤝 Tu Fundación Benéfica mejoró tu imagen pública (+15 Reputación).`);
-    }
-    
-    G.reputation += rep;
-    G.money += earned;
-  G.totalMoney += earned;
-  G.wins += wins;
-  if (wetSeason && cat === 'F1') G.wetWins += wins;
-  G.podiums += podiums;
-  G.poles += poles;
-  G.dnfs += dnfs;
-
-  const teamName = G.team ? G.team.name : '—';
-  const teamLogo = G.team && G.team.logo ? G.team.logo : null;
-  const teamStars = G.team ? G.team.stars : null;
-  const result = { cat, year: G.year, champ, wins, podiums, poles, dnfs, earned, rep, rating, teamName, teamLogo, teamStars, age: G.age, races };
-  G.seasons.push(result);
-  G.lastResult = result;
-
-  // ─── Nemesis Heat Accumulation ───
-  if (!G.nemesis && G.aiRoster) {
-    G.nemesisHeat = G.nemesisHeat || {};
-    // Passive heat: being teammates each season
-    if (G.peer && G.catIndex === 5) {
-      const peerDriver = G.aiRoster.find(d => d.id === G.peer.id);
-      if (peerDriver) addNemesisHeat(peerDriver, 15);
-    }
-    // Accurate championship positions (within 2 places of each other in same category)
-    const catDrivers = G.aiRoster.filter(d => d.cat === cat);
-    // Sort by _power (simulated performance including car)
-    catDrivers.sort((a,b) => (b._power || 0) - (a._power || 0));
-    let currentRank = 1;
-    catDrivers.forEach(d => {
-      if (currentRank === champ) currentRank++; // Skip the player's slot
-      d._finalRank = currentRank;
-      
-      const diff = Math.abs(d._finalRank - champ);
-      if (G.catIndex < 5) {
-        if (diff === 0) addNemesisHeat(d, 70);
-        else if (diff === 1) addNemesisHeat(d, 60);
-        else if (diff === 2) addNemesisHeat(d, 35);
-      } else {
-        if (diff === 0) addNemesisHeat(d, 40);
-        else if (diff === 1) addNemesisHeat(d, 30);
-        else if (diff === 2) addNemesisHeat(d, 15);
-      }
-      currentRank++;
-    });
-  }
-  // 🏁🏁🏁 Nemesis H2H Tracking 🏁🏁🏁
-  if (G.nemesis && G.aiRoster) {
-    const nemDriver = G.aiRoster.find(d => d.id === G.nemesis.id);
-    if (nemDriver && nemDriver.cat === cat) {
-      G.nemesis.cat = nemDriver.cat;
-      // Fallback if _finalRank missing (shouldn't happen)
-      const approxNemRank = nemDriver._finalRank || Math.max(1, Math.round((1 - nemDriver.skill / 99) * 20) + 1);
-      if (champ < approxNemRank) G.nemesis.h2hWins = (G.nemesis.h2hWins || 0) + 1;
-      else if (champ > approxNemRank) G.nemesis.h2hLosses = (G.nemesis.h2hLosses || 0) + 1;
-      // Nemesis champion interview (if he won and we didn't)
-      if (approxNemRank === 1 && champ > 1 && !G.storyFlags['interview_nemesis_champ']) {
-        G._seasonSteps = G._seasonSteps || [];
-        G._seasonSteps.push('event:nemesis_champ');
-      }
-
-      // ─── Feature 1: Seat Steal ───
-      // Conditions: F1, our contract expires, nemesis is in a BETTER team but finished BEHIND us
-      if (cat === 'F1' && G.f1ContractYearsLeft === 0 && !G.nemesis.retired) {
-        const myStars = G.team ? G.team.stars : 0;
-        const nemTeam = TEAMS['F1'] && TEAMS['F1'].find(t => t.name === nemDriver.team);
-        const nemStars = nemTeam ? nemTeam.stars : 0;
-        if (nemStars > myStars && approxNemRank > champ && !G.storyFlags['nemesis_seat_steal_offered']) {
-          G._seasonSteps = G._seasonSteps || [];
-          G._seasonSteps.push('nemesis_steal_seat');
-        }
-      }
-
-      // ─── Feature 2: H2H Ultimatum ───
-      if (cat === 'F1' && G.peer && G.peer.id === G.nemesis.id && !G.nemesis.retired) {
-        G.nemesis.teammateSeasons = (G.nemesis.teammateSeasons || 0) + 1;
-        if (G.nemesis.ultimatumActive) {
-          // Resolve the ultimatum: who won the H2H this year?
-          G.nemesis.ultimatumActive = false;
-          G._seasonSteps = G._seasonSteps || [];
-          if (champ < approxNemRank) {
-            G._seasonSteps.push('nemesis_h2h_ultimatum_win'); // Player beat nemesis
-          } else {
-            G._seasonSteps.push('nemesis_h2h_ultimatum_lose'); // Nemesis beat player
-          }
-        } else if (!G.storyFlags['nemesis_ultimatum_used'] && G.nemesis.teammateSeasons >= 2 && Math.random() < 0.5) {
-          // Warn: 50% chance, only once per career, minimum 2 seasons together
-          G.nemesis.ultimatumActive = true;
-          G._seasonSteps = G._seasonSteps || [];
-          G._seasonSteps.push('nemesis_h2h_ultimatum_warn');
-        }
-      }
-
-      // ─── Feature 3: Press Events (random, once each, F1 only) ───
-      if (cat === 'F1' && !G.nemesis.retired) {
-        // Monologue trash talk: nemesis finished behind player
-        if (approxNemRank > champ && !G.storyFlags['interview_nemesis_talks_trash'] && Math.random() < 0.4) {
-          G._seasonSteps = G._seasonSteps || [];
-          G._seasonSteps.push('event:nemesis_talks_trash');
-        }
-        // Monologue respect: nemesis finished ahead of player
-        if (approxNemRank < champ && !G.storyFlags['interview_nemesis_talks_respect'] && Math.random() < 0.35) {
-          G._seasonSteps = G._seasonSteps || [];
-          G._seasonSteps.push('event:nemesis_talks_respect');
-        }
-        // Press compare/rivalry: random chance any season, only once each
-        if (!G.storyFlags['interview_nemesis_press_compare'] && Math.random() < 0.3) {
-          G._seasonSteps = G._seasonSteps || [];
-          G._seasonSteps.push('event:nemesis_press_compare');
-        }
-        if (!G.storyFlags['interview_nemesis_press_rivalry'] && Math.random() < 0.3) {
-          G._seasonSteps = G._seasonSteps || [];
-          G._seasonSteps.push('event:nemesis_press_rivalry');
-        }
-      }
-
-    } else if (nemDriver) {
-      G.nemesis.cat = nemDriver.cat; // Keep cat updated even in different categories
-    }
+  updateRivalries(cat, champ);
     
     // Brand Arrivals (Expansion & Takeover)
     if (G.catIndex === 5 && G.seasons.filter(s => s.cat === 'F1').length >= 1) {
@@ -3029,22 +3186,7 @@ function computeSeasonResult() {
         G.brandEventsCount++;
       }
     }
-    // Check nemesis retirement (age >= 40 or past prime)
-    if (nemDriver && !G.nemesis.retired && nemDriver.age >= 40) {
-      G.nemesis.retired = true;
-      G._seasonSteps = G._seasonSteps || [];
-      G._seasonSteps.push('nemesis_retired');
-    }
-    // Occasional retired comment (15% chance per season after retirement)
-    if (G.nemesis.retired && Math.random() < 0.15 && !G.storyFlags['interview_nemesis_retired_comment']) {
-      G._seasonSteps = G._seasonSteps || [];
-      G._seasonSteps.push('event:nemesis_retired_comment');
-    }
-    
-    // Add summary log
-    const statusStr = G.nemesis.retired ? 'Retirado' : (G.nemesis.cat ? G.nemesis.cat : '');
-    G._seasonEventLogs.push(`⚔️ Rivalidad Histórica vs ${G.nemesis.name} (${statusStr}): ${G.nemesis.h2hWins || 0} - ${G.nemesis.h2hLosses || 0}`);
-  }
+
 
   // Sponsor evaluation (junior categories only)
   // [DESACTIVADO A PEDIDO DEL JUGADOR]
@@ -3301,8 +3443,7 @@ function simulateShadowF1Season() {
   const scored = f1Drivers.map(d => {
     const team = (TEAMS['F1'] || []).find(t => t.name === d.team);
     const stars = team ? team.stars : 3;
-    const carRating = getF1CarRating(stars);
-    const power = (d.skill * 0.25) + (carRating * 0.75) + rand(-10, 10);
+    const power = getF1DriverPower(d.skill, stars) + rand(-10, 10);
     return { name: d.name, team: d.team, power };
   });
   scored.sort((a, b) => b.power - a.power);
@@ -3332,8 +3473,26 @@ function calcChampPosition(rating) {
 function resetEventChrome() {
   const label = document.querySelector('#screen-event .label');
   const card = document.querySelector('#screen-event .card');
+  const ch = document.getElementById('ev-choices');
+
   if (label) label.textContent = 'Evento especial';
-  if (card) { card.style.borderColor = ''; card.style.boxShadow = ''; }
+  
+  if (card) { 
+    card.style.borderColor = ''; 
+    card.style.boxShadow = ''; 
+    card.style.animation = 'none';
+    card.classList.remove('anim-card-enter', 'anim-card-exit');
+    void card.offsetWidth;
+    card.style.animation = '';
+  }
+  
+  if (ch) {
+    ch.style.animation = 'none';
+    ch.classList.remove('anim-card-enter', 'anim-card-exit');
+    void ch.offsetWidth;
+    ch.style.animation = '';
+  }
+
   const titleEl = document.getElementById('ev-title');
   if (titleEl) titleEl.style.color = '';
   const radio = document.getElementById('ev-radio-block');
@@ -3347,15 +3506,13 @@ function resetEventChrome() {
 //  SPONSOR EVENT
 // ═══════════════════════════════════════════════════════════
 function showSponsorEvent() {
-  resetEventChrome();
-
   const cat = CATEGORIES[G.catIndex];
   const BASE = SEAT_COSTS[G.catIndex] ? SEAT_COSTS[G.catIndex][0] : 1200000;
 
   // Pool of sponsor options per type
   const SPONSORS = {
     A: [
-      { brand: 'Santander', logo: 'assets/images/marcas/marca santander.png', emoji: '🏦', mult: 1.00 },
+      { brand: 'Santander', logo: 'assets/images/marcas/marca santander.png', emoji: '🤝', mult: 1.00 },
       { brand: 'Telmex',    logo: 'assets/images/marcas/marca telmex.png',    emoji: '📞', mult: 1.00 },
       { brand: 'Rolex',     logo: 'assets/images/marcas/marca rolex.png',     emoji: '⌚', mult: 1.00 },
       { brand: 'Emirates',  logo: 'assets/images/marcas/marca emirates.png',  emoji: '✈️', mult: 1.00 },
@@ -3386,130 +3543,113 @@ function showSponsorEvent() {
   const bonusC  = Math.round(BASE * pickC.multBonus);
 
   const options = [
-    { brand: pickA.brand, logo: pickA.logo, emoji: pickA.emoji, type: 'A', objective: 'none',     fixedPaid: fixedA, bonusAmount: 0,      label: 'Sin objetivo', detail: `Cobras ${fmt$(fixedA)} al inicio. Sin bono de rendimiento.`, badge: '🟡 Seguro' },
-    { brand: pickB.brand, logo: pickB.logo, emoji: pickB.emoji, type: 'B', objective: 'top5',     fixedPaid: fixedB, bonusAmount: bonusB, label: 'Top 5', detail: `${fmt$(fixedB)} ahora + ${fmt$(bonusB)} si terminás en el Top 5 del campeonato.`, badge: '🔵 Moderado' },
-    { brand: pickC.brand, logo: pickC.logo, emoji: pickC.emoji, type: 'C', objective: 'champion', fixedPaid: fixedC, bonusAmount: bonusC, label: 'Campeón', detail: `${fmt$(fixedC)} ahora + ${fmt$(bonusC)} si salís CAMPEÓN.`, badge: '🔴 Todo o Nada' },
+    { brand: pickA.brand, logo: pickA.logo, emoji: pickA.emoji, type: 'A', objective: 'none',     fixedPaid: fixedA, bonusAmount: 0,      label: 'Sin objetivo', detail: `Cobras ${fmt$(fixedA)} al inicio. Sin bono de rendimiento.`, badge: '✅ Seguro' },
+    { brand: pickB.brand, logo: pickB.logo, emoji: pickB.emoji, type: 'B', objective: 'top5',     fixedPaid: fixedB, bonusAmount: bonusB, label: 'Top 5', detail: `${fmt$(fixedB)} ahora + ${fmt$(bonusB)} si terminás en el Top 5 del campeonato.`, badge: '📈 Moderado' },
+    { brand: pickC.brand, logo: pickC.logo, emoji: pickC.emoji, type: 'C', objective: 'champion', fixedPaid: fixedC, bonusAmount: bonusC, label: 'Campeón', detail: `${fmt$(fixedC)} ahora + ${fmt$(bonusC)} si salís CAMPEÓN.`, badge: '🔥 Todo o Nada' },
   ];
 
-  const label = document.querySelector('#screen-event .label');
-  if (label) label.textContent = '💰 Patrocinadores';
-  document.getElementById('ev-icon').textContent = '💰';
-  document.getElementById('ev-title').textContent = 'Elegí tu patrocinador para la categoría';
-  document.getElementById('ev-desc').textContent = `Antes de arrancar la temporada de ${cat}, tres marcas te hacen una oferta. Solo podés elegir una.`;
-
-  const ch = document.getElementById('ev-choices');
-  ch.innerHTML = '';
-
-  options.forEach(opt => {
-    const btn = document.createElement('div');
-    btn.className = 'minigame-choice';
-    const logoEl = `<img src="${opt.logo}" alt="${opt.brand}" style="height:28px;max-width:80px;object-fit:contain;vertical-align:middle;margin-right:8px" onerror="this.style.display='none'">`;
-    btn.innerHTML = `
-      <h3 style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
-        ${logoEl}<span>${opt.brand}</span>
-        <span style="margin-left:auto;font-size:11px;opacity:0.7">${opt.badge}</span>
-      </h3>
-      <p style="margin-bottom:4px;color:var(--muted);font-size:13px">${opt.detail}</p>
-    `;
-    btn.onclick = () => {
-      G.sponsor = {
-        brand: opt.brand,
-        logo: opt.logo,
-        type: opt.type,
-        fixedPaid: opt.fixedPaid,
-        bonusAmount: opt.bonusAmount,
-        objective: opt.objective,
-        category: G.catIndex,
-      };
-      G.money += opt.fixedPaid;
-      G.totalMoney += opt.fixedPaid;
-      ch.innerHTML = `
-        <div class="card" style="text-align:center;padding:24px">
-          <div style="font-size:36px;margin-bottom:12px">✅</div>
-          <div class="heading" style="font-size:18px;margin-bottom:8px">¡Contrato firmado con ${opt.brand}!</div>
-          <div class="sub" style="margin-bottom:16px">${fmt$(opt.fixedPaid)} depositados en tu cuenta.${opt.objective !== 'none' ? ` Objetivo: <strong>${opt.label}</strong> para cobrar el bono de ${fmt$(opt.bonusAmount)}.` : ' Sin objetivo de rendimiento.'}</div>
-          <button class="btn btn-primary" onclick="processSeasonStep()">Continuar</button>
-        </div>
-      `;
-    };
-    ch.appendChild(btn);
+  showEventScene({
+    icon: '💸',
+    title: 'Elegí tu patrocinador para la categoría',
+    subtitle: 'Patrocinadores',
+    desc: `Antes de arrancar la temporada de ${cat}, tres marcas te hacen una oferta. Solo podés elegir una.`,
+    borderColor: UI_COLORS.success,
+    choices: options.map(opt => ({
+      text: `<img src="${opt.logo}" alt="${opt.brand}" style="height:28px;max-width:80px;object-fit:contain;vertical-align:middle;margin-right:8px" onerror="this.style.display='none'"><span>${opt.brand}</span>`,
+      subtitle: `${opt.detail} <span style="font-size:11px;opacity:0.7;display:block;margin-top:2px;">${opt.badge}</span>`,
+      onClick: () => {
+        G.sponsor = {
+          brand: opt.brand,
+          logo: opt.logo,
+          type: opt.type,
+          fixedPaid: opt.fixedPaid,
+          bonusAmount: opt.bonusAmount,
+          objective: opt.objective,
+          category: G.catIndex,
+        };
+        G.money += opt.fixedPaid;
+        G.totalMoney += opt.fixedPaid;
+        showEventScene({
+          icon: '✅',
+          title: `¡Contrato firmado con ${opt.brand}!`,
+          desc: `${fmt$(opt.fixedPaid)} depositados en tu cuenta.${opt.objective !== 'none' ? ` Objetivo: <strong>${opt.label}</strong> para cobrar el bono de ${fmt$(opt.bonusAmount)}.` : ' Sin objetivo de rendimiento.'}`,
+          borderColor: UI_COLORS.success,
+          choices: [{ text: 'Continuar' }]
+        });
+      }
+    }))
   });
-
-  goto('screen-event');
 }
 
 // ═══════════════════════════════════════════════════════════
 //  EMERGENCY LOAN SCREEN
 // ═══════════════════════════════════════════════════════════
 function showEmergencyLoanScreen(catIdx, r, cheapestSeat) {
-  resetEventChrome();
   const LOAN = 500000;
-  const label = document.querySelector('#screen-event .label');
-  if (label) label.textContent = '💸 Emergencia Financiera';
-  document.getElementById('ev-icon').textContent = '🆘';
-  document.getElementById('ev-title').textContent = 'Sin fondos';
-  document.getElementById('ev-desc').innerHTML = `No tenés dinero suficiente para comprar un asiento en ${CATEGORIES[catIdx]}.<br><br>Tu familia y managers pueden conseguirte un <strong>préstamo de emergencia de ${fmt$(LOAN)}</strong>, pero tendrás que devolverlo al final de la próxima temporada.<br><br><em>Solo podés usarlo una vez en toda tu carrera.</em>`;
-
-  const ch = document.getElementById('ev-choices');
-  ch.innerHTML = '';
-
-  const bLoan = document.createElement('div');
-  bLoan.className = 'minigame-choice';
-  bLoan.innerHTML = `<h3>🆘 Aceptar el préstamo</h3><p style="margin-bottom:6px">Recibís ${fmt$(LOAN)} ahora. Al final de la temporada, se descuentan automáticamente de tus ganancias.</p>`;
-  bLoan.onclick = () => {
-    G.loanUsed = true;
-    G.loanDebt = LOAN;
-    G.money += LOAN;
-    G.totalMoney += LOAN;
-    // Resume normal flow
-    goToContracts(catIdx);
-  };
-  ch.appendChild(bLoan);
-
-  const bRetire = document.createElement('div');
-  bRetire.className = 'minigame-choice';
-  bRetire.style.borderColor = '#ef4444';
-  bRetire.innerHTML = `<h3 style="color:#ef4444">🏁 Retirarse</h3><p style="margin-bottom:6px">Tu carrera como piloto termina aquí. Sin dinero, sin asiento.</p>`;
-  bRetire.onclick = () => showRetirement('💸 Sin fondos para continuar tu carrera, te retiraste.');
-  ch.appendChild(bRetire);
-
-  goto('screen-event');
+  
+  showEventScene({
+    icon: '💸',
+    title: 'Sin fondos',
+    subtitle: 'Emergencia Financiera',
+    desc: `No tenés dinero suficiente para comprar un asiento en ${CATEGORIES[catIdx]}.<br><br>Tu familia y managers pueden conseguirte un <strong>préstamo de emergencia de ${fmt$(LOAN)}</strong>, pero tendrás que devolverlo al final de la próxima temporada.<br><br><em>Solo podés usarlo una vez en toda tu carrera.</em>`,
+    borderColor: UI_COLORS.danger,
+    choices: [
+      {
+        text: '💸 Aceptar el préstamo',
+        subtitle: `Recibís ${fmt$(LOAN)} ahora. Al final de la temporada, se descuentan automáticamente de tus ganancias.`,
+        onClick: () => {
+          G.loanUsed = true;
+          G.loanDebt = LOAN;
+          G.money += LOAN;
+          G.totalMoney += LOAN;
+          // Resume normal flow
+          goToContracts(catIdx);
+        }
+      },
+      {
+        text: '🏁 Retirarse',
+        subtitle: 'Tu carrera como piloto termina aquí. Sin dinero, sin asiento.',
+        style: { borderColor: UI_COLORS.danger, color: UI_COLORS.danger },
+        onClick: () => showRetirement('💸 Sin fondos para continuar tu carrera, te retiraste.')
+      }
+    ]
+  });
 }
 
 function showNemesisBornEvent(driverId) {
   const driver = G.aiRoster && G.aiRoster.find(d => d.id === driverId);
   const rawName = G.nemesis ? G.nemesis.name : (driver ? driver.name : 'Tu Rival');
-  const name = `<span style="color:#ef4444;font-weight:bold">${rawName}</span>`;
+  const name = `<span style="color:${UI_COLORS.danger};font-weight:bold">${rawName}</span>`;
   const msgFn = NEMESIS_ORIGIN_MESSAGES[Math.floor(Math.random() * NEMESIS_ORIGIN_MESSAGES.length)];
-  resetEventChrome();
-  document.getElementById('ev-icon').textContent = '⚔️';
-  document.getElementById('ev-title').textContent = 'Nace una Rivalidad';
-  document.getElementById('ev-desc').innerHTML = msgFn(name);
-  const ch = document.getElementById('ev-choices');
-  ch.innerHTML = '';
-  const btn = document.createElement('div');
-  btn.className = 'minigame-choice';
-  btn.innerHTML = `<h3>"Nos vemos en la pista"</h3><div style="font-size:12px;color:var(--muted);margin-top:4px">Se ha generado un Némesis, nace una rivalidad.</div>`;
-  btn.onclick = processSeasonStep;
-  ch.appendChild(btn);
-  goto('screen-event');
+  
+  showEventScene({
+    icon: '🔥',
+    title: 'Nace una Rivalidad',
+    desc: msgFn(name),
+    borderColor: UI_COLORS.danger,
+    choices: [{
+      text: '"Nos vemos en la pista"',
+      subtitle: 'Se ha generado un Némesis, nace una rivalidad.',
+      onClick: () => processSeasonStep()
+    }]
+  });
 }
 
 function showNemesisRetiredEvent() {
   const rawName = G.nemesis ? G.nemesis.name : 'Tu Némesis';
-  const name = `<span style="color:#ef4444;font-weight:bold">${rawName}</span>`;
-  resetEventChrome();
-  document.getElementById('ev-icon').textContent = '🏁';
-  document.getElementById('ev-title').innerHTML = `${name} se Retira`;
-  document.getElementById('ev-desc').innerHTML = `${name} anunció su retiro del automovilismo. Su carrera termina acá. La guerra entre ustedes quedará en los libros de historia.`;
-  const ch = document.getElementById('ev-choices');
-  ch.innerHTML = '';
-  const btn = document.createElement('div');
-  btn.className = 'minigame-choice';
-  btn.innerHTML = `<h3>Fin de una era</h3><p style="margin-bottom:6px">Balance final: ${G.nemesis.h2hWins || 0} temporadas por delante, ${G.nemesis.h2hLosses || 0} temporadas por detrás. Aunque ya no compita, puede que sus comentarios rn los medios no terminen acá.</p>`;
-  btn.onclick = () => processSeasonStep();
-  ch.appendChild(btn);
-  goto('screen-event');
+  const name = `<span style="color:${UI_COLORS.danger};font-weight:bold">${rawName}</span>`;
+  
+  showEventScene({
+    icon: '👋',
+    title: `${name} se Retira`,
+    desc: `${name} anunció su retiro del automovilismo. Su carrera termina acá. La guerra entre ustedes quedará en los libros de historia.`,
+    borderColor: UI_COLORS.danger,
+    choices: [{
+      text: 'Fin de una era',
+      subtitle: `Balance final: ${G.nemesis.h2hWins || 0} temporadas por delante, ${G.nemesis.h2hLosses || 0} temporadas por detrás. Aunque ya no compita, puede que sus comentarios en los medios no terminen acá.`,
+      onClick: () => processSeasonStep()
+    }]
+  });
 }
 
 function showNemesisSeatStealEvent() {
@@ -3518,217 +3658,207 @@ function showNemesisSeatStealEvent() {
   if (!nemDriver) { processSeasonStep(); return; }
 
   const rawName = G.nemesis.name;
-  const name = `<span style="color:#ef4444;font-weight:bold">${rawName}</span>`;
+  const name = `<span style="color:${UI_COLORS.danger};font-weight:bold">${rawName}</span>`;
   const nemTeam = TEAMS['F1'] && TEAMS['F1'].find(t => t.name === nemDriver.team);
 
   G.storyFlags['nemesis_seat_steal_offered'] = true;
 
-  resetEventChrome();
-  document.getElementById('ev-icon').textContent = '🪑';
-  document.getElementById('ev-title').innerHTML = `La Butaca de ${rawName}`;
-  document.getElementById('ev-desc').innerHTML = `Tu mánager te llama con una novedad enorme: en <strong style="color:var(--accent)">${nemDriver.team}</strong> están evaluando opciones para la próxima temporada. ${name} terminó por detrás tuyo pese a tener mejor auto, y desde adentro del equipo preguntaron si estarías dispuesto a tomar su butaca. Es una estructura de ${'⭐'.repeat(nemTeam ? nemTeam.stars : 3)} que terminó muy decepcionada con los resultados de tu rival.`;
-
-  const ch = document.getElementById('ev-choices');
-  ch.innerHTML = '';
-
-  const b1 = document.createElement('div');
-  b1.className = 'minigame-choice';
-  b1.innerHTML = `<h3>📞 "Sí, que me llamen"</h3><p style="margin-bottom:6px">Dejás que el equipo de ${rawName} te contacte. Aparecerá como opción en el mercado de contratos.</p>`;
-  b1.onclick = () => {
-    // Flag so showContracts knows to highlight this team
-    G._nemesisSeatTarget = nemDriver.team;
-    G._seasonEventLogs = G._seasonEventLogs || [];
-    G._seasonEventLogs.push(`🪑 Te ofreciste para el asiento de ${rawName} en ${nemDriver.team}.`);
-    ch.innerHTML = `
-      <div class="card" style="padding:24px;text-align:center">
-        <div style="font-size:36px;margin-bottom:8px">📲</div>
-        <div class="heading" style="margin-bottom:8px">Mensaje enviado</div>
-        <div class="sub" style="margin-bottom:16px">Tu mánager habló con el director del equipo. El asiento de ${rawName} aparecerá disponible en el mercado de contratos.</div>
-        <button class="btn btn-primary" style="width:100%" onclick="processSeasonStep()">Continuar</button>
-      </div>
-    `;
-  };
-  ch.appendChild(b1);
-
-  const b2 = document.createElement('div');
-  b2.className = 'minigame-choice';
-  b2.innerHTML = `<h3>🚫 "No me interesa"</h3><p style="margin-bottom:6px">Preferís buscar otro equipo. No se sabe nada, el mercado sigue igual.</p>`;
-  b2.onclick = () => {
-    processSeasonStep();
-  };
-  ch.appendChild(b2);
-
-  goto('screen-event');
+  showEventScene({
+    icon: '📞',
+    title: `La Butaca de ${rawName}`,
+    desc: `Tu mánager te llama con una novedad enorme: en <strong style="color:var(--accent)">${nemDriver.team}</strong> están evaluando opciones para la próxima temporada. ${name} terminó por detrás tuyo pese a tener mejor auto, y desde adentro del equipo preguntaron si estarías dispuesto a tomar su butaca. Es una estructura de ${'⭐'.repeat(nemTeam ? nemTeam.stars : 3)} que terminó muy decepcionada con los resultados de tu rival.`,
+    borderColor: UI_COLORS.accent,
+    choices: [
+      {
+        text: '📱 "Sí, que me llamen"',
+        subtitle: `Dejás que el equipo de ${rawName} te contacte. Aparecerá como opción en el mercado de contratos.`,
+        onClick: () => {
+          G._nemesisSeatTarget = nemDriver.team;
+          G._seasonEventLogs = G._seasonEventLogs || [];
+          G._seasonEventLogs.push(`📱 Te ofreciste para el asiento de ${rawName} en ${nemDriver.team}.`);
+          showEventScene({
+            icon: '✅',
+            title: 'Mensaje enviado',
+            desc: `Tu mánager habló con el director del equipo. El asiento de ${rawName} aparecerá disponible en el mercado de contratos.`,
+            borderColor: UI_COLORS.success,
+            choices: [{ text: 'Continuar' }]
+          });
+        }
+      },
+      {
+        text: '🙅 "No me interesa"',
+        subtitle: 'Preferís buscar otro equipo. No se sabe nada, el mercado sigue igual.',
+        onClick: () => processSeasonStep()
+      }
+    ]
+  });
 }
 
 function showNemesisUltimatumWarnEvent() {
   if (!G.nemesis) { processSeasonStep(); return; }
   const rawName = G.nemesis.name;
-  const name = `<span style="color:#ef4444;font-weight:bold">${rawName}</span>`;
   const teamName = G.team ? G.team.name : 'tu equipo';
 
   G.storyFlags['nemesis_ultimatum_used'] = true;
 
-  resetEventChrome();
-  document.getElementById('ev-icon').textContent = '⚠️';
-  document.getElementById('ev-title').textContent = 'Clima Insostenible';
-  document.getElementById('ev-desc').innerHTML = `El director de ${teamName} los llama a los dos juntos al motorhome. "Llevan demasiado tiempo dentro del mismo equipo sin que ninguno tome ventaja decisiva. Esto no puede seguir así." Mirándolos a ambos, fue claro: <strong>"El que quede por debajo el año que viene tendrá que marcharse. Solo hay lugar para uno."</strong>`;
-
-  const ch = document.getElementById('ev-choices');
-  ch.innerHTML = '';
-  const btn = document.createElement('div');
-  btn.className = 'minigame-choice';
-  btn.style.borderColor = '#ef4444';
-  btn.innerHTML = `<h3 style="color:#ef4444">⚔️ "Entendido"</h3><p style="margin-bottom:6px">El año que viene uno de los dos se va. El reloj ya arrancó.</p>`;
-  btn.onclick = () => processSeasonStep();
-  ch.appendChild(btn);
-
-  goto('screen-event');
+  showEventScene({
+    icon: '⚡',
+    title: 'Clima Insostenible',
+    desc: `El director de ${teamName} los llama a los dos juntos al motorhome. "Llevan demasiado tiempo dentro del mismo equipo sin que ninguno tome ventaja decisiva. Esto no puede seguir así." Mirándolos a ambos, fue claro: <strong>"El que quede por debajo el año que viene tendrá que marcharse. Solo hay lugar para uno."</strong>`,
+    borderColor: UI_COLORS.danger,
+    choices: [{
+      text: '⚡ "Entendido"',
+      subtitle: 'El año que viene uno de los dos se va. El reloj ya arrancó.',
+      style: { borderColor: UI_COLORS.danger, color: UI_COLORS.danger },
+      onClick: () => processSeasonStep()
+    }]
+  });
 }
 
 function showNemesisUltimatumResolveEvent(playerWon) {
   if (!G.nemesis) { processSeasonStep(); return; }
   const rawName = G.nemesis.name;
-  const name = `<span style="color:#ef4444;font-weight:bold">${rawName}</span>`;
+  const name = `<span style="color:${UI_COLORS.danger};font-weight:bold">${rawName}</span>`;
   const teamName = G.team ? G.team.name : 'el equipo';
 
-  resetEventChrome();
-
   if (playerWon) {
-    document.getElementById('ev-icon').textContent = '🏆';
-    document.getElementById('ev-title').innerHTML = `${rawName} Echado del Equipo`;
-    document.getElementById('ev-desc').innerHTML = `Lo que el equipo prometió, el equipo cumplió. ${name} fue convocado a la oficina del director y salió de ahí con el contrato terminado. La prensa tardó minutos en saberlo: <em>"${rawName} fuera de ${teamName} por bajo rendimiento."</em> Vos seguís. Él busca asiento.`;
-    // Nemesis gets reassigned to a worse team
     const nemDriver = G.aiRoster && G.aiRoster.find(d => d.id === G.nemesis.id);
-    if (nemDriver) {
-      const worseTeams = TEAMS['F1'].filter(t => t.stars < (G.team ? G.team.stars : 3));
+    if (nemDriver && G.team) {
+      const worseTeams = TEAMS['F1'].filter(t => t.stars < G.team.stars);
+      let targetTeamName = 'Sin equipo';
       if (worseTeams.length > 0) {
-        nemDriver.team = worseTeams[Math.floor(Math.random() * worseTeams.length)].name;
+        targetTeamName = worseTeams[Math.floor(Math.random() * worseTeams.length)].name;
       }
+      
+      nemDriver.team = targetTeamName;
+      
+      // To avoid teams having 1 or 3 drivers, we swap the Nemesis with an AI driver from the target team.
+      if (targetTeamName !== 'Sin equipo') {
+        const driversInTarget = G.aiRoster.filter(d => d.cat === 'F1' && d.team === targetTeamName && d.id !== nemDriver.id);
+        if (driversInTarget.length > 0) {
+          // Sort to take the best driver from the target team to the player's team (since it's a promotion for them)
+          driversInTarget.sort((a, b) => b.skill - a.skill);
+          const promotedDriver = driversInTarget[0];
+          promotedDriver.team = G.team.name;
+        }
+      } else {
+        // If Nemesis goes to 'Sin equipo', we just create a rookie to fill the player's empty seat
+        G.aiRoster.push({
+          id: 'ai_' + Math.floor(Math.random() * 1000000),
+          name: 'Joven Promesa',
+          team: G.team.name,
+          age: 21,
+          flag: '🏳️',
+          cat: 'F1',
+          skill: 75,
+          contractYearsLeft: 1,
+          consecutiveLosses: 0,
+          avatar: '👨🏻'
+        });
+      }
+    }
+    // Detach nemesis as peer so the team doesn't show 3 drivers
+    if (G.peer && G.peer.id === G.nemesis.id) {
+      G.peer = null;
     }
     G.reputation += 30;
     G._seasonEventLogs = G._seasonEventLogs || [];
     G._seasonEventLogs.push(`🏆 Forzaste la salida de ${rawName} del equipo. +30 Reputación.`);
+    // Schedule a new teammate to be assigned in preseason
+    G._pendingRefreshTeammate = true;
+    
+    showEventScene({
+      icon: '🏆',
+      title: `${rawName} Echado del Equipo`,
+      desc: `Lo que el equipo prometió, el equipo cumplió. ${name} fue convocado a la oficina del director y salió de ahí con el contrato terminado. La prensa tardó minutos en saberlo: <em>"${rawName} fuera de ${teamName} por bajo rendimiento."</em> Vos seguís. Él busca asiento.`,
+      borderColor: UI_COLORS.success,
+      choices: [{
+        text: '✌️ "El mejor ganó"',
+        subtitle: `Terminaste por delante en el campeonato y demostraste quien es el mejor para comandar el proyecto.`,
+        style: { borderColor: UI_COLORS.success, color: UI_COLORS.success },
+        onClick: () => processSeasonStep()
+      }]
+    });
   } else {
-    document.getElementById('ev-icon').textContent = '📦';
-    document.getElementById('ev-title').textContent = 'El Equipo Tomó su Decisión';
-    document.getElementById('ev-desc').innerHTML = `Fue rápido y sin anestesia. El director te llamó, cerró la puerta y fue directo: "Este año ${name} estuvo por encima. Tenemos que ir en una dirección y no podés ser vos." Tu contrato en ${teamName} terminó ahí. Ahora el mercado está abierto.`;
-    // Force player back to market: expire contract
     G.f1ContractYearsLeft = 0;
     G.reputation = Math.max(0, G.reputation - 20);
     G._seasonEventLogs = G._seasonEventLogs || [];
-    G._seasonEventLogs.push(`📦 ${rawName} ganó el pulso. Fuiste echado de ${teamName}. -20 Reputación.`);
+    G._seasonEventLogs.push(`❌ ${rawName} ganó el pulso. Fuiste echado de ${teamName}. -20 Reputación.`);
+    
+    showEventScene({
+      icon: '❌',
+      title: 'El Equipo Tomó su Decisión',
+      desc: `Fue rápido y sin anestesia. El director te llamó, cerró la puerta y fue directo: "Este año ${name} estuvo por encima. Tenemos que ir en una dirección y no podés ser vos." Tu contrato en ${teamName} terminó ahí. Ahora el mercado está abierto.`,
+      borderColor: UI_COLORS.danger,
+      choices: [{
+        text: '🔥 "Esto no terminó"',
+        subtitle: `Balance H2H: ${G.nemesis.h2hWins || 0} a ${G.nemesis.h2hLosses || 0}. La deuda queda pendiente.`,
+        style: { borderColor: UI_COLORS.danger, color: UI_COLORS.danger },
+        onClick: () => processSeasonStep()
+      }]
+    });
   }
-
-  const ch = document.getElementById('ev-choices');
-  ch.innerHTML = '';
-  const btn = document.createElement('div');
-  btn.className = 'minigame-choice';
-  btn.style.borderColor = playerWon ? '#4ade80' : '#ef4444';
-  btn.innerHTML = playerWon
-    ? `<h3 style="color:#4ade80">💪 "El mejor ganó"</h3><p style="margin-bottom:6px">Balance H2H: ${G.nemesis.h2hWins || 0} a ${G.nemesis.h2hLosses || 0} a tu favor.</p>`
-    : `<h3 style="color:#ef4444">😤 "Esto no terminó"</h3><p style="margin-bottom:6px">Balance H2H: ${G.nemesis.h2hWins || 0} a ${G.nemesis.h2hLosses || 0}. La deuda queda pendiente.</p>`;
-  btn.onclick = () => processSeasonStep();
-  ch.appendChild(btn);
-
-  goto('screen-event');
 }
 
 
 function showShadowOfferEvent() {
-  resetEventChrome();
-
-  const icon = document.getElementById('ev-icon');
-  const title = document.getElementById('ev-title');
-  const desc = document.getElementById('ev-desc');
-  const ch = document.getElementById('ev-choices');
-  const label = document.querySelector('#screen-event .label');
-  const card = document.querySelector('#screen-event .card');
-
-  const existingRadio = document.getElementById('ev-radio-block');
-  if (existingRadio) existingRadio.remove();
-
   const rivalTeams = TEAMS['F1'].filter(t => t.name !== G.team.name);
   const offerTeam = randFrom(rivalTeams.length ? rivalTeams : TEAMS['F1']);
 
-  if (label) label.textContent = '🕵️ Oferta Secreta';
-  if (card) { card.style.borderColor = 'var(--accent)'; card.style.boxShadow = '0 0 24px rgba(232,200,74,.2)'; }
-  icon.textContent = '🕵️';
-  title.textContent = 'Una Oferta en las Sombras';
-  title.style.color = 'var(--accent)';
-  desc.innerHTML = `El director de <strong>${offerTeam.name}</strong> te aborda en secreto en el paddock:<br><br>` +
-    `<span style="font-style:italic">"El año que viene cambia el reglamento. Tenemos el diseño muy avanzado y te aseguro que nuestro auto volará. ` +
-    `Firmá ahora este pre-contrato. Si tu equipo actual se entera, te van a echar, pero es tu chance de dominar la nueva era."</span>`;
-
-  ch.innerHTML = '';
-
-  const bReject = document.createElement('div');
-  bReject.className = 'minigame-choice';
-  bReject.innerHTML = `<h3>🤝 Rechazar y ser leal</h3><p style="margin-bottom:6px">Te quedás en ${G.team.name} y confiás en su desarrollo legal. (+40 Equipo)</p>`;
-  bReject.onclick = () => {
-    G.personality.team = clamp(G.personality.team + 40, -100, 100);
-    const logText = `🤝 Rechazaste la oferta secreta de ${offerTeam.name} y le fuiste leal a ${G.team.name}.`;
-    G._seasonEventLogs.push(logText);
-    ch.innerHTML = `
-      <div class="card" style="text-align:center; padding: 24px">
-        <div style="font-size:36px;margin-bottom:12px">🤝</div>
-        <div class="heading" style="font-size:18px;margin-bottom:8px">Lealtad ante todo</div>
-        <div class="sub" style="margin-bottom:16px">${logText}</div>
-        <button class="btn btn-primary" onclick="processSeasonStep()">Continuar</button>
-      </div>
-    `;
-  };
-  ch.appendChild(bReject);
-
-  const bAccept = document.createElement('div');
-  bAccept.className = 'minigame-choice';
-  bAccept.style.borderColor = 'var(--accent)';
-  bAccept.style.boxShadow = '0 0 16px rgba(232,200,74,.25)';
-  bAccept.innerHTML = `<h3 style="color:var(--accent)">🕵️ Firmar el pre-contrato (Traición)</h3><p style="margin-bottom:6px">Firmás en secreto con ${offerTeam.name}. No hay vuelta atrás. (+20 Agresividad)</p>`;
-  bAccept.onclick = () => {
-    G.personality.aggressiveness = clamp(G.personality.aggressiveness + 20, -100, 100);
-    G._shadowBetrayalActive = true;
-    G._shadowSecretTeam = offerTeam.name;
-    G._shadowOldTeam = G.team.name;
-    if (!G.blacklistedTeams) G.blacklistedTeams = [];
-    if (!G.blacklistedTeams.includes(G.team.name)) G.blacklistedTeams.push(G.team.name);
-    G.f1ContractYearsLeft = 0; // contract manipulated to expire at the end of this season
-    const logText = `🕵️ Firmaste en secreto un pre-contrato con ${offerTeam.name}. Tu contrato con ${G.team.name} quedó reducido a esta temporada.`;
-    G._seasonEventLogs.push(logText);
-    ch.innerHTML = `
-      <div class="card" style="text-align:center; padding: 24px; border-color:var(--accent)">
-        <div style="font-size:36px;margin-bottom:12px">🕵️</div>
-        <div class="heading" style="font-size:18px;margin-bottom:8px;color:var(--accent)">El trato está hecho</div>
-        <div class="sub" style="margin-bottom:16px">${logText}</div>
-        <button class="btn btn-primary" onclick="processSeasonStep()">Continuar</button>
-      </div>
-    `;
-  };
-  ch.appendChild(bAccept);
-
-  goto('screen-event');
+  showEventScene({
+    icon: '🕵️',
+    title: 'Una Oferta en las Sombras',
+    subtitle: 'Oferta Secreta',
+    desc: `El director de <strong>${offerTeam.name}</strong> te aborda en secreto en el paddock:<br><br><span style="font-style:italic">"El año que viene cambia el reglamento. Tenemos el diseño muy avanzado y te aseguro que nuestro auto volará. Firmá ahora este pre-contrato. Si tu equipo actual se entera, te van a echar, pero es tu chance de dominar la nueva era."</span>`,
+    borderColor: UI_COLORS.accent,
+    bgGradient: 'rgba(235, 180, 50, 0.15)',
+    choices: [
+      {
+        text: '🛡️ Rechazar y ser leal',
+        subtitle: `Te quedás en ${G.team.name} y confiás en su desarrollo legal. (+40 Equipo)`,
+        onClick: () => {
+          G.personality.team = clamp(G.personality.team + 40, -100, 100);
+          const logText = `🛡️ Rechazaste la oferta secreta de ${offerTeam.name} y le fuiste leal a ${G.team.name}.`;
+          G._seasonEventLogs.push(logText);
+          showEventScene({
+            icon: '🛡️',
+            title: 'Lealtad ante todo',
+            desc: logText,
+            borderColor: UI_COLORS.blue,
+            choices: [{ text: 'Continuar' }]
+          });
+        }
+      },
+      {
+        text: '🕵️ Firmar el pre-contrato (Traición)',
+        subtitle: `Firmás en secreto con ${offerTeam.name}. No hay vuelta atrás. (+20 Agresividad)`,
+        style: { borderColor: UI_COLORS.accent, color: UI_COLORS.accent, boxShadow: '0 0 16px rgba(232,200,74,.25)' },
+        onClick: () => {
+          G.personality.aggressiveness = clamp(G.personality.aggressiveness + 20, -100, 100);
+          G._shadowBetrayalActive = true;
+          G._shadowSecretTeam = offerTeam.name;
+          G._shadowOldTeam = G.team.name;
+          if (!G.blacklistedTeams) G.blacklistedTeams = [];
+          if (!G.blacklistedTeams.includes(G.team.name)) G.blacklistedTeams.push(G.team.name);
+          G.f1ContractYearsLeft = 0;
+          const logText = `🕵️ Firmaste en secreto un pre-contrato con ${offerTeam.name}. Tu contrato con ${G.team.name} quedó reducido a esta temporada.`;
+          G._seasonEventLogs.push(logText);
+          showEventScene({
+            icon: '🕵️',
+            title: 'El trato está hecho',
+            desc: logText,
+            borderColor: UI_COLORS.accent,
+            choices: [{ text: 'Continuar' }]
+          });
+        }
+      }
+    ]
+  });
 }
 
 function showRegulationEvent() {
-  resetEventChrome();
-  const icon = document.getElementById('ev-icon');
-  const title = document.getElementById('ev-title');
-  const desc = document.getElementById('ev-desc');
-  const ch = document.getElementById('ev-choices');
-
-  const existingRadio = document.getElementById('ev-radio-block');
-  if (existingRadio) existingRadio.remove();
-
-  icon.textContent = '📐';
-  title.textContent = '¡Cambio de Reglamento Técnico!';
-  ch.innerHTML = '';
-
-  // If the player betrayed their team via the shadow pre-contract, they're
-  // excluded from the development-focus decision entirely.
   if (G._shadowBetrayalActive) {
     G._shadowBetrayalActive = false;
-    desc.textContent = `La FIA anunció un nuevo reglamento técnico que entrará en vigor al final de esta temporada. Tu directiva ya sospecha de tu pre-contrato secreto: fuiste excluido de las reuniones técnicas a puertas cerradas.`;
-
     const options = ['current', 'split', 'next'];
     const effect = randFrom(options);
     let decisionLabel;
@@ -3745,78 +3875,60 @@ function showRegulationEvent() {
     const logText = `🚫 Excluido del desarrollo: el equipo decidió, sin consultarte, ${decisionLabel}.`;
     G._seasonEventLogs.push(logText);
 
-    ch.innerHTML = `
-      <div class="card" style="text-align:center; padding: 24px">
-        <div style="font-size:36px;margin-bottom:12px">🔒</div>
-        <div class="heading" style="font-size:18px;margin-bottom:8px">Fuera de las reuniones técnicas</div>
-        <div class="sub" style="margin-bottom:16px">${logText}</div>
-        <button class="btn btn-primary" onclick="processSeasonStep()">Continuar</button>
-      </div>
-    `;
-    goto('screen-event');
+    showEventScene({
+      icon: '🔒',
+      title: 'Fuera de las reuniones técnicas',
+      desc: `La FIA anunció un nuevo reglamento técnico que entrará en vigor al final de esta temporada. Tu directiva ya sospecha de tu pre-contrato secreto: fuiste excluido de las reuniones técnicas a puertas cerradas.<br><br><span style="color:var(--muted)">${logText}</span>`,
+      borderColor: UI_COLORS.danger,
+      choices: [{ text: 'Continuar' }]
+    });
     return;
   }
 
-  desc.textContent = `La FIA anunció un nuevo reglamento técnico que entrará en vigor al final de esta temporada. ¿Cómo enfocás los recursos de tu equipo?`;
-
-  const choices = [
-    {
-      text: '🏁 Apostar por esta temporada',
-      subdesc: 'Beneficio: +8 de rendimiento ahora. Consecuencia: Tu equipo podría quedar peor posicionado.',
-      effect: 'current',
-    },
-    {
-      text: '⚖️ Dividir recursos',
-      subdesc: 'Beneficio: +4 de rendimiento ahora. Mantenés tus opciones sin hipotecar el futuro ni el presente.',
-      effect: 'split',
-    },
-    {
-      text: '🔭 Apostar todo al nuevo reglamento',
-      subdesc: 'Penalidad: -4 de rendimiento ahora. Después tenés una gran posibilidad de un salto en la parrilla.',
-      effect: 'next',
-    },
-  ];
-
-  choices.forEach(c => {
-    const b = document.createElement('div');
-    b.className = 'minigame-choice';
-    b.innerHTML = `
-      <h3>${c.text}</h3>
-      <p style="margin-bottom:6px">${c.subdesc}</p>
-    `;
-    b.onclick = () => {
-      let logText;
-      if (c.effect === 'current') {
-        G.regulationBonus = 8;
-        G.nextSeasonRegPenalty = 0;
-        G.nextSeasonRegBonus = -1;
-        logText = `Decisión: Apostaste todo al campeonato actual.`;
-      } else if (c.effect === 'split') {
-        G.regulationBonus = 4;
-        G.nextSeasonRegPenalty = 0;
-        G.nextSeasonRegBonus = 0;
-        logText = `Decisión: Dividiste los recursos equitativamente.`;
-      } else {
-        G.regulationBonus = -4;
-        G.nextSeasonRegPenalty = 0;
-        G.nextSeasonRegBonus = 1;
-        logText = `Decisión: Apostaste el desarrollo al nuevo reglamento.`;
+  showEventScene({
+    icon: '📜',
+    title: '¡Cambio de Reglamento Técnico!',
+    desc: `La FIA anunció un nuevo reglamento técnico que entrará en vigor al final de esta temporada. ¿Cómo enfocás los recursos de tu equipo?`,
+    borderColor: UI_COLORS.blue,
+    choices: [
+      {
+        text: '🏎️ Apostar por esta temporada',
+        subtitle: 'Beneficio: +8 de rendimiento ahora. Consecuencia: Tu equipo podría quedar peor posicionado.',
+        onClick: () => {
+          G.regulationBonus = 8;
+          G.nextSeasonRegPenalty = 0;
+          G.nextSeasonRegBonus = -1;
+          const logText = `Decisión: Apostaste todo al campeonato actual.`;
+          G._seasonEventLogs.push(logText);
+          showEventScene({ icon: '✍️', title: 'Decisión tomada', desc: logText, choices: [{ text: 'Continuar' }] });
+        }
+      },
+      {
+        text: '⚖️ Dividir recursos',
+        subtitle: 'Beneficio: +4 de rendimiento ahora. Mantenés tus opciones sin hipotecar el futuro ni el presente.',
+        onClick: () => {
+          G.regulationBonus = 4;
+          G.nextSeasonRegPenalty = 0;
+          G.nextSeasonRegBonus = 0;
+          const logText = `Decisión: Dividiste los recursos equitativamente.`;
+          G._seasonEventLogs.push(logText);
+          showEventScene({ icon: '✍️', title: 'Decisión tomada', desc: logText, choices: [{ text: 'Continuar' }] });
+        }
+      },
+      {
+        text: '🔮 Apostar todo al nuevo reglamento',
+        subtitle: 'Penalidad: -4 de rendimiento ahora. Después tenés una gran posibilidad de un salto en la parrilla.',
+        onClick: () => {
+          G.regulationBonus = -4;
+          G.nextSeasonRegPenalty = 0;
+          G.nextSeasonRegBonus = 1;
+          const logText = `Decisión: Apostaste el desarrollo al nuevo reglamento.`;
+          G._seasonEventLogs.push(logText);
+          showEventScene({ icon: '✍️', title: 'Decisión tomada', desc: logText, choices: [{ text: 'Continuar' }] });
+        }
       }
-      G._seasonEventLogs.push(logText);
-
-      ch.innerHTML = `
-        <div class="card" style="text-align:center; padding: 24px">
-          <div style="font-size:36px;margin-bottom:12px">✅</div>
-          <div class="heading" style="font-size:18px;margin-bottom:8px">Decisión tomada</div>
-          <div class="sub" style="margin-bottom:16px">${logText}</div>
-          <button class="btn btn-primary" onclick="processSeasonStep()">Continuar</button>
-        </div>
-      `;
-    };
-    ch.appendChild(b);
+    ]
   });
-
-  goto('screen-event');
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -4233,7 +4345,7 @@ function afterSummary() {
     const sameCatTeams = TEAMS[CATEGORIES[catIdx]] || [];
     const cheapestSeat = Math.min(...sameCatTeams.map(t => {
       const si = clamp((t.stars || 3) - 3, 0, 2);
-      return Math.round((SEAT_COSTS[catIdx] || SEAT_COSTS[4])[si] * acadDisc);
+      return getSeatCost(catIdx, t.stars, G.academy);
     }));
     if (G.money < cheapestSeat) {
       if (!G.loanUsed) {
@@ -4270,8 +4382,7 @@ function afterSummary() {
     const acadDisc = G.academy ? 0.30 : 1.0;
     const nextTeams = TEAMS[CATEGORIES[nextCatIdx]] || [];
     const cheapestNextSeat = Math.min(...nextTeams.map(t => {
-      const si = clamp((t.stars || 3) - 3, 0, 2);
-      return Math.round((SEAT_COSTS[nextCatIdx] || SEAT_COSTS[4])[si] * acadDisc);
+      return getSeatCost(nextCatIdx, t.stars, G.academy);
     }));
     canAffordNext = G.money >= cheapestNextSeat;
   }
@@ -4307,334 +4418,303 @@ function afterSummary() {
 }
 
 function showAcademyF2BlockEvent(pendingSteps = []) {
-  resetEventChrome();
   const academy = ACADEMIES.find(a => a.id === G.academy);
-
-  document.getElementById('ev-icon').innerHTML = `<img src="${academy.icon}" width="40" style="object-fit:contain">`;
-  document.getElementById('ev-title').textContent = `Reunión con ${academy.name}`;
-  document.getElementById('ev-desc').textContent = `Aunque tienes los puntos para subir a F1, los directivos de la academia te piden que hagas un año más en F2 para "terminar de desarrollarte", ya que no tienen asientos disponibles en F1 para ti en este momento.`;
-
-  const ch = document.getElementById('ev-choices');
-  ch.innerHTML = '';
-
-  const b1 = document.createElement('div');
-  b1.className = 'minigame-choice';
-  b1.innerHTML = `<h3>Hacerles caso y seguir en F2</h3><p style="margin-bottom:6px">Mantienes el favor de la academia, repitiendo categoría.</p>`;
-  b1.onclick = () => {
-    G.catIndex = 4; // Stay in F2
-    G.academyF2Repeated = true;
-    G._nextSteps = pendingSteps.filter(s => s.type !== 'category_transition');
-    processNextStep();
-  };
-  ch.appendChild(b1);
-
-  const b2 = document.createElement('div');
-  b2.className = 'minigame-choice';
-  b2.innerHTML = `<h3>Romper el contrato y buscar asiento en F1</h3><p style="margin-bottom:6px">Renuncias a la academia para subir a la F1 por tu cuenta. Te vetarán de sus equipos.</p>`;
-  b2.onclick = () => {
-    G.academyBans = G.academyBans || [];
-    G.academyBans.push(G.academy);
-    G.academy = null;
-    G.academyWarnings = 0;
-    updateTopBar();
-    G._nextSteps = [...pendingSteps];
-    processNextStep();
-  };
-  ch.appendChild(b2);
-
-  goto('screen-event');
+  showEventScene({
+    icon: `<img src="${academy.icon}" width="40" style="object-fit:contain">`,
+    title: `Reunión con ${academy.name}`,
+    desc: `Aunque tienes los puntos para subir a F1, los directivos de la academia te piden que hagas un año más en F2 para "terminar de desarrollarte", ya que no tienen asientos disponibles en F1 para ti en este momento.`,
+    choices: [
+      {
+        text: 'Hacerles caso y seguir en F2',
+        subtitle: 'Mantienes el favor de la academia, repitiendo categoría.',
+        onClick: () => {
+          G.catIndex = 4; // Stay in F2
+          G.academyF2Repeated = true;
+          G._nextSteps = pendingSteps.filter(s => s.type !== 'category_transition');
+          processNextStep();
+        }
+      },
+      {
+        text: 'Romper el contrato y buscar asiento en F1',
+        subtitle: 'Renuncias a la academia para subir a la F1 por tu cuenta. Te vetarán de sus equipos.',
+        style: { borderColor: UI_COLORS.danger, color: UI_COLORS.danger },
+        onClick: () => {
+          G.academyBans = G.academyBans || [];
+          G.academyBans.push(G.academy);
+          G.academy = null;
+          G.academyWarnings = 0;
+          updateTopBar();
+          G._nextSteps = [...pendingSteps];
+          processNextStep();
+        }
+      }
+    ]
+  });
 }
 
 function showAcademyDropEvent(pendingSteps) {
-  resetEventChrome();
   const academy = ACADEMIES.find(a => a.id === G.academy);
-  
-  document.getElementById('ev-icon').innerHTML = `<img src="${academy.icon}" width="40" style="object-fit:contain">`;
-  document.getElementById('ev-title').textContent = `Fin de Ciclo`;
-  document.getElementById('ev-desc').textContent = `Tu contrato con el equipo ha terminado. A pesar de tus esfuerzos los directivos de ${academy.name} sienten que tu techo de desarrollo no cumple con las expectativas para subirte al asiento. Han decidido no renovarte el apoyo, por lo que a partir de ahora eres agente libre. Podrás negociar con cualquier equipo de la parrilla.`;
-
-  const ch = document.getElementById('ev-choices');
-  ch.innerHTML = '';
-
-  const b1 = document.createElement('div');
-  b1.className = 'minigame-choice';
-  b1.innerHTML = `<h3>Explorar el mercado</h3><p style="margin-bottom:6px">Eres libre de fichar por quien quieras sin restricciones.</p>`;
-  b1.onclick = () => {
-    G._seasonEventLogs.push(`Dejaste de pertenecer a la ${academy.name} tras finalizar tu contrato.`);
-    G.academy = null;
-    G.academyPromisedTeam = null;
-    G.achievementsProgress = G.achievementsProgress || {};
-    G.achievementsProgress['dropped_from_academy'] = true;
-    updateTopBar();
-    G.pendingAcademyInterview = 'f1_academy_dropped';
-    G._nextSteps = [...pendingSteps];
-    processNextStep();
-  };
-  ch.appendChild(b1);
-
-  goto('screen-event');
+  showEventScene({
+    icon: `<img src="${academy.icon}" width="40" style="object-fit:contain">`,
+    title: 'Fin de Ciclo',
+    desc: `Tu contrato con el equipo ha terminado. A pesar de tus esfuerzos los directivos de ${academy.name} sienten que tu techo de desarrollo no cumple con las expectativas para subirte al asiento. Han decidido no renovarte el apoyo, por lo que a partir de ahora eres agente libre. Podrás negociar con cualquier equipo de la parrilla.`,
+    borderColor: UI_COLORS.danger,
+    choices: [{
+      text: 'Explorar el mercado',
+      subtitle: 'Eres libre de fichar por quien quieras sin restricciones.',
+      onClick: () => {
+        G._seasonEventLogs.push(`Dejaste de pertenecer a la ${academy.name} tras finalizar tu contrato.`);
+        G.academy = null;
+        G.academyPromisedTeam = null;
+        G.achievementsProgress = G.achievementsProgress || {};
+        G.achievementsProgress['dropped_from_academy'] = true;
+        updateTopBar();
+        G.pendingAcademyInterview = 'f1_academy_dropped';
+        G._nextSteps = [...pendingSteps];
+        processNextStep();
+      }
+    }]
+  });
 }
 
 function showAcademyMainTeamPromotionEvent(pendingSteps, promisedTeamName) {
-  resetEventChrome();
   const academy = ACADEMIES.find(a => a.id === G.academy);
-  
-  document.getElementById('ev-icon').innerHTML = `<img src="${academy.icon}" width="40" style="object-fit:contain">`;
-  document.getElementById('ev-title').textContent = `Llamada de ${academy.name}`;
-  document.getElementById('ev-desc').textContent = `Has dominado a tu compañero durante todo tu contrato en el equipo. Los directivos de ${academy.name} han quedado impresionados con tu rendimiento constante y han decidido que es momento de dar el salto. ¡Te ofrecen un asiento en el equipo!`;
-
-  const ch = document.getElementById('ev-choices');
-  ch.innerHTML = '';
-
-  const b1 = document.createElement('div');
-  b1.className = 'minigame-choice';
-  b1.innerHTML = `<h3>Aceptar el ascenso</h3><p style="margin-bottom:6px">Firma con el equipo principal y gradúate de la academia.</p>`;
-  b1.onclick = () => {
-    const oldTeamName = G.team ? G.team.name : null;
-    const wasInF1 = G.catIndex === 5;
-    
-    const offerTeam = TEAMS['F1'].find(t => t.name === promisedTeamName);
-    G.team = offerTeam;
-    G.f1ContractYearsLeft = 2; // Un contrato de 2 años
-    G.f1ContractH2HWins = 0;
-    G.f1ContractH2HLosses = 0;
-    if (G.catIndex === 5) refreshTeammate();
-    
-    // Displace AI teammate if needed
-    if (G.aiRoster && offerTeam.name) {
-      const newTeamDrivers = G.aiRoster.filter(d => d.cat === 'F1' && d.team === offerTeam.name);
-      if (newTeamDrivers.length > 1) {
-        const displaced = newTeamDrivers.find(d => !G.peer || d.id !== G.peer.id);
-        if (displaced) {
-          if (wasInF1 && oldTeamName && oldTeamName !== offerTeam.name) {
-            displaced.team = oldTeamName;
-            const stars = TEAMS['F1'].find(t => t.name === oldTeamName)?.stars || 3;
-            displaced.contractYearsLeft = Math.floor(Math.random() * (stars >= 4 ? 4 : 2)) + 2;
-          } else {
-            G.aiRoster = G.aiRoster.filter(d => d.id !== displaced.id);
+  showEventScene({
+    icon: `<img src="${academy.icon}" width="40" style="object-fit:contain">`,
+    title: `Llamada de ${academy.name}`,
+    desc: `Has dominado a tu compañero durante todo tu contrato en el equipo. Los directivos de ${academy.name} han quedado impresionados con tu rendimiento constante y han decidido que es momento de dar el salto. ¡Te ofrecen un asiento en el equipo principal!`,
+    borderColor: UI_COLORS.accent,
+    choices: [{
+      text: 'Aceptar el ascenso',
+      subtitle: 'Firma con el equipo principal y gradúate de la academia.',
+      style: { borderColor: UI_COLORS.accent, color: UI_COLORS.accent },
+      onClick: () => {
+        const oldTeamName = G.team ? G.team.name : null;
+        const wasInF1 = G.catIndex === 5;
+        
+        const offerTeam = TEAMS['F1'].find(t => t.name === promisedTeamName);
+        G.team = offerTeam;
+        G.f1ContractYearsLeft = 2; // Un contrato de 2 años
+        G.f1ContractH2HWins = 0;
+        G.f1ContractH2HLosses = 0;
+        if (G.catIndex === 5) refreshTeammate(true);
+        
+        // Displace AI teammate if needed
+        if (G.aiRoster && offerTeam.name) {
+          const newTeamDrivers = G.aiRoster.filter(d => d.cat === 'F1' && d.team === offerTeam.name);
+          if (newTeamDrivers.length > 1) {
+            const displaced = newTeamDrivers.find(d => !G.peer || d.id !== G.peer.id);
+            if (displaced) {
+              if (wasInF1 && oldTeamName && oldTeamName !== offerTeam.name) {
+                displaced.team = oldTeamName;
+                const stars = TEAMS['F1'].find(t => t.name === oldTeamName)?.stars || 3;
+                displaced.contractYearsLeft = Math.floor(Math.random() * (stars >= 4 ? 4 : 2)) + 2;
+              } else {
+                G.aiRoster = G.aiRoster.filter(d => d.id !== displaced.id);
+              }
+            }
           }
         }
+        
+        const salary = offerTeam.stars >= 4 ? 2000000 : 1000000;
+        G.money += salary; G.totalMoney += salary;
+        
+        G._seasonEventLogs = G._seasonEventLogs || [];
+        G._seasonEventLogs.push(`🌟 ¡Te has graduado de la ${academy.name}! Al llegar al equipo principal, ya no eres un piloto junior, sino una estrella consagrada de la Fórmula 1.`);
+        G.academy = null;
+        updateTopBar();
+        
+        G.pendingAcademyInterview = 'f1_academy_promoted_main';
+        G._nextSteps = [...pendingSteps];
+        processNextStep();
       }
-    }
-
-    const salary = offerTeam.stars >= 4 ? 2000000 : 1000000;
-    G.money += salary; G.totalMoney += salary;
-    
-    // Graduation
-    G._seasonEventLogs.push(`🎓 ¡Te has graduado de la ${academy.name}! Al llegar al equipo principal, ya no eres un piloto junior, sino una estrella consagrada de la Fórmula 1.`);
-    G.academy = null;
-    updateTopBar();
-
-    G.f1ContractYearsLeft = 1;
-    G.f1ContractH2HWins = 0;
-    G.f1ContractH2HLosses = 0;
-    if (G.catIndex === 5) refreshTeammate();
-    
-    G.pendingAcademyInterview = 'f1_academy_promoted_main';
-    G._nextSteps = [...pendingSteps];
-    processNextStep();
-  };
-  ch.appendChild(b1);
-
-  goto('screen-event');
+    }]
+  });
 }
 
 function showAcademyPromisedSeatEvent(pendingSteps, promisedTeamName, champ) {
-  resetEventChrome();
   const academy = ACADEMIES.find(a => a.id === G.academy);
   
   let desc = '';
   if (champ === 1) {
     desc = `¡Felicidades Campeón! Cumpliste con todo lo que te pedimos al repetir tu temporada en F2. Como recompensa a tu dedicación y talento, hemos decidido subirte directamente al primer equipo. ¡Tienes un asiento garantizado en ${promisedTeamName} para esta temporada!`;
   } else {
-    desc = `Tu rendimiento durante la temporada ha convencido a los directivos. estan convencidos de que estás listo para dar el siguiente paso y, aunque aun no hay lugar en el equipo, gracias a los lazos que mantenemos dentro de la Fórmula 1, hemos conseguido asegurarte un asiento en ${promisedTeamName}. Si lo haces bien, tendras prioridad para ocupar un asiento en nuestro equipo principal cuando se presente la oportunidad`;
+    desc = `Tu rendimiento durante la temporada ha convencido a los directivos. Estan convencidos de que estás listo para dar el siguiente paso y, aunque aun no hay lugar en el equipo, gracias a los lazos que mantenemos dentro de la Fórmula 1, hemos conseguido asegurarte un asiento en ${promisedTeamName}. Si lo haces bien, tendras prioridad para ocupar un asiento en nuestro equipo principal cuando se presente la oportunidad`;
   }
 
-  document.getElementById('ev-icon').innerHTML = `<img src="${academy.icon}" width="40" style="object-fit:contain">`;
-  document.getElementById('ev-title').textContent = `El Ascenso Prometido`;
-  document.getElementById('ev-desc').textContent = desc;
-
-  const ch = document.getElementById('ev-choices');
-  ch.innerHTML = '';
-
-  const b1 = document.createElement('div');
-  b1.className = 'minigame-choice';
-  b1.innerHTML = `<h3>¡Firmar el contrato!</h3><p style="margin-bottom:6px">Ir a firmar tu nuevo contrato en F1.</p>`;
-  b1.onclick = () => {
-    const offerTeam = TEAMS['F1'].find(t => t.name === promisedTeamName);
-    G.team = offerTeam;
-    G.academyPromisedTeam = null;
-    
-    // Add post-season interview based on team
-    if (champ === 1) {
-      G.pendingAcademyInterview = 'f1_academy_sign_main';
-      G.achievementsProgress = G.achievementsProgress || {};
-      G.achievementsProgress['academy_straight_to_main'] = true;
-    } else {
-      G.pendingAcademyInterview = 'f1_academy_sign_filial';
-    }
-    
-    // Graduarse si asciende directo al principal
-    if (academy && academy.f1Teams[0] === offerTeam.name) {
-      G._seasonEventLogs = G._seasonEventLogs || [];
-      G._seasonEventLogs.push(`🎓 ¡Te has graduado de la ${academy.name}! Al firmar con el equipo principal, ya no eres un piloto junior, sino una estrella consagrada.`);
-      G.academy = null;
-      updateTopBar();
-    }
-    G.f1ContractYearsLeft = 1;
-    G.f1ContractH2HWins = 0;
-    G.f1ContractH2HLosses = 0;
-    if (G.catIndex === 5) refreshTeammate();
-    
-    // Displace AI teammate if needed
-    if (G.aiRoster && offerTeam.name) {
-      const newTeamDrivers = G.aiRoster.filter(d => d.cat === 'F1' && d.team === offerTeam.name);
-      if (newTeamDrivers.length > 1) {
-        const displaced = newTeamDrivers.find(d => !G.peer || d.id !== G.peer.id);
-        if (displaced) {
-          G.aiRoster = G.aiRoster.filter(d => d.id !== displaced.id);
+  showEventScene({
+    icon: `<img src="${academy.icon}" width="40" style="object-fit:contain">`,
+    title: 'El Ascenso Prometido',
+    desc: desc,
+    borderColor: UI_COLORS.accent,
+    choices: [{
+      text: '¡Firmar el contrato!',
+      subtitle: 'Ir a firmar tu nuevo contrato en F1.',
+      style: { borderColor: UI_COLORS.accent, color: UI_COLORS.accent },
+      onClick: () => {
+        const offerTeam = TEAMS['F1'].find(t => t.name === promisedTeamName);
+        G.team = offerTeam;
+        G.academyPromisedTeam = null;
+        
+        // Add post-season interview based on team
+        if (champ === 1) {
+          G.pendingAcademyInterview = 'f1_academy_sign_main';
+          G.achievementsProgress = G.achievementsProgress || {};
+          G.achievementsProgress['academy_straight_to_main'] = true;
+        } else {
+          G.pendingAcademyInterview = 'f1_academy_sign_filial';
         }
+        
+        // Graduarse si asciende directo al principal
+        if (academy && academy.f1Teams[0] === offerTeam.name) {
+          G._seasonEventLogs = G._seasonEventLogs || [];
+          G._seasonEventLogs.push(`🌟 ¡Te has graduado de la ${academy.name}! Al firmar con el equipo principal, ya no eres un piloto junior, sino una estrella consagrada.`);
+          G.academy = null;
+          updateTopBar();
+        }
+        G.f1ContractYearsLeft = 1;
+        G.f1ContractH2HWins = 0;
+        G.f1ContractH2HLosses = 0;
+        if (G.catIndex === 5) refreshTeammate(true);
+        
+        // Displace AI teammate if needed
+        if (G.aiRoster && offerTeam.name) {
+          const newTeamDrivers = G.aiRoster.filter(d => d.cat === 'F1' && d.team === offerTeam.name);
+          if (newTeamDrivers.length > 1) {
+            const displaced = newTeamDrivers.find(d => !G.peer || d.id !== G.peer.id);
+            if (displaced) {
+              G.aiRoster = G.aiRoster.filter(d => d.id !== displaced.id);
+            }
+          }
+        }
+
+        const salary = offerTeam.stars >= 4 ? 1500000 : 500000;
+        G.money += salary; G.totalMoney += salary;
+        G._prevCatIdx = 4;
+
+        G._nextSteps = [...pendingSteps];
+        processNextStep();
       }
-    }
-
-    const salary = offerTeam.stars >= 4 ? 1500000 : 500000;
-    G.money += salary; G.totalMoney += salary;
-    G._prevCatIdx = 4;
-
-    G._nextSteps = [...pendingSteps];
-    processNextStep();
-  };
-  ch.appendChild(b1);
-
-  goto('screen-event');
+    }]
+  });
 }
 
 function showAcademyMutualTerminationEvent(pendingSteps = []) {
-  resetEventChrome();
   const academy = ACADEMIES.find(a => a.id === G.academy);
-
-  document.getElementById('ev-icon').innerHTML = `<img src="${academy.icon}" width="40" style="object-fit:contain">`;
-  document.getElementById('ev-title').textContent = `Rescisión de Mutuo Acuerdo`;
-  document.getElementById('ev-desc').textContent = `${academy.name} reconoce que tienes nivel para subir a F1, pero lamentablemente siguen sin tener un asiento disponible para ti. Han decidido liberarte de tu contrato en buenos términos para que busques tu oportunidad. No podrán ficharte este año, pero las puertas quedan abiertas para el futuro.`;
-
-  const ch = document.getElementById('ev-choices');
-  ch.innerHTML = '';
-
-  const b1 = document.createElement('div');
-  b1.className = 'minigame-choice';
-  b1.innerHTML = `<h3>Agradecer y ser libre</h3><p style="margin-bottom:6px">Te conviertes en agente libre.</p>`;
-  b1.onclick = () => {
-    G.academyTempBans = G.academyTempBans || [];
-    G.academyTempBans.push(G.academy);
-    G.academy = null;
-    G.academyWarnings = 0;
-    G.achievementsProgress = G.achievementsProgress || {};
-    G.achievementsProgress['dropped_from_academy'] = true;
-    updateTopBar();
-    G._nextSteps = [...pendingSteps];
-    processNextStep();
-  };
-  ch.appendChild(b1);
-
-  goto('screen-event');
+  showEventScene({
+    icon: `<img src="${academy.icon}" width="40" style="object-fit:contain">`,
+    title: 'Rescisión de Mutuo Acuerdo',
+    desc: `${academy.name} reconoce que tienes nivel para subir a F1, pero lamentablemente siguen sin tener un asiento disponible para ti. Han decidido liberarte de tu contrato en buenos términos para que busques tu oportunidad. No podrán ficharte este año, pero las puertas quedan abiertas para el futuro.`,
+    borderColor: UI_COLORS.blue,
+    choices: [{
+      text: 'Agradecer y ser libre',
+      subtitle: 'Te conviertes en agente libre.',
+      onClick: () => {
+        G.academyTempBans = G.academyTempBans || [];
+        G.academyTempBans.push(G.academy);
+        G.academy = null;
+        G.academyWarnings = 0;
+        G.achievementsProgress = G.achievementsProgress || {};
+        G.achievementsProgress['dropped_from_academy'] = true;
+        updateTopBar();
+        G._nextSteps = [...pendingSteps];
+        processNextStep();
+      }
+    }]
+  });
 }
 
 function showAcademyEvent(pendingSteps = []) {
-  resetEventChrome();
-  // Filter out academies that banned the player
   let available = ACADEMIES.filter(a => !(G.academyBans || []).includes(a.id));
-  if (available.length === 0) available = ACADEMIES; // Fallback
+  if (available.length === 0) available = ACADEMIES;
   const academy = randFrom(available);
 
-  document.getElementById('ev-icon').innerHTML = `<img src="${academy.icon}" width="40" style="object-fit:contain">`;
-  document.getElementById('ev-title').textContent = `Invitación: ${academy.name}`;
-  document.getElementById('ev-desc').textContent = `Tus grandes actuaciones te metieron en el radar de la academia de ${academy.name}. Te ofrecen unirte a su programa de jóvenes pilotos, con grandes beneficios pero también obligaciones.`;
-
-  const ch = document.getElementById('ev-choices');
-  ch.innerHTML = '';
-
-  const b1 = document.createElement('div');
-  b1.className = 'minigame-choice';
-  b1.innerHTML = `<h3>Unirse a la academia de ${academy.name}</h3><p style="margin-bottom:6px">Te facilitará el camino y los contratos, pero estarás atado a ellos.</p>`;
-  b1.onclick = () => {
-    G.academy = academy.id;
-    if (G.nemesis && Math.random() < 0.25) G.nemesis.academy = academy.id;
-    G.academyWarnings = 0;
-    updateTopBar();
-    G._nextSteps = [...pendingSteps];
-    processNextStep();
-  };
-  ch.appendChild(b1);
-
-  const b2 = document.createElement('div');
-  b2.className = 'minigame-choice';
-  b2.innerHTML = `<h3>Rechazar</h3><p style="margin-bottom:6px">Prefiero mantener mi independencia.</p>`;
-  b2.onclick = () => {
-    G.achievementsProgress = G.achievementsProgress || {};
-    G.achievementsProgress['rejected_academy'] = true;
-    G._nextSteps = [...pendingSteps];
-    processNextStep();
-  };
-  ch.appendChild(b2);
-
-  goto('screen-event');
+  showEventScene({
+    icon: `<img src="${academy.icon}" width="40" style="object-fit:contain">`,
+    title: `Invitación: ${academy.name}`,
+    desc: `Tus grandes actuaciones te metieron en el radar de la academia de ${academy.name}. Te ofrecen unirte a su programa de jóvenes pilotos, con grandes beneficios pero también obligaciones.`,
+    borderColor: UI_COLORS.accent,
+    bgGradient: 'rgba(235, 180, 50, 0.15)',
+    choices: [
+      {
+        text: `Unirse a la academia de ${academy.name}`,
+        subtitle: 'Te facilitará el camino y los contratos, pero estarás atado a ellos.',
+        style: { borderColor: UI_COLORS.accent, color: UI_COLORS.accent, boxShadow: '0 0 16px rgba(232,200,74,.25)' },
+        onClick: () => {
+          G.academy = academy.id;
+          if (G.nemesis && Math.random() < 0.25) G.nemesis.academy = academy.id;
+          G.academyWarnings = 0;
+          updateTopBar();
+          G._nextSteps = [...pendingSteps];
+          processNextStep();
+        }
+      },
+      {
+        text: 'Rechazar',
+        subtitle: 'Prefiero mantener mi independencia.',
+        onClick: () => {
+          G.achievementsProgress = G.achievementsProgress || {};
+          G.achievementsProgress['rejected_academy'] = true;
+          G._nextSteps = [...pendingSteps];
+          processNextStep();
+        }
+      }
+    ]
+  });
 }
 
 function showGoldenBoyEvent(pendingSteps = []) {
-  resetEventChrome();
   const topTeams = TEAMS['F1'].filter(t => t.stars >= 4);
   const offerTeam = randFrom(topTeams);
 
-  document.getElementById('ev-icon').textContent = '🌟';
-  document.getElementById('ev-title').textContent = 'Fichaje Estrella';
-  document.getElementById('ev-desc').textContent = `Tus formidables actuaciones en categorías menores llamaron la atención de ${offerTeam.name}. Quieren saltarse los protocolos y ofrecerte un asiento inmediato en F1.`;
+  showEventScene({
+    icon: '🌟',
+    title: 'Fichaje Estrella',
+    desc: `Tus formidables actuaciones en categorías menores llamaron la atención de ${offerTeam.name}. Quieren saltarse los protocolos y ofrecerte un asiento inmediato en F1.`,
+    borderColor: UI_COLORS.accent,
+    bgGradient: 'rgba(235, 180, 50, 0.15)',
+    choices: [
+      {
+        text: `Aceptar oferta de ${offerTeam.name}`,
+        subtitle: 'Firma con un equipo Top inmediatamente.',
+        style: { borderColor: UI_COLORS.accent, color: UI_COLORS.accent, boxShadow: '0 0 16px rgba(232,200,74,.25)' },
+        onClick: () => {
+          G.achievementsProgress = G.achievementsProgress || {};
+          G.achievementsProgress['golden_boy_offer'] = true;
+          G.team = offerTeam;
+          G.f1ContractYearsLeft = Math.random() < 0.5 ? 1 : 2;
+          G.f1ContractH2HWins = 0;
+          G.f1ContractH2HLosses = 0;
+          if (G.catIndex === 5) refreshTeammate(true);
+          
+          if (G.aiRoster && offerTeam.name) {
+            const newTeamDrivers = G.aiRoster.filter(d => d.cat === 'F1' && d.team === offerTeam.name);
+            if (newTeamDrivers.length > 1) {
+              const displaced = newTeamDrivers.find(d => !G.peer || d.id !== G.peer.id);
+              if (displaced) {
+                G.aiRoster = G.aiRoster.filter(d => d.id !== displaced.id);
+              }
+            }
+          }
 
-  const ch = document.getElementById('ev-choices');
-  ch.innerHTML = '';
+          const salary = 2000000;
+          G.money += salary; G.totalMoney += salary;
 
-  const b1 = document.createElement('div');
-  b1.className = 'minigame-choice';
-  b1.innerHTML = `<h3>Aceptar oferta de ${offerTeam.name}</h3><p style="margin-bottom:6px">Firma con un equipo Top inmediatamente.</p>`;
-  b1.onclick = () => {
-    G.achievementsProgress = G.achievementsProgress || {};
-    G.achievementsProgress['golden_boy_offer'] = true;
-    G.team = offerTeam;
-    G.f1ContractYearsLeft = Math.random() < 0.5 ? 1 : 2;
-    G.f1ContractH2HWins = 0;
-    G.f1ContractH2HLosses = 0;
-    if (G.catIndex === 5) refreshTeammate();
-    
-    // Displace AI teammate if needed
-    if (G.aiRoster && offerTeam.name) {
-      const newTeamDrivers = G.aiRoster.filter(d => d.cat === 'F1' && d.team === offerTeam.name);
-      if (newTeamDrivers.length > 1) {
-        const displaced = newTeamDrivers.find(d => !G.peer || d.id !== G.peer.id);
-        if (displaced) {
-          G.aiRoster = G.aiRoster.filter(d => d.id !== displaced.id);
+          G._prevCatIdx = 4;
+          G._nextSteps = [...pendingSteps];
+          processNextStep();
+        }
+      },
+      {
+        text: 'Rechazar y ver el mercado',
+        subtitle: 'Gracias, pero prefiero elegir yo mismo.',
+        onClick: () => {
+          G._nextSteps = ['contracts', ...pendingSteps];
+          processNextStep();
         }
       }
-    }
-
-    const salary = 2000000;
-    G.money += salary; G.totalMoney += salary;
-
-    G._prevCatIdx = 4;
-    G._nextSteps = [...pendingSteps];
-    processNextStep();
-  };
-  ch.appendChild(b1);
-
-  const b2 = document.createElement('div');
-  b2.className = 'minigame-choice';
-  b2.innerHTML = `<h3>Rechazar y ver el mercado</h3><p style="margin-bottom:6px">Gracias, pero prefiero elegir yo mismo.</p>`;
-  b2.onclick = () => {
-    // If they reject, we must inject 'contracts' back since we filtered it out in goToContracts
-    G._nextSteps = ['contracts', ...pendingSteps];
-    processNextStep();
-  };
-  ch.appendChild(b2);
-
-  goto('screen-event');
+    ]
+  });
 }
 
 function showCategoryChoiceScreen(oldCatIdx, r) {
@@ -4736,22 +4816,6 @@ function goToContracts(oldCatIdx, repeatCat = false, skipContracts = false) {
   // F2 -> F1 Academy logic
   if (oldCatIdx === 4 && G.catIndex === 5 && G.academy && !skipContracts) {
     const ovr = Math.round(Object.values(G.stats).reduce((a, b) => a + b) / 5);
-    const getReqs = (stars) => {
-      const baseRep = 1200;
-      const baseOvr = 75;
-      const repStep = 200;
-      const ovrStep = 5;
-      const agentModOvr = G.upgrades.includes('agent') ? -2 : 0;
-      const agentModRep = G.upgrades.includes('agent') ? 0.9 : 1;
-      const academyModOvr = -3;
-      const academyModRep = 0.8;
-      
-      if (stars === 5) return { rep: (baseRep + repStep * 2) * agentModRep * academyModRep, ovr: baseOvr + ovrStep * 2 + agentModOvr + academyModOvr };
-      if (stars === 4) return { rep: (baseRep + repStep) * agentModRep * academyModRep, ovr: baseOvr + ovrStep + agentModOvr + academyModOvr };
-      if (stars === 3) return { rep: baseRep * agentModRep * academyModRep, ovr: baseOvr + agentModOvr + academyModOvr };
-      if (stars === 2) return { rep: Math.max(0, baseRep - repStep) * agentModRep * academyModRep, ovr: Math.max(0, baseOvr - ovrStep) + agentModOvr + academyModOvr };
-      return { rep: Math.max(0, baseRep - repStep * 2) * agentModRep * academyModRep, ovr: Math.max(0, baseOvr - ovrStep * 2) + agentModOvr + academyModOvr };
-    };
 
     const academy = ACADEMIES.find(a => a.id === G.academy);
     const f1TeamsPool = TEAMS['F1'].filter(t => academy.f1Teams.includes(t.name));
@@ -4774,7 +4838,7 @@ function goToContracts(oldCatIdx, repeatCat = false, skipContracts = false) {
       }
     } else {
       const validAcademyOffers = f1TeamsPool.filter(t => {
-        const reqs = getReqs(t.stars);
+        const reqs = getTeamRequirements(t.stars, G.catIndex);
         return G.reputation >= reqs.rep && ovr >= reqs.ovr;
       });
 
@@ -4866,7 +4930,7 @@ function showMessageScreen(title, desc) {
     screen.style.justifyContent = 'center';
     screen.innerHTML = `
       <div class="label" style="margin-bottom:8px">Notificación</div>
-      <div class="card" style="margin-bottom:24px">
+      <div class="card mb-24">
         <div class="heading" id="msg-title" style="margin-bottom:8px"></div>
         <div class="sub" id="msg-desc" style="line-height:1.5"></div>
       </div>
@@ -4897,7 +4961,7 @@ function processNextStep() {
       const p = G._pendingTeammateChangeMsg;
       const title = '🏎️ Cambio en el Garaje';
       const resultText = p.h2hWins > p.h2hLosses ? 'a tu favor' : (p.h2hWins < p.h2hLosses ? 'en tu contra' : 'en empate');
-      const nemesisColor = p.isNemesis ? 'color:#ef4444;' : 'color:#6366f1;';
+      const nemesisColor = p.isNemesis ? 'color:var(--danger);' : 'color:#6366f1;';
       const desc = `Tu antiguo compañero, <strong>${p.oldName}</strong>, ${p.destination}.<br><br>El duelo interno durante estos años finalizó con un récord de <strong>${p.h2hWins} a ${p.h2hLosses}</strong> ${resultText}.<br><br>Tu nuevo compañero de equipo será <strong style="${nemesisColor}">${p.newName}</strong>.`;
       G._pendingTeammateChangeMsg = null;
       G._nextSteps.unshift('preseason');
@@ -5002,6 +5066,11 @@ function processNextStep() {
       }
     }
 
+    // If nemesis was kicked out mid-season, find a new teammate for preseason
+    if (G._pendingRefreshTeammate) {
+      G._pendingRefreshTeammate = false;
+      refreshTeammate();
+    }
     // Ensure the pilot has a valid team for their current category
     const validTeams = TEAMS[CATEGORIES[G.catIndex]];
     if (!validTeams.find(t => t.name === G.team.name)) {
@@ -5165,7 +5234,7 @@ function showRandomEvent(forcedId = null) {
   let evDesc = ev.desc;
   
   if (G.nemesis) {
-    const nStyle = `<span style="color:#ef4444;font-weight:bold">${G.nemesis.name}</span>`;
+    const nStyle = `<span style="color:var(--danger);font-weight:bold">${G.nemesis.name}</span>`;
     const nemRegex = /tu n[éèe]mesis/gi;
     evTitle = evTitle.replace(/\{\{NEMESIS_NAME\}\}/g, nStyle).replace(nemRegex, nStyle);
     evDesc = evDesc.replace(/\{\{NEMESIS_NAME\}\}/g, nStyle)
@@ -5186,7 +5255,7 @@ function showRandomEvent(forcedId = null) {
     const radioBlock = document.createElement('div');
     radioBlock.id = 'ev-radio-block';
     radioBlock.innerHTML = `
-      <div style="font-family:monospace;font-size:12px;color:#4ade80;background:#0a1a0a;border:1px solid #1a3a1a;border-radius:6px;padding:10px 14px;margin-bottom:14px;text-align:left">
+      <div class="terminal-box success">
         <div style="font-size:10px;letter-spacing:2px;color:#22c55e;margin-bottom:6px;opacity:0.7">📻 TEAM RADIO ▬▬▬</div>
         <div id="ev-radio-text" style="line-height:1.5;min-height:1.2em"></div>
       </div>`;
@@ -5215,7 +5284,7 @@ function showRandomEvent(forcedId = null) {
 
     let cText = c.text;
     if (G.nemesis) {
-      const nStyle = `<span style="color:#ef4444;font-weight:bold">${G.nemesis.name}</span>`;
+      const nStyle = `<span style="color:var(--danger);font-weight:bold">${G.nemesis.name}</span>`;
       cText = cText.replace(/\{\{NEMESIS_NAME\}\}/g, nStyle).replace(/tu n[éèe]mesis/gi, nStyle);
     }
 
@@ -5270,14 +5339,14 @@ function showRandomEvent(forcedId = null) {
       }
 
       if (G.nemesis && narrative) {
-        const nStyle = `<span style="color:#ef4444;font-weight:bold">${G.nemesis.name}</span>`;
+        const nStyle = `<span style="color:var(--danger);font-weight:bold">${G.nemesis.name}</span>`;
         narrative = narrative.replace(/\{\{NEMESIS_NAME\}\}/g, nStyle).replace(/tu n[éèe]mesis/gi, nStyle);
       }
 
       const outcomeIcon = resolvedDelta >= 0 ? '✅' : '💥';
       const statLine = `<div style="font-size:13px;color:var(--muted);margin-bottom:12px">${deltaSign}${resolvedDelta}${statLabelText}${moneyText}</div>`;
       const narrativeHtml = narrative
-        ? `<div style="font-size:14px;line-height:1.6;color:var(--text);background:rgba(255,255,255,0.04);border-radius:10px;padding:14px 16px;margin-bottom:16px;text-align:left;border-left:3px solid ${resolvedDelta >= 0 ? '#4ade80' : '#f87171'}">${narrative}</div>`
+        ? `<div class="narrative-box" style="border-left-color: ${resolvedDelta >= 0 ? '#4ade80' : '#f87171'};">${narrative}</div>`
         : '';
 
       ch.innerHTML = `
@@ -5335,7 +5404,7 @@ function showMinigame(forcedId = null) {
     const radioBlock = document.createElement('div');
     radioBlock.id = 'mg-radio-block';
     radioBlock.innerHTML = `
-      <div style="font-family:monospace;font-size:12px;color:#4ade80;background:#0a1a0a;border:1px solid #1a3a1a;border-radius:6px;padding:10px 14px;margin-bottom:14px;text-align:left">
+      <div class="terminal-box success">
         <div style="font-size:10px;letter-spacing:2px;color:#22c55e;margin-bottom:6px;opacity:0.7">📻 TEAM RADIO ▬▬▬</div>
         <div id="mg-radio-text" style="line-height:1.5;min-height:1.2em"></div>
       </div>`;
@@ -5445,7 +5514,7 @@ function showMinigame(forcedId = null) {
       G._seasonEventLogs.push(logText);
 
       const narrativeHtml = narrative
-        ? `<div style="font-size:14px;line-height:1.6;color:var(--text);background:rgba(255,255,255,0.04);border-radius:10px;padding:14px 16px;margin-bottom:16px;text-align:left;border-left:3px solid ${success ? '#4ade80' : isNeutralFail ? '#9ca3af' : '#f87171'}">${narrative}</div>`
+        ? `<div class="narrative-box" style="border-left-color: ${success ? '#4ade80' : isNeutralFail ? '#9ca3af' : '#f87171'};">${narrative}</div>`
         : '';
 
       ch.innerHTML = `
@@ -5678,11 +5747,11 @@ function showIMGResult(success, title, detail, narrative, givesWin = true) {
   const icon = success ? (givesWin ? '🏆' : '✅') : '💥';
   const color = success ? '#4ade80' : '#f87171';
   area.innerHTML = `
-    <div class="card" style="padding:28px;text-align:center">
+    <div class="card card-center">
       <div style="font-size:56px;margin-bottom:12px">${icon}</div>
       <div class="heading" style="font-size:22px;color:${color};margin-bottom:8px">${title}</div>
       <div class="sub" style="margin-bottom:14px">${detail}</div>
-      ${narrative ? `<div style="font-size:13px;line-height:1.6;color:var(--text);background:rgba(255,255,255,0.04);border-radius:8px;padding:12px;margin-bottom:16px;text-align:left;border-left:3px solid ${color}">${narrative}</div>` : ''}
+      ${narrative ? `<div class="narrative-box" style="border-left-color: ${color};">${narrative}</div>` : ''}
       <button class="btn btn-primary" onclick="processSeasonStep()">CONTINUAR</button>
     </div>
   `;
@@ -6554,7 +6623,7 @@ function startTempGame() {
     <div class="heading" style="font-size:20px;margin-bottom:4px">TEMPERATURA DE NEUMATICOS</div>
     <div class="label" style="color:var(--muted);margin-bottom:14px">Mantené los neumaticos en la zona verde</div>
     <div id="img-temp-bar-wrap" style="position:relative;width:100%;height:38px;background:#1a1a2e;border-radius:20px;overflow:hidden;margin-bottom:12px;border:1px solid rgba(255,255,255,0.1)">
-      <div id="img-temp-zone" style="position:absolute;left:${ZONE_MIN}%;width:${ZONE_MAX-ZONE_MIN}%;top:0;height:100%;background:rgba(74,222,128,0.25);border-left:2px solid #4ade80;border-right:2px solid #4ade80"></div>
+      <div id="img-temp-zone" style="position:absolute;left:${ZONE_MIN}%;width:${ZONE_MAX-ZONE_MIN}%;top:0;height:100%;background:rgba(74,222,128,0.25);border-left:2px solid var(--success);border-right:2px solid var(--success)"></div>
       <div id="img-temp-fill" style="position:absolute;left:0;top:0;height:100%;width:${temp}%;background:linear-gradient(90deg,#60a5fa,#4ade80);border-radius:20px;transition:width 0.05s"></div>
       <div id="img-temp-val" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:12px;color:white;font-weight:bold">${Math.round(temp)}%</div>
     </div>
@@ -7118,15 +7187,15 @@ function startRainGame() {
     <div class="label" style="color:var(--muted);margin-bottom:14px">Entrá a boxes en el momento justo — ni seco ni inundado</div>
     <div style="position:relative;width:100%;height:44px;background:#1a1a2e;border-radius:22px;overflow:hidden;margin-bottom:6px;border:1px solid rgba(255,255,255,0.1)">
       <div style="position:absolute;left:0;top:0;height:100%;width:${SAFE_MIN}%;background:rgba(250,204,21,0.12);border-right:2px solid #facc15"></div>
-      <div style="position:absolute;left:${SAFE_MIN}%;width:${SAFE_MAX - SAFE_MIN}%;top:0;height:100%;background:rgba(74,222,128,0.18);border-right:2px solid #4ade80"></div>
+      <div style="position:absolute;left:${SAFE_MIN}%;width:${SAFE_MAX - SAFE_MIN}%;top:0;height:100%;background:rgba(74,222,128,0.18);border-right:2px solid var(--success)"></div>
       <div style="position:absolute;left:${SAFE_MAX}%;width:${100 - SAFE_MAX}%;top:0;height:100%;background:rgba(248,113,113,0.12);"></div>
       <div id="img-rain-fill" style="position:absolute;left:0;top:0;height:100%;width:0%;background:linear-gradient(90deg,#facc15,#4ade80);border-radius:22px"></div>
       <div id="img-rain-cursor" style="position:absolute;top:10%;left:0%;width:3px;height:80%;background:white;border-radius:2px;box-shadow:0 0 6px white"></div>
     </div>
     <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-bottom:14px;padding:0 4px">
-      <span style="color:#facc15">🌦 Muy seco</span>
-      <span style="color:#4ade80">✅ Zona ideal</span>
-      <span style="color:#f87171">🌊 Trompo</span>
+      <span style="color:var(--warning)">🌦 Muy seco</span>
+      <span style="color:var(--success)">✅ Zona ideal</span>
+      <span style="color:var(--fail)">🌊 Trompo</span>
     </div>
     <div id="img-rain-status" style="font-size:15px;color:var(--accent);margin-bottom:20px;text-align:center;min-height:20px">La lluvia empieza a caer...</div>
     <button id="img-rain-btn" class="btn btn-primary" style="font-size:17px;padding:20px 0;width:100%;background:linear-gradient(135deg,#60a5fa,#3b82f6)">🔧 ENTRAR A BOXES — PONER INTERMEDIAS</button>
@@ -7218,7 +7287,7 @@ function startTyresGame() {
 
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
       <span class="label" style="font-size:13px">Desgaste de gomas:</span>
-      <span id="img-tyr-wear-val" style="color:#4ade80;font-weight:bold">100%</span>
+      <span id="img-tyr-wear-val" style="color:var(--success);font-weight:bold">100%</span>
     </div>
     <div style="width:100%;height:20px;background:#1a1a2e;border-radius:10px;overflow:hidden;margin-bottom:10px;border:1px solid rgba(255,255,255,0.1)">
       <div id="img-tyr-wear-bar" style="height:100%;width:100%;background:linear-gradient(90deg,#4ade80,#22c55e);border-radius:10px;transition:width 0.05s"></div>
@@ -7569,191 +7638,30 @@ function canMeetNextCatReqs(nextCatIdx) {
   const agentModOvr = G.upgrades.includes('agent') ? -2 : 0;
   const agentModRep = G.upgrades.includes('agent') ? 0.9 : 1;
 
-  const getReqsForCat = (stars, catIdx) => {
-    const baseRep = [0, 100, 250, 400, 700, 1200][catIdx];
-    const baseOvr = [40, 45, 50, 55, 65, 75][catIdx];
-    const repStep = [40, 80, 100, 150, 200, 200][catIdx];
-    const ovrStep = [3, 4, 4, 5, 5, 5][catIdx];
-    const academyModOvr = G.academy ? -3 : 0;
-    const academyModRep = G.academy ? 0.8 : 1;
-
-    if (stars === 5) return { rep: (baseRep + repStep * 2)*agentModRep*academyModRep, ovr: baseOvr + ovrStep * 2 + agentModOvr + academyModOvr };
-    if (stars === 4) return { rep: (baseRep + repStep)*agentModRep*academyModRep, ovr: baseOvr + ovrStep + agentModOvr + academyModOvr };
-    if (stars === 3) return { rep: baseRep*agentModRep*academyModRep, ovr: baseOvr + agentModOvr + academyModOvr };
-    if (stars === 2) return { rep: Math.max(0, (baseRep - repStep)*agentModRep*academyModRep), ovr: Math.max(0, baseOvr - ovrStep) + agentModOvr + academyModOvr };
-    return { rep: Math.max(0, (baseRep - repStep * 2)*agentModRep*academyModRep), ovr: Math.max(0, baseOvr - ovrStep * 2) + agentModOvr + academyModOvr };
-  };
-
   return nextCatTeams.some(t => {
-    const reqs = getReqsForCat(t.stars, nextCatIdx);
+    const reqs = getTeamRequirements(t.stars, nextCatIdx);
     return G.reputation >= reqs.rep && ovr >= reqs.ovr;
   });
 }
 function showContracts() {
   const cat = CATEGORIES[G.catIndex];
-  let allTeams = TEAMS[cat] || TEAMS['F1'];
-
-  // Teams the player permanently burned bridges with (shadow-offer betrayal) never offer again
-  if (G.blacklistedTeams && G.blacklistedTeams.length) {
-    allTeams = allTeams.filter(t => !G.blacklistedTeams.includes(t.name));
-  }
-
+  const allTeams = TEAMS[cat] || TEAMS['F1'];
+  
   // Rep & OVR requirements logic
   const ovr = Math.round(Object.values(G.stats).reduce((a, b) => a + b) / 5);
 
-  const getReqs = (stars) => {
-    const baseRep = [0, 100, 250, 400, 700, 1200][G.catIndex];
-    const baseOvr = [40, 45, 50, 55, 65, 75][G.catIndex];
-
-    // Scale requirements based on category
-    
-      const repStep = [40, 80, 100, 150, 200, 200][G.catIndex];
-      const agentModOvr = G.upgrades.includes('agent') ? -2 : 0;
-      const agentModRep = G.upgrades.includes('agent') ? 0.9 : 1;
-      
-      const academyModOvr = G.academy ? -3 : 0;
-      const academyModRep = G.academy ? 0.8 : 1;
-    
-    const ovrStep = [3, 4, 4, 5, 5, 5][G.catIndex];
-
-    if (stars === 5) return { rep: (baseRep + repStep * 2) * agentModRep * academyModRep, ovr: baseOvr + ovrStep * 2 + agentModOvr + academyModOvr };
-    if (stars === 4) return { rep: (baseRep + repStep) * agentModRep * academyModRep, ovr: baseOvr + ovrStep + agentModOvr + academyModOvr };
-    if (stars === 3) return { rep: baseRep * agentModRep * academyModRep, ovr: baseOvr + agentModOvr + academyModOvr };
-    if (stars === 2) return { rep: Math.max(0, baseRep - repStep) * agentModRep * academyModRep, ovr: Math.max(0, baseOvr - ovrStep) + agentModOvr + academyModOvr };
-    return { rep: Math.max(0, baseRep - repStep * 2) * agentModRep * academyModRep, ovr: Math.max(0, baseOvr - ovrStep * 2) + agentModOvr + academyModOvr };
-  };
-
-  // Filter out teams that require more rep or ovr than you have
-  let offerPool = allTeams.filter(t => {
-    // Check if the team is promised by the academy or nemesis (bypasses requirements)
-    if (G.academyPromisedTeam === t.name) return true;
-    if (G._nemesisSeatTarget === t.name) return true;
-
-    if (cat === 'F1') {
-      const allBans = [...(G.academyBans || []), ...(G.academyTempBans || [])];
-      if (allBans.length > 0) {
-        for (const banId of allBans) {
-          const bannedAc = ACADEMIES.find(a => a.id === banId);
-          if (bannedAc && bannedAc.f1Teams.includes(t.name)) return false;
-        }
-      }
-    }
-    const reqs = getReqs(t.stars);
-    return G.reputation >= reqs.rep && ovr >= reqs.ovr;
-  });
-
-  // Fallback: only for same-category repeats (should always have at least 1-2 star teams)
-  if (offerPool.length === 0) {
-    const minStars = Math.min(...allTeams.map(t => t.stars));
-    offerPool = allTeams.filter(t => t.stars === minStars);
-  }
-
-  // Shadow-offer betrayal: the market is locked. The only "offer" on the table
-  // is the pre-contract signed in secret — there is no going back.
-  let isLockedShadowMarket = false;
-  if (cat === 'F1' && G._shadowSecretTeam) {
-    const secretTeam = TEAMS['F1'].find(t => t.name === G._shadowSecretTeam);
-    if (secretTeam) {
-      offerPool = [secretTeam];
-      isLockedShadowMarket = true;
-    }
-  }
-
-  // F1 logic: limit offers based on previous performance and add renewals
-  let isAcademyLocked = false;
-  if (!isLockedShadowMarket && cat === 'F1' && G.academy) {
-    const academy = ACADEMIES.find(a => a.id === G.academy);
-    if (academy) {
-      offerPool = offerPool.filter(t => academy.f1Teams.includes(t.name));
-      isAcademyLocked = true;
-    }
-  }
-
-  const wasInF1 = G.lastResult && G.lastResult.cat === 'F1';
-  if (!isLockedShadowMarket && cat === 'F1' && wasInF1) {
-    const prevChamp = (G.lastResult && G.lastResult.cat === 'F1') ? G.lastResult.champ : 20;
-
-    // Current team always gets to offer renewal if player met the position requirement for their team's stars
-    // NEW RULE: They will NOT offer a renewal if the player has 0 H2H wins during this contract.
-    const hasH2HWins = G.f1ContractH2HWins === undefined ? true : G.f1ContractH2HWins > 0;
-    const wonH2H = (G.f1ContractH2HWins || 0) > (G.f1ContractH2HLosses || 0);
-    const myCurrentStars = G.team ? (G.team.stars || 3) : 3;
-
-    const currentTeamInPool = allTeams.find(t => G.team && t.name === G.team.name);
-    const renewalChampReq = G.team ? (G.team.stars >= 5 ? 8 : G.team.stars >= 4 ? 12 : G.team.stars >= 3 ? 18 : 20) : 20;
-    const forceRenewal = currentTeamInPool && prevChamp <= renewalChampReq && hasH2HWins;
-    if (forceRenewal && !offerPool.find(t => t.name === G.team.name)) {
-      offerPool.push(currentTeamInPool);
-    }
-
-    offerPool = offerPool.filter(t => {
-      if (G._nemesisSeatTarget === t.name) return true;
-      if (G.team && t.name === G.team.name) return forceRenewal || (prevChamp <= 15 && hasH2HWins);
-      // REGLA: Si ganamos el H2H, podemos subir un escalón de estrellas sin importar nuestra posición en el campeonato
-      if (wonH2H && t.stars === myCurrentStars + 1) return true;
-
-      if (t.stars === 5) return prevChamp <= 8;
-      if (t.stars === 4) return prevChamp <= 12;
-      if (t.stars === 3) return prevChamp <= 18;
-      return true; // 1 and 2 stars always offer if you meet rep/ovr
-    });
-
-    offerPool = shuffle(offerPool);
-    let finalOffers = [];
-
-    // GARANTIZAR asiento del némesis si nos llamaron
-    if (G._nemesisSeatTarget) {
-      const nemesisTargetTeam = offerPool.find(t => t.name === G._nemesisSeatTarget);
-      if (nemesisTargetTeam) {
-        finalOffers.push(nemesisTargetTeam);
-        offerPool = offerPool.filter(t => t.name !== G._nemesisSeatTarget);
-      }
-    }
-
-    const renewalTeam = offerPool.find(t => G.team && t.name === G.team.name);
-    if (renewalTeam) {
-      finalOffers.push(renewalTeam);
-      offerPool = offerPool.filter(t => t.name !== renewalTeam.name);
-    }
-
-    // REGLA: Si ganamos el H2H, GARANTIZAR al menos un equipo superior en la mesa
-    if (wonH2H && myCurrentStars < 5) {
-      const upgradeTeam = offerPool.find(t => t.stars > myCurrentStars);
-      if (upgradeTeam) {
-        finalOffers.push(upgradeTeam);
-        offerPool = offerPool.filter(t => t.name !== upgradeTeam.name);
-      }
-    }
-
-    // Llenar con el resto de ofertas (hasta 4 ofertas totales)
-    const needed = Math.max(4 - finalOffers.length, 0);
-    finalOffers.push(...offerPool.slice(0, needed));
-    offerPool = finalOffers;
-  } else {
-    offerPool = shuffle(offerPool);
-    const selectedOffers = [];
-    ['desarrollo', 'equilibrado', 'ganar'].forEach(focusType => {
-      const teamOfFocus = offerPool.find(t => t.focus === focusType);
-      if (teamOfFocus) selectedOffers.push(teamOfFocus);
-    });
-    while (selectedOffers.length < 3 && selectedOffers.length < offerPool.length) {
-      const extraTeam = offerPool.find(t => !selectedOffers.includes(t));
-      if (extraTeam) selectedOffers.push(extraTeam);
-      else break;
-    }
-    offerPool = selectedOffers;
-  }
+  const poolData = generateOfferPool(cat, ovr, allTeams);
+  let offerPool = poolData.offerPool;
+  const isLockedShadowMarket = poolData.isLockedShadowMarket;
+  const isAcademyLocked = poolData.isAcademyLocked;
 
   // For junior categories: sort so affordable offers appear first
   // [DESACTIVADO A PEDIDO DEL JUGADOR]
   /*
   if (G.catIndex < 5) {
-    const acadDisc = G.academy ? 0.50 : 1.0;
     offerPool.sort((a, b) => {
-      const aIdx = clamp((a.stars || 3) - 3, 0, 2);
-      const bIdx = clamp((b.stars || 3) - 3, 0, 2);
-      const aCost = Math.round((SEAT_COSTS[G.catIndex] || SEAT_COSTS[4])[aIdx] * acadDisc);
-      const bCost = Math.round((SEAT_COSTS[G.catIndex] || SEAT_COSTS[4])[bIdx] * acadDisc);
+      const aCost = getSeatCost(G.catIndex, a.stars, G.academy);
+      const bCost = getSeatCost(G.catIndex, b.stars, G.academy);
       const aAfford = G.money >= aCost ? 0 : 1;
       const bAfford = G.money >= bCost ? 0 : 1;
       return aAfford - bAfford;
@@ -7805,8 +7713,8 @@ function showContracts() {
     const contractLabel = isF1 ? `📋 Contrato: ${contractYears} temporadas` : '';
     const salaryTotal = isF1 ? `Total: ${fmt$(salarySpin * contractYears)}` : '';
 
-    const reqRep = isRegChange ? '❓' : getReqs(team.stars).rep;
-    const reqOvr = isRegChange ? '❓' : getReqs(team.stars).ovr;
+    const reqRep = isRegChange ? '❓' : getTeamRequirements(team.stars, G.catIndex).rep;
+    const reqOvr = isRegChange ? '❓' : getTeamRequirements(team.stars, G.catIndex).ovr;
 
     const isRenewal = (G.team && team.name === G.team.name);
     const prevChamp = (G.lastResult && G.lastResult.cat === 'F1') ? G.lastResult.champ : 20;
@@ -7816,7 +7724,7 @@ function showContracts() {
     let badges = '';
     if (isRenewal) badges += '<span class="badge badge-green" style="font-size:10px;margin-left:6px;vertical-align:middle">Renovación</span>';
     if (isOpportunity) badges += '<span class="badge" style="background-color:#fbbf24;color:#000;font-size:10px;margin-left:6px;vertical-align:middle;padding:2px 6px;border-radius:4px;font-weight:bold">OPORTUNIDAD</span>';
-    if (G._nemesisSeatTarget && team.name === G._nemesisSeatTarget) badges += '<span class="badge" style="background-color:#ef4444;color:#fff;font-size:10px;margin-left:6px;vertical-align:middle;padding:2px 6px;border-radius:4px;font-weight:bold">⚔️ CODICIADO</span>';
+    if (G._nemesisSeatTarget && team.name === G._nemesisSeatTarget) badges += '<span class="badge" style="background-color:var(--danger);color:#fff;font-size:10px;margin-left:6px;vertical-align:middle;padding:2px 6px;border-radius:4px;font-weight:bold">⚔️ CODICIADO</span>';
     
     let prospectiveTeammate = null;
     let prospectiveSkill = null;
@@ -7907,7 +7815,7 @@ function showContracts() {
         ? `<span style="text-decoration:line-through;color:var(--muted);font-size:14px;margin-right:6px">${fmt$(rawCost)}</span>`
         : '';
       const affordHtml = !canAfford
-        ? `<div style="margin-top:6px;padding:4px 8px;border-radius:4px;background:rgba(239,68,68,0.15);color:#f87171;font-size:11px;font-weight:bold">⛔ Fondos insuficientes</div>`
+        ? `<div style="margin-top:6px;padding:4px 8px;border-radius:4px;background:rgba(239,68,68,0.15);color:var(--fail);font-size:11px;font-weight:bold">⛔ Fondos insuficientes</div>`
         : '';
       c.innerHTML = `
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
@@ -7924,7 +7832,7 @@ function showContracts() {
         <!-- [DESACTIVADO A PEDIDO DEL JUGADOR: Asientos formativos gratis]
         <div class="result-row" style="padding:8px 0;border-color:var(--border)">
           <div class="r-label">💸 Costo del asiento</div>
-          <div class="r-val" style="font-size:17px;color:#f87171">${discountHtml}${fmt$(seatCost)}${G.academy ? ' <span style="font-size:11px;color:#4ade80">(-50% academia)</span>' : ''}</div>
+          <div class="r-val" style="font-size:17px;color:var(--fail)">${discountHtml}${fmt$(seatCost)}${G.academy ? ' <span style="font-size:11px;color:var(--success)">(-50% academia)</span>' : ''}</div>
         </div>
         -->
         <div class="result-row" style="padding:8px 0;border-color:transparent">
@@ -7993,7 +7901,7 @@ function showContracts() {
       }
       
       if (isF1) {
-        refreshTeammate();
+        refreshTeammate(oldTeamName !== null && oldTeamName !== team.name);
         
         // Handle the AI driver that the player just displaced from their new team
         if (G.aiRoster && team.name) {
@@ -8050,13 +7958,13 @@ function showContracts() {
     const academy = ACADEMIES.find(a => a.id === G.academy);
     const breakBtn = document.createElement('div');
     breakBtn.className = 'card offer-card selectable';
-    breakBtn.style.border = '1px solid #ef4444';
+    breakBtn.style.border = '1px solid var(--danger)';
     breakBtn.innerHTML = `
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
         <div style="display:flex;align-items:center;gap:12px">
           <div style="width:56px;height:48px;border-radius:8px;background:rgba(239,68,68,0.1);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0">✂️</div>
           <div>
-            <div class="heading" style="font-size:18px;color:#ef4444">Romper contrato con la academia ${academy.name}</div>
+            <div class="heading" style="font-size:18px;color:var(--danger)">Romper contrato con la academia ${academy.name}</div>
             <div style="font-size:12px;color:var(--muted);margin-top:2px">Ver ofertas de TODOS los equipos (${academy.name} no se lo va a tomar bien)</div>
           </div>
         </div>
@@ -8079,8 +7987,8 @@ function showContracts() {
     retBtn.className = 'btn btn-secondary';
     retBtn.style.width = '100%';
     retBtn.style.marginTop = '16px';
-    retBtn.style.border = '1px solid #ef4444';
-    retBtn.style.color = '#ef4444';
+    retBtn.style.border = '1px solid var(--danger)';
+    retBtn.style.color = 'var(--danger)';
     retBtn.innerHTML = '🏁 Retirarse y ver legado';
     retBtn.onclick = () => { showRetirement(); };
     list.appendChild(retBtn);
@@ -8262,7 +8170,7 @@ function showRetirement(reason = null) {
   `;
 
   if (persText) {
-      document.getElementById('ret-legacy-banner').insertAdjacentHTML('afterend', `<div class="card" style="margin-bottom:16px;background:rgba(74, 144, 232, 0.1);border-color:var(--blue);text-align:center"><div style="font-size:14px;color:var(--blue);margin-bottom:4px;font-weight:bold;letter-spacing:1px">PERFIL DEL PILOTO</div><div style="font-size:15px">${persText}</div></div>`);
+      document.getElementById('ret-legacy-banner').insertAdjacentHTML('afterend', `<div class="card mb-16" style=";background:rgba(74, 144, 232, 0.1);border-color:var(--blue);text-align:center"><div style="font-size:14px;color:var(--blue);margin-bottom:4px;font-weight:bold;letter-spacing:1px">PERFIL DEL PILOTO</div><div style="font-size:15px">${persText}</div></div>`);
   }
 
   const f1TeamsData = [];
@@ -8513,7 +8421,7 @@ const FIRST_NAMES = ["Oliver", "Jack", "Harry", "Jacob", "Charlie", "Thomas", "G
 const EMOJI_AVATARS = ['👨🏻', '🧔🏽‍♂️', '👱🏼‍♂️', '🧑🏾‍🦲', '👨🏽', '🧔🏼‍♂️', '👱🏻‍♂️', '👨🏼‍🦱', '👱🏽', '👦🏻', '👦🏽', '🧔🏻', '👨🏾‍🦲'];
 const LAST_NAMES = ["Smith", "Jones", "Taylor", "Brown", "Williams", "Wilson", "Johnson", "Davies", "Robinson", "Wright", "Thompson", "Evans", "Walker", "White", "Roberts", "Green", "Hall", "Wood", "Jackson", "Clarke", "García", "Martínez", "López", "González", "Rodríguez", "Fernández", "Pérez", "Gómez", "Sánchez", "Romero", "Sosa", "Torres", "Álvarez", "Ruiz", "Ramírez", "Flores", "Benítez", "Acosta", "Medina", "Herrera", "Suárez", "Dupont", "Dubois", "Lefebvre", "Leroy", "Roux", "Müller", "Schmidt", "Schneider", "Fischer", "Weber", "Meyer", "Wagner", "Becker"];
 
-function refreshTeammate() {
+function refreshTeammate(playerChangedTeam = false) {
   if (!G.aiRoster || !G.team) return;
   let catDrivers = G.aiRoster.filter(d => d.cat === 'F1' && d.team === G.team.name);
   if (catDrivers.length === 0) { G.peer = null; return; }
@@ -8539,9 +8447,6 @@ function refreshTeammate() {
   
   if (nemesisInTeam) {
     newTm = nemesisInTeam;
-    // We don't return here if it's the first time they are teammates, 
-    // because we want the "New teammate: fresh slate" block below to run to assign G.peer.
-    // BUT if the nemesis was ALREADY the peer, we can return.
     if (G.peer && G.peer.id === nemesisInTeam.id) {
       G.peer.skill = nemesisInTeam.skill;
       G.peer.age = nemesisInTeam.age;
@@ -8557,9 +8462,9 @@ function refreshTeammate() {
   }
 
   // Teammate changed!
-  // Only show the message if the PLAYER stayed in the same team. 
-  // If G.peer.team !== G.team.name, it means the player moved, so it's not the teammate leaving.
-  if (G.peer && G.seasons.filter(s => s.cat === 'F1').length > 0 && G.peer.team === G.team.name) {
+  // Show the message only if the PLAYER stayed in the same team (teammate left, not player).
+  // playerChangedTeam=true means the player moved, so the "old teammate" story doesn't apply.
+  if (G.peer && !playerChangedTeam && G.seasons.filter(s => s.cat === 'F1').length > 0) {
      const oldPeerInRoster = G.aiRoster.find(d => d.id === G.peer.id);
      let destination = 'se retiró del automovilismo';
      if (oldPeerInRoster) {
@@ -8567,7 +8472,7 @@ function refreshTeammate() {
          else destination = `quedó fuera de la F1 (ahora corre en ${oldPeerInRoster.cat})`;
      } else if (G.peer.age && G.peer.age <= 37) {
          const otherSeries = ['el WEC (Campeonato Mundial de Resistencia)', 'IMSA', 'el RALLY', 'la Fórmula E', 'NASCAR', 'la IndyCar'];
-         destination = `dejo la F1 y se fue a competir en ${otherSeries[Math.floor(Math.random() * otherSeries.length)]}`;
+         destination = `dejó la F1 y se fue a competir en ${otherSeries[Math.floor(Math.random() * otherSeries.length)]}`;
      }
      
      G._pendingTeammateChangeMsg = {
@@ -8868,8 +8773,7 @@ function generateStandingsTable(r) {
         power = d._power;
       } else {
         if (r.cat === 'F1') {
-          const carRating = getF1CarRating(stars);
-          power = (d.skill * 0.25) + (carRating * 0.75);
+          power = getF1DriverPower(d.skill, stars);
         } else {
           power = d.skill + (stars * 3);
         }

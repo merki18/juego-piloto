@@ -35,10 +35,10 @@ function getSeatCost(catIdx, teamStars, hasAcademy) {
 }
 
 function getTeamRequirements(stars, catIndex) {
-  const baseRep = [0, 100, 250, 400, 700, 1200][catIndex] || 1200;
-  const baseOvr = [40, 45, 50, 55, 65, 75][catIndex] || 75;
-  const repStep = [40, 80, 100, 150, 200, 200][catIndex] || 200;
-  const ovrStep = [3, 4, 4, 5, 5, 5][catIndex] || 5;
+  const baseRep = [0, 100, 250, 400, 700, 1200][catIndex] ?? 1200;
+  const baseOvr = [40, 45, 50, 55, 65, 75][catIndex] ?? 75;
+  const repStep = [40, 80, 100, 150, 200, 200][catIndex] ?? 200;
+  const ovrStep = [3, 4, 4, 5, 5, 5][catIndex] ?? 5;
   
   const agentModOvr = G.upgrades.includes('agent') ? -2 : 0;
   const agentModRep = G.upgrades.includes('agent') ? 0.9 : 1;
@@ -591,7 +591,27 @@ const RANDOM_EVENTS = [
       { text: 'Ignorarlo y hablar en la pista', stat: 'quali', delta: 1, repDelta: 10, hint: 'Resultado fijo: sumás reputación por tu madurez, pero no demostras agresividad.', fixedDesc: 'Seguiste de largo sin mirarlo. Los periodistas valoraron tu madurez y te enfocaste en tu ritmo de clasificación, pero él sigue sintiéndose superior.' },
       { text: 'Enfrentarlo públicamente', stat: 'speed', delta: 0, pers: 'aggressiveness', delta2: 25, repDelta: -10, nemesisSpark: true, hint: '🔥 +Agresividad masiva. Nace una gran rivalidad.', fixedDesc: 'Lo frenaste en seco adelante de las cámaras. Se dijeron de todo. Tu agresividad se disparó y el paddock ya eligió bandos. La próxima carrera va a ser una guerra.' }
     ]
-  }
+  },
+  {
+    id: 'tribute_karting_veteran',
+    icon: '🏆',
+    title: 'Homenaje en Casa',
+    desc: 'El circuito de karting en {{COUNTRY}} donde empezaste tu carrera está organizando un homenaje en honor al campeonato que ganaste. Las instalaciones están muy deterioradas y te piden ayuda para renovarlas.',
+    choices: [
+      { text: 'Donar dinero', stat: 'media', delta: 2, money: -500000, repDelta: 30, hint: 'Cuesta $500.000, pero ganás muchísima reputación y prensa.', fixedDesc: 'La donación fue un éxito. La pista central ahora lleva tu nombre y la prensa de {{COUNTRY}} habla maravillas de vos.' },
+      { text: 'Organizar una exhibición', stat: 'media', delta: 1, money: 0, repDelta: 20, skillStat: 'speed', skillBonus: 1, skillFail: -1, hint: 'Velocidad: das un buen show o quedás en ridículo frente a tus compatriotas.', successDesc: 'Te subiste a un karting y diste un espectáculo increíble para los fans. Ayudaste a recaudar fondos para el circuito sin gastar de tu bolsillo.', failDesc: 'Quisiste dar un show pero exigiste el karting de más y rompiste el motor. Fue bastante bochornoso.' },
+      { text: 'No involucrarte', stat: 'media', delta: -1, money: 0, repDelta: -10, hint: 'Perdés un poco de imagen pública en tu país.', fixedDesc: 'Agradeciste la invitación pero decidiste no involucrarte. Algunos fanáticos locales se decepcionaron, pero mantuviste tu enfoque en la F1.' }
+    ]
+  },
+  {
+  icon: '🏟️',
+  title: 'Carrera de casa',
+  desc: 'El siguiente GP se corre en {{COUNTRY}}. Tu familia está en las tribunas, la prensa local lleva semanas hablando solo de vos. La presión es diferente.',
+  choices: [
+    { text: 'Disfrutarlo como un impulso', stat: 'speed', delta: 0, skillStat: 'speed', skillBonus: 4, skillFail: -1, repDelta: 25, hint: '🏎️ Velocidad: la energía de la multitud puede darte alas o apagarte.', successDesc: 'El estadio entero coreaba tu nombre en la parada. Sacaste energías de donde no sabías que tenías. Fue tu mejor carrera de la temporada.', failDesc: 'La presión te bloqueó desde los entrenamientos libres. Cada declaración a la prensa local pesaba el doble. Cometiste un error básico en clasificación y largaste mas atras que lo habitual. La tribuna hizo silencio.' },
+    { text: 'Tratarlo como cualquier otra carrera', stat: 'tyres', delta: 1, hint: 'Resultado fijo: mantenés la cabeza fría (+1 Gestión).', fixedDesc: 'No diste declaraciones extra, evitaste el ruido mediático y te concentraste en el proceso. Tu resultado fue sólido aunque no brillante. A veces lo más profesional no es lo más emocionante.' }
+  ]
+},
 ];
 
 
@@ -739,6 +759,34 @@ const MINIGAMES = [
       { text: 'Abortar la vuelta y preparar otra', pureLuck: true, baseBonus: 0.75, noWinOnSuccess: true, desc: 'Suerte: esperar que exista espacio en el siguiente intento.', successDesc: 'La siguiente vuelta estuvo completamente limpia. Pudiste atacar sin tráfico.', failDesc: 'Volviste a encontrarte tráfico. La clasificación terminó siendo una frustración.' }
     ]
   },
+  {
+    icon: '🛞',
+    title: 'Flat Spot',
+    desc: 'Bloqueaste una rueda en la frenada y ahora sentís una vibración fuerte en todo el auto.',
+    choices: [
+      { text: 'Adaptar la frenada y controlar la vibración', skillStat: 'tyres', baseBonus: 0.25, statBonus: 0.45, desc: 'Gestión: minimizar el daño a un neumático ya castigado.', noWinOnSuccess: true, successDesc: 'Cambiaste tus puntos de frenada y la vibración se mantuvo bajo control. El neumático sobrevivió hasta la bandera.', failDesc: 'La vibración empeoró cada vuelta. El neumático quedó destruido y tu ritmo cayó muchísimo.' },
+      { text: 'Parar en boxes antes de tiempo', skillStat: 'speed', baseBonus: 0.25, statBonus: 0.45, desc: 'Velocidad: hacer un pit stop no planeado y volar en pista libre para recuperar el tiempo.', noWinOnSuccess: true, successDesc: 'El equipo hizo un pit stop perfecto y tus vueltas voladoras con gomas frescas mitigaron el daño.', failDesc: 'La parada te hundió en el tráfico y el ritmo con las gomas nuevas no alcanzó para salvar la carrera.' }
+    ]
+  },
+  {
+    id: 'midfield',
+    icon: '🌦️',
+    title: 'La pista se está secando',
+    desc: 'Arrancaste con lluvia extrema, pero dejó de llover y se empieza a formar una fina línea seca. Pisar un charco o la línea blanca es trompo seguro. Estás peleando por entrar a los puntos.',
+    choices: [
+      { text: 'Arriesgar y ser el primero en poner neumaticos de seco', skillStat: 'rain', baseBonus: 0.15, statBonus: 0.5, desc: 'Lluvia: volar sobre la pista mixta con puro tacto.', noWinOnSuccess: true, onFailDnf: true, successDesc: 'Volaste. Mientras los demás patinaban con gomas gastadas o hacían trompos, sacaste una ventaja bestial con las slicks y rescataste grandes puntos.', failDesc: 'Pusiste slicks demasiado temprano. Apenas saliste de boxes pisaste un parche húmedo, perdiste el control y destruiste el auto contra el muro.' },
+      { text: 'Jugar seguro y esperar que paren los demás', skillStat: 'tyres', baseBonus: 0.35, statBonus: 0.35, desc: 'Gestión: sobrevivir buscando charcos hasta que sea el momento ideal.', noWinOnSuccess: true, successDesc: 'Te dedicaste a enfriar tus gomas en la recta y esperaste el momento exacto. No fuiste el más rápido, pero con la estrategia conservadora sumaste puntos a casa.', failDesc: 'Tus gomas de lluvia se sobrecalentaron por completo y el auto dejó de doblar. Perdiste muchísimo tiempo antes del cambio y caíste al fondo del pelotón.' }
+    ]
+  },
+  {
+  icon: '🔄',
+  title: 'Vuelta de instalación que se complica',
+  desc: 'Durante la vuelta de formación notas que el auto se comporta de forma extraña. Tenés que decidir si volvés a boxes para revisarlo o si largás igual y confiás en que no sea nada grave.',
+  choices: [
+    { text: 'Volver a boxes y largar desde el pit lane', skillStat: 'tyres', baseBonus: 0.2, statBonus: 0.3, noWinOnSuccess: true, desc: 'Gestión: sacrificar posiciones para asegurarte de que el auto esté en condiciones.', successDesc: 'El equipo detectó el problema y pudo solucionarlo antes de la largada. Saliste desde el pit lane, pero con el auto en perfectas condiciones. Con buen ritmo y una estrategia inteligente, remontaste hasta el sexto puesto.', failDesc: 'El problema no era tan grave como parecía y la revisión te hizo perder demasiado tiempo. Cuando finalmente saliste del pit lane, ya estabas muy lejos del resto y terminaste fuera de los puntos.' },
+    { text: 'Largar igual y confiar en que aguante', skillStat: 'quali', baseBonus: 0.25, statBonus: 0.35, noWinOnSuccess: true, desc: 'Clasificación: conocer el comportamiento del auto te permite adaptarte rápidamente a cualquier anomalía', successDesc: 'El comportamiento extraño no empeoró. Te adaptaste rápidamente y encontraste un buen ritmo desde las primeras vueltas. Aprovechaste cada oportunidad y terminaste sumando buenos puntos', failDesc: 'El problema empeoró apenas comenzó la carrera. El auto perdió rendimiento y quedaste expuesto en las rectas. Te superaron varios rivales en pocas vueltas y no pudiste defenderte.' }
+  ]
+},
 ];
 
 
@@ -910,7 +958,7 @@ const INTERVIEWS = [
     {
       id: 'f1_new_brand_takeover',
       title: 'Terremoto Corporativo',
-      desc: 'Una de las escuderías históricas acaba de ser comprada por un gigante automotriz de cara a la próxima temporada. ¿Cómo crees que afectará esto al balance de poder?',
+      desc: 'Una de las escuderías acaba de ser comprada por un gigante automotriz de cara a la próxima temporada. ¿Cómo crees que afectará esto al balance de poder?',
       choices: [
         { text: '"Darán un salto de calidad increíble."', pers: 'team', delta: 10, pers2: 'media', delta2: 10, hint: 'Elogias el potencial del nuevo proyecto (+Equipo, +Medios).', fixedDesc: '"Con esa inyección de capital e infraestructura, seguro darán un salto enorme. Tenemos que estar preparados."' },
         { text: '"El dinero no compra campeonatos."', pers: 'aggressiveness', delta: 20, hint: 'Desafiás a los nuevos dueños (+Agresividad).', fixedDesc: '"Pueden poner todo el dinero que quieran, pero la experiencia en pista no se compra de la noche a la mañana. Tienen mucho que demostrar."' },
@@ -1029,12 +1077,22 @@ const INTERVIEWS = [
     ]
   },
   {
-    id: 'rival_crash',
+    id: 'generic_rival_crash',
     title: 'Toque polémico en pista',
     desc: 'Un piloto experimentado te chocó en carrera. Ambos quedaron fuera. ¿Qué le decís a la TV?',
     choices: [
       { text: 'Llamarlo ciego y viejo', pers: 'aggressiveness', delta: 25, hint: 'Guerra declarada (+Agresividad).', fixedDesc: '"Evidentemente ya no ve bien. Debería pensar en el retiro." Iniciaste una guerra en el paddock.' },
       { text: '"Son cosas de las carreras"', pers: 'media', delta: -5, pers2: 'team', delta2: 10, hint: 'Diplomático, no entrás en juegos.', fixedDesc: 'Mantuviste la calma. Tu equipo apreció que no generaras un circo mediático extra.' }
+    ]
+  },
+  {
+    id: 'generic_polemic_penalty',
+    title: 'La Penalización Polémica',
+    desc: 'En la carrera anterior la FIA te sancionó de forma dudosa y perdiste posiciones valiosas. Un periodista insiste en que des tu opinión.',
+    choices: [
+      { text: '"Los comisarios no entienden nada de carreras"', pers: 'aggressiveness', delta: 30, money: -25000, hint: 'Ataque frontal (+Agresividad brutal, -$25.000 multa).', fixedDesc: '"Es una vergüenza, parece que nunca se subieron a un auto." Recibiste una fuerte multa de la FIA, pero los fans aplaudieron tu sinceridad.' },
+      { text: '"Aceptamos la decisión y miramos adelante"', pers: 'media', delta: 15, pers2: 'team', delta2: 15, hint: 'Diplomático (Sube Equipo y Mediático).', fixedDesc: 'El equipo te felicitó por no generar más polémica y limpiar la imagen de la escudería frente a los medios.' },
+      { text: '"El auto no daba para más de todos modos"', pers: 'team', delta: -15, pers2: 'aggressiveness', delta2: 10, hint: 'Echás culpas (Baja Equipo, Sube Agresividad).', fixedDesc: 'Esquivaste la sanción minimizando al auto. Los ingenieros del equipo se miraron de reojo al escuchar tus declaraciones.' }
     ]
   },
   {
@@ -1257,7 +1315,17 @@ const INTERVIEWS = [
     choices: [
       { text: 'Continuar', pers: 'aggressiveness', delta: 0, hint: '', fixedDesc: '' }
     ]
-  }
+  },
+  {
+   id: 'generic_social_media',
+   title: '🗣️ El peso de las redes',
+   desc: 'Un periodista joven te pregunta cómo manejás la presión de las redes sociales y los comentarios de los fanáticos.',
+   choices: [
+      { text: '"Las uso, no me usan a mí."', pers: 'media', delta: 10, hint: 'Mostrás control y madurez digital (+Mediatico).', fixedDesc: '"Tengo el teléfono en modo avión el jueves antes de la carrera. El resto de la semana sí, reviso lo que se dice, aprendo. Pero cuando me subo al cockpit, eso no existe."' },
+      { text: '"Hay días que cierro la app y no la abro."', pers: 'media', delta: 5, pers2: 'team', delta2: 5, hint: 'Respuesta honesta que genera empatía (+Mediatico, +Equipo).', fixedDesc: '"Te mentiría si te dijera que todo lo que se escribe no llega. Hay semanas que cierro todo y me enfoco en lo que puedo controlar. La gente de afuera no ve los entrenamientos de las 6 de la mañana."' },
+      { text: '"No las leo. Punto."', pers: 'aggressiveness', delta: 10, hint: 'Actitud de enfoque total (+Agresividad).', fixedDesc: '"Cero. No las leo. Hay gente que paga para eso. Mi trabajo es el cockpit, no la pantalla."' }
+    ]
+  },
 ];
 
 
@@ -1288,6 +1356,10 @@ function applyInterviewConsequences(c, ivId) {
   let actualRepDelta = c.repDelta || 0;
   if (actualRepDelta !== 0) {
     G.reputation += actualRepDelta;
+  }
+  
+  if (c.money) {
+    G.money += c.money;
   }
   
   return actualRepDelta; // return for logging purposes
@@ -1433,7 +1505,7 @@ function getInterviewPool(postSeasonId = null) {
     }
 
     // General interviews
-    if (iv.id === 'rival_crash' && G.seasons.filter(s => s.cat === 'F1').length < 2) return false;
+    if (iv.id.startsWith('generic_') && G.seasons.filter(s => s.cat === 'F1').length < 2) return false;
     if (iv.id === 'bad_streak' && (G.wins > 0 || G.podiums > 0)) return false;
     return true;
   });
@@ -1580,7 +1652,7 @@ function showPressConference(queue, logs = [], isIntro = true) {
       desc: summaryHtml,
       borderColor: UI_COLORS.blue,
       animate: true,
-      choices: [{ text: 'Finalizar Rueda de Prensa' }]
+      choices: [{ text: 'Finalizar Rueda de Prensa', onClick: () => processSeasonStep() }]
     });
     return;
   }
@@ -1851,8 +1923,9 @@ function updateRivalries(cat, champ) {
     }
 
     // Check nemesis retirement
-    if (nemDriver && !G.nemesis.retired && nemDriver.age >= 40) {
+    if (nemDriver && !G.nemesis.retired && nemDriver.age >= 40 && !G.nemesis.ultimatumActive) {
       G.nemesis.retired = true;
+      if (G.lastResult) G.lastResult.nemesisRetiredThisSeason = true;
       G._seasonSteps = G._seasonSteps || [];
       G._seasonSteps.push('nemesis_retired');
     }
@@ -1925,7 +1998,7 @@ function showInterview(postSeasonId = null) {
       borderColor: UI_COLORS.danger,
       bgGradient: 'rgba(239, 68, 68, 0.15)',
       animate: true,
-      choices: [{ text: 'Continuar' }]
+      choices: [{ text: 'Continuar', onClick: () => processSeasonStep() }]
     });
     return;
   }
@@ -1957,7 +2030,7 @@ function showInterview(postSeasonId = null) {
            borderColor: isEventMode ? UI_COLORS.accent : UI_COLORS.blue,
            bgGradient: isEventMode ? 'rgba(235, 180, 50, 0.15)' : 'rgba(74, 144, 232, 0.15)',
            animate: true,
-           choices: [{ text: 'Continuar' }]
+           choices: [{ text: 'Continuar', onClick: () => processSeasonStep() }]
         });
       }
     };
@@ -2874,6 +2947,17 @@ function processSeasonStep() {
   else if (step === 'nemesis_h2h_ultimatum_lose') showNemesisUltimatumResolveEvent(false);
   else if (step === 'compute') {
     computeSeasonResult();
+    const priority = (s) => {
+      if (s === 'minigame' || s === 'interactive_minigame') return 1;
+      if (s === 'event' || (typeof s === 'string' && s.startsWith('event:ev_'))) return 2;
+      if (typeof s === 'string' && s.startsWith('nemesis_')) return 3;
+      if (typeof s === 'string' && s.startsWith('brand_arrival:')) return 4;
+      if (s === 'shadow_offer') return 5;
+      if (s === 'regulation') return 6;
+      if (isPressStep(s)) return 10;
+      return 7;
+    };
+    if (G._seasonSteps) G._seasonSteps.sort((a, b) => priority(a) - priority(b));
     processSeasonStep();
   }
 }
@@ -3574,7 +3658,7 @@ function showSponsorEvent() {
           title: `¡Contrato firmado con ${opt.brand}!`,
           desc: `${fmt$(opt.fixedPaid)} depositados en tu cuenta.${opt.objective !== 'none' ? ` Objetivo: <strong>${opt.label}</strong> para cobrar el bono de ${fmt$(opt.bonusAmount)}.` : ' Sin objetivo de rendimiento.'}`,
           borderColor: UI_COLORS.success,
-          choices: [{ text: 'Continuar' }]
+          choices: [{ text: 'Continuar', onClick: () => processSeasonStep() }]
         });
       }
     }))
@@ -3681,7 +3765,7 @@ function showNemesisSeatStealEvent() {
             title: 'Mensaje enviado',
             desc: `Tu mánager habló con el director del equipo. El asiento de ${rawName} aparecerá disponible en el mercado de contratos.`,
             borderColor: UI_COLORS.success,
-            choices: [{ text: 'Continuar' }]
+            choices: [{ text: 'Continuar', onClick: () => processSeasonStep() }]
           });
         }
       },
@@ -3700,6 +3784,12 @@ function showNemesisUltimatumWarnEvent() {
   const teamName = G.team ? G.team.name : 'tu equipo';
 
   G.storyFlags['nemesis_ultimatum_used'] = true;
+
+  if (G.f1ContractYearsLeft === 0) {
+    G.f1ContractYearsLeft = 1;
+    G._seasonEventLogs = G._seasonEventLogs || [];
+    G._seasonEventLogs.push(`ℹ️ Como tu contrato vencía este año, ${teamName} te lo extendió automáticamente para definir el duelo contra ${rawName}.`);
+  }
 
   showEventScene({
     icon: '⚡',
@@ -3722,6 +3812,8 @@ function showNemesisUltimatumResolveEvent(playerWon) {
   const teamName = G.team ? G.team.name : 'el equipo';
 
   if (playerWon) {
+    G.achievementsProgress = G.achievementsProgress || {};
+    G.achievementsProgress['nemesis_ultimatum_won'] = true;
     const nemDriver = G.aiRoster && G.aiRoster.find(d => d.id === G.nemesis.id);
     if (nemDriver && G.team) {
       const worseTeams = TEAMS['F1'].filter(t => t.stars < G.team.stars);
@@ -3780,6 +3872,8 @@ function showNemesisUltimatumResolveEvent(playerWon) {
       }]
     });
   } else {
+    G.achievementsProgress = G.achievementsProgress || {};
+    G.achievementsProgress['nemesis_ultimatum_lost'] = true;
     G.f1ContractYearsLeft = 0;
     G.reputation = Math.max(0, G.reputation - 20);
     G._seasonEventLogs = G._seasonEventLogs || [];
@@ -3825,7 +3919,7 @@ function showShadowOfferEvent() {
             title: 'Lealtad ante todo',
             desc: logText,
             borderColor: UI_COLORS.blue,
-            choices: [{ text: 'Continuar' }]
+            choices: [{ text: 'Continuar', onClick: () => processSeasonStep() }]
           });
         }
       },
@@ -3848,7 +3942,7 @@ function showShadowOfferEvent() {
             title: 'El trato está hecho',
             desc: logText,
             borderColor: UI_COLORS.accent,
-            choices: [{ text: 'Continuar' }]
+            choices: [{ text: 'Continuar', onClick: () => processSeasonStep() }]
           });
         }
       }
@@ -3880,7 +3974,7 @@ function showRegulationEvent() {
       title: 'Fuera de las reuniones técnicas',
       desc: `La FIA anunció un nuevo reglamento técnico que entrará en vigor al final de esta temporada. Tu directiva ya sospecha de tu pre-contrato secreto: fuiste excluido de las reuniones técnicas a puertas cerradas.<br><br><span style="color:var(--muted)">${logText}</span>`,
       borderColor: UI_COLORS.danger,
-      choices: [{ text: 'Continuar' }]
+      choices: [{ text: 'Continuar', onClick: () => processSeasonStep() }]
     });
     return;
   }
@@ -3900,7 +3994,7 @@ function showRegulationEvent() {
           G.nextSeasonRegBonus = -1;
           const logText = `Decisión: Apostaste todo al campeonato actual.`;
           G._seasonEventLogs.push(logText);
-          showEventScene({ icon: '✍️', title: 'Decisión tomada', desc: logText, choices: [{ text: 'Continuar' }] });
+          showEventScene({ icon: '✍️', title: 'Decisión tomada', desc: logText, choices: [{ text: 'Continuar', onClick: () => processSeasonStep() }] });
         }
       },
       {
@@ -3912,7 +4006,7 @@ function showRegulationEvent() {
           G.nextSeasonRegBonus = 0;
           const logText = `Decisión: Dividiste los recursos equitativamente.`;
           G._seasonEventLogs.push(logText);
-          showEventScene({ icon: '✍️', title: 'Decisión tomada', desc: logText, choices: [{ text: 'Continuar' }] });
+          showEventScene({ icon: '✍️', title: 'Decisión tomada', desc: logText, choices: [{ text: 'Continuar', onClick: () => processSeasonStep() }] });
         }
       },
       {
@@ -3924,7 +4018,7 @@ function showRegulationEvent() {
           G.nextSeasonRegBonus = 1;
           const logText = `Decisión: Apostaste el desarrollo al nuevo reglamento.`;
           G._seasonEventLogs.push(logText);
-          showEventScene({ icon: '✍️', title: 'Decisión tomada', desc: logText, choices: [{ text: 'Continuar' }] });
+          showEventScene({ icon: '✍️', title: 'Decisión tomada', desc: logText, choices: [{ text: 'Continuar', onClick: () => processSeasonStep() }] });
         }
       }
     ]
@@ -5149,6 +5243,11 @@ function showRandomEvent(forcedId = null) {
       if (G._directivaUsed) return false; // Only once per career
       if (Math.random() >= 0.5) return false; // 50% chance if conditions met
     }
+    if (ev.id === 'tribute_karting_veteran') {
+      if (G.age < 30) return false;
+      if ((G.f1Titles || 0) < 1) return false;
+      if (G._tributeDone) return false; // Una sola vez
+    }
     if (ev.id === 'peer_choque' || ev.id === 'peer_amigo' || ev.id === 'peer_numero1' || ev.id === 'peer_wall') {
       if (!G.peer) return false; // Peer must exist
       if (G.catIndex < 5) return false; // F1 only
@@ -5229,6 +5328,9 @@ function showRandomEvent(forcedId = null) {
   if (ev.id === 'directiva') {
     G._directivaUsed = true;
   }
+  if (ev.id === 'tribute_karting_veteran') {
+    G._tributeDone = true;
+  }
 
   let evTitle = ev.title;
   let evDesc = ev.desc;
@@ -5241,6 +5343,10 @@ function showRandomEvent(forcedId = null) {
                    .replace(/\{\{NEMESIS_CAT\}\}/g, G.nemesis.cat || 'otra categoría')
                    .replace(nemRegex, nStyle);
   }
+
+  const countryName = (NATIONALITIES.find(n => n.flag === G.flag) || {name: 'tu país'}).name;
+  evTitle = evTitle.replace(/\{\{COUNTRY\}\}/g, countryName);
+  evDesc = evDesc.replace(/\{\{COUNTRY\}\}/g, countryName);
 
   document.getElementById('ev-icon').textContent = ev.icon;
   document.getElementById('ev-title').innerHTML = evTitle;
@@ -7863,6 +7969,8 @@ function showContracts() {
       const oldTeamName = G.team ? G.team.name : null;
       if (G._nemesisSeatTarget === team.name) {
         G._stoleNemesisSeatThisYear = true;
+        G.achievementsProgress = G.achievementsProgress || {};
+        G.achievementsProgress['nemesis_seat_stolen'] = true;
       }
       G.team = team;
       G.academyPromisedTeam = null;
@@ -8550,7 +8658,12 @@ const ACHIEVEMENTS = [
   { id: 'shadow_scam', name: 'La Estafa', desc: 'Aceptaste un pre contrato y el auto resultó ser poco competitivo.', icon: '🤡', tier: 'silver', condition: () => (G.achievementsProgress || {})['shadow_scam'] },
   { id: 'shadow_success', name: 'La Decisión Correcta', desc: 'Aceptaste un pre contrato y el auto resultó ser un misil.', icon: '🔮', tier: 'silver', condition: () => (G.achievementsProgress || {})['shadow_success'] },
   { id: 'king_of_eras', name: 'El Rey de Cada Era', desc: 'Ganaste campeonatos bajo 3 reglamentos diferentes.', icon: '📜', tier: 'gold', condition: () => ((G.achievementsProgress || {})['reg_changes_won'] || []).length >= 3 },
-  { id: 'look_at_me_now', name: 'Ahora Mírame', desc: 'Ganaste el campeonato mundial de F1 después de haber sido expulsado de una academia.', icon: '🔥', tier: 'gold', condition: () => G.f1Titles > 0 && (G.achievementsProgress || {})['dropped_from_academy'] },
+  { id: 'look_at_me_now', name: 'Ahora Mírame', desc: 'Ganaste el campeonato mundial de F1 después de haber sido expulsado de una academia.', icon: '😡', tier: 'gold', condition: () => G.f1Titles > 0 && (G.achievementsProgress || {})['dropped_from_academy'] },
+  { id: 'executioner', name: 'El Verdugo', desc: 'Le ganaste el ultimátum a tu némesis, obligándolo a abandonar el equipo.', icon: '⚔️', tier: 'silver', condition: () => (G.achievementsProgress || {})['nemesis_ultimatum_won'] },
+  { id: 'karma', name: 'Karma', desc: 'Perdiste el ultimátum contra tu némesis y te echaron del equipo.', icon: '🪃', tier: 'silver', condition: () => (G.achievementsProgress || {})['nemesis_ultimatum_lost'] },
+  { id: 'seat_thief', name: 'El Ladrón de Asientos', desc: 'Le robaste la butaca a tu némesis firmando con su equipo a sus espaldas.', icon: '🥷', tier: 'silver', condition: () => (G.achievementsProgress || {})['nemesis_seat_stolen'] },
+  { id: 'pioneer', name: 'Creando historia', desc: 'Ganaste un campeonato con una de las nuevas marcas que entraron a la F1.', icon: '🚀', tier: 'gold', condition: () => G.f1Titles > 0 && G.seasons.some(s => s.champ === 1 && s.cat === 'F1' && ['BYD', 'Porsche', 'Toyota', 'Andretti', 'Hyundai'].includes(s.teamName)) },
+  { id: 'nickname_collector', name: 'Múltiples Personalidades', desc: 'La prensa te puso al menos 3 apodos distintos a lo largo de tu carrera.', icon: '🎭', tier: 'silver', condition: () => G.nicknameHistory && G.nicknameHistory.length >= 3 },
   // Platino
   { id: 'undefeated_h2h', name: 'Imbatible en el equipo', desc: 'Terminaste tu carrera deportiva sin haber perdido nunca un duelo de compañeros.', icon: '🤝', tier: 'platinum', condition: () => G.isRetired && G.seasons.length > 0 && (G.careerH2HLosses || 0) === 0 },
   { id: 'fangio', name: 'Como Fangio!', desc: 'Ganaste el campeonato del mundo con cuatro equipos diferentes.', icon: '🏆', tier: 'platinum', condition: () => new Set(G.seasons.filter(s => s.champ === 1 && s.cat === 'F1').map(s => s.teamName)).size >= 4 },

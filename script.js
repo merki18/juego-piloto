@@ -4546,12 +4546,19 @@ function afterSummary() {
   goToContracts(catIdx);
 }
 
-function showAcademyF2BlockEvent(pendingSteps = []) {
+function showAcademyF2BlockEvent(pendingSteps = [], reason = 'no_seats') {
   const academy = ACADEMIES.find(a => a.id === G.academy);
+  let descText = `Aunque tienes los puntos para subir a F1, los directivos de la academia te piden que hagas un año más en F2 para "terminar de desarrollarte"`;
+  if (reason === 'not_top_5') {
+    descText += `, ya que esperaban verte en una mejor posicion este año y quieren asegurarse de que estés listo.`;
+  } else {
+    descText += `, ya que no tienen asientos disponibles en F1 para ti en este momento.`;
+  }
+
   showEventScene({
     icon: `<img src="${academy.icon}" width="40" style="object-fit:contain">`,
     title: `Reunión con ${academy.name}`,
-    desc: `Aunque tienes los puntos para subir a F1, los directivos de la academia te piden que hagas un año más en F2 para "terminar de desarrollarte", ya que no tienen asientos disponibles en F1 para ti en este momento.`,
+    desc: descText,
     choices: [
       {
         text: 'Hacerles caso y seguir en F2',
@@ -4649,7 +4656,7 @@ function showAcademyMainTeamPromotionEvent(pendingSteps, promisedTeamName) {
         G.money += salary; G.totalMoney += salary;
         
         G._seasonEventLogs = G._seasonEventLogs || [];
-        G._seasonEventLogs.push(`🌟 ¡Te has graduado de la ${academy.name}! Al llegar al equipo principal, ya no eres un piloto junior, sino una estrella consagrada de la Fórmula 1.`);
+        G._seasonEventLogs.push(`🌟 ¡Te has graduado de la academia de ${academy.name}! Al llegar al equipo principal, ya no eres un piloto junior, sino una estrella consagrada de la Fórmula 1.`);
         G.academy = null;
         updateTopBar();
         
@@ -4697,7 +4704,7 @@ function showAcademyPromisedSeatEvent(pendingSteps, promisedTeamName, champ) {
         // Graduarse si asciende directo al principal
         if (academy && academy.f1Teams[0] === offerTeam.name) {
           G._seasonEventLogs = G._seasonEventLogs || [];
-          G._seasonEventLogs.push(`🌟 ¡Te has graduado de la ${academy.name}! Al firmar con el equipo principal, ya no eres un piloto junior, sino una estrella consagrada.`);
+          G._seasonEventLogs.push(`🌟 ¡Te has graduado de la academia de ${academy.name}! Al firmar con el equipo principal, ya no eres un piloto junior, sino una estrella consagrada.`);
           G.academy = null;
           updateTopBar();
         }
@@ -4722,6 +4729,66 @@ function showAcademyPromisedSeatEvent(pendingSteps, promisedTeamName, champ) {
         G._prevCatIdx = 4;
 
         G._nextSteps = [...pendingSteps];
+        processNextStep();
+      }
+    }]
+  });
+}
+
+function showAcademyDirectPromotionEvent(pendingSteps, promisedTeamName, champ) {
+  const academy = ACADEMIES.find(a => a.id === G.academy);
+  
+  let desc = '';
+  if (champ === 1 && academy.f1Teams[0] === promisedTeamName) {
+    desc = `¡Felicidades Campeón! Has arrasado en esta temporada de F2 y superaste todas nuestras expectativas. Como recompensa a este ascenso meteórico, hemos decidido subirte directamente al equipo principal. ¡Tienes un asiento garantizado en ${promisedTeamName} para esta temporada!`;
+  } else {
+    desc = `Tu rendimiento durante la temporada de F2 nos ha convencido de que estás listo para dar el salto. Hemos conseguido asegurarte un asiento en ${promisedTeamName}. Si lo haces bien, tendrás prioridad para ocupar un asiento en nuestro equipo principal cuando se presente la oportunidad.`;
+  }
+
+  showEventScene({
+    icon: `<img src="${academy.icon}" width="40" style="object-fit:contain">`,
+    title: 'Llegada a la F1',
+    desc: desc,
+    borderColor: UI_COLORS.accent,
+    choices: [{
+      text: '¡Firmar el contrato!',
+      subtitle: 'Ir a firmar tu nuevo contrato en F1.',
+      style: { borderColor: UI_COLORS.accent, color: UI_COLORS.accent },
+      onClick: () => {
+        const offerTeam = TEAMS['F1'].find(t => t.name === promisedTeamName);
+        G.team = offerTeam;
+        
+        if (academy && academy.f1Teams[0] === promisedTeamName) {
+          G.pendingAcademyInterview = 'f1_academy_sign_main';
+          G.achievementsProgress = G.achievementsProgress || {};
+          G.achievementsProgress['academy_straight_to_main'] = true;
+        } else {
+          G.pendingAcademyInterview = 'f1_academy_sign_filial';
+        }
+        
+        if (academy && academy.f1Teams[0] === offerTeam.name) {
+          G._seasonEventLogs = G._seasonEventLogs || [];
+          G._seasonEventLogs.push(`🏆 ¡Te has graduado de la academia de ${academy.name}! Al firmar con el equipo principal, ya no eres un piloto junior, sino una estrella consagrada.`);
+          G.academy = null;
+          updateTopBar();
+        }
+        
+        G.f1ContractYearsLeft = 1;
+        G.f1ContractH2HWins = 0;
+        G.f1ContractH2HLosses = 0;
+        if (G.catIndex === 5) refreshTeammate(true);
+        
+        if (G.aiRoster && offerTeam.name) {
+          const newTeamDrivers = G.aiRoster.filter(d => d.cat === 'F1' && d.team === offerTeam.name);
+          if (newTeamDrivers.length > 1) {
+            const displaced = newTeamDrivers.find(d => !G.peer || d.id !== G.peer.id);
+            if (displaced) {
+              G.aiRoster = G.aiRoster.filter(d => d.id !== displaced.id);
+            }
+          }
+        }
+        
+        G._nextSteps = pendingSteps;
         processNextStep();
       }
     }]
@@ -4971,10 +5038,26 @@ function goToContracts(oldCatIdx, repeatCat = false, skipContracts = false) {
         return G.reputation >= reqs.rep && ovr >= reqs.ovr;
       });
 
-      if (validAcademyOffers.length === 0) {
-        showAcademyF2BlockEvent(steps);
+      const champPos = G.lastResult.champ;
+
+      if (champPos > 5) {
+        showAcademyF2BlockEvent(steps, 'not_top_5');
         return;
       }
+
+      if (validAcademyOffers.length === 0) {
+        showAcademyF2BlockEvent(steps, 'no_seats');
+        return;
+      }
+
+      // PROMOCIÓN DIRECTA
+      let targetTeam = validAcademyOffers[validAcademyOffers.length - 1].name; // Default a la filial (equipo de menos estrellas)
+      if (champPos === 1 && validAcademyOffers.length > 1) {
+          // Si salió campeón, le damos el mejor equipo disponible (suele ser el equipo principal)
+          targetTeam = validAcademyOffers[0].name;
+      }
+      showAcademyDirectPromotionEvent(steps.filter(s => s !== 'contracts'), targetTeam, champPos);
+      return;
     }
   }
 
@@ -5822,6 +5905,15 @@ const INTERACTIVE_MINIGAMES = [
     instructions: 'Deslizá el dedo o el mouse de lado a lado para moverte libremente. ¡Los rezagados se moverán intentando cerrarte el paso! Si los tocás, rompés el alerón. Pasá a los 5 para ganar.',
     minCat: 1,
   },
+  {
+    id: 'img_gap',
+    label: '🏎️ El Hueco',
+    icon: '🏎️',
+    title: 'EL HUECO',
+    situation: 'Las luces se apagan y llegás a la primera curva en medio de un pelotón. Los autos de adelante empiezan a cerrarse entre sí, pero durante unos instantes puede aparecer una oportunidad para meterte por dentro y ganar varias posiciones. Tenés que reconocer el momento exacto en el que se abre el hueco.',
+    instructions: 'Observá cómo se mueve el pelotón. Cuando veas que el interior de la curva está abierto, presioná DIVEBOMB. Demasiado pronto: puerta cerrada. Demasiado tarde: no había espacio.',
+    minCat: 1,
+  },
 ];
 
 // ── Show Interactive Minigame Intro ──
@@ -5835,6 +5927,7 @@ function showInteractiveMinigame(forcedId = null) {
     const winGames = ['img_reaction', 'img_pitstop', 'img_timing', 'img_defense', 'img_slipstream', 'img_strategy', 'img_comeback'];
     if (winGames.includes(mg.id) && (G.team.stars || 0) < 3) return false;
     if (mg.id === 'img_rain') return false; // temporarily disabled
+    if (mg.id === 'img_gap') return false; // temporarily disabled
     return true;
   });
   if (eligible.length === 0) { processSeasonStep(); return; }
@@ -5877,6 +5970,7 @@ function showInteractiveMinigame(forcedId = null) {
       case 'img_tyres':       startTyresGame();       break;
       case 'img_reboot':      startRebootGame();      break;
       case 'img_comeback':    startComebackGame();    break;
+      case 'img_gap':         startGapGame();         break;
     }
   };
   goto('screen-img-intro');
@@ -7766,6 +7860,338 @@ function startComebackGame() {
   
   animFrame = requestAnimationFrame(loop);
 }
+// ═══════════════════════════════════════════════════════════
+//  EL HUECO — Divebomb en la primera curva
+// ═══════════════════════════════════════════════════════════
+function startGapGame() {
+  const area = document.getElementById('img-game-area');
+  area.innerHTML = `
+    <div style="font-size:32px;margin-bottom:4px">🏎️</div>
+    <div class="heading" style="font-size:17px;margin-bottom:2px">EL HUECO</div>
+    <div class="label" id="img-gap-status" style="color:var(--muted);margin-bottom:10px;min-height:20px">Observá el pelotón...</div>
+    <canvas id="img-gap-canvas" width="300" height="280"
+      style="display:block;margin:0 auto 12px;border-radius:12px;border:1px solid rgba(255,255,255,0.15);background:#0a0e1a;"></canvas>
+    <button id="img-gap-btn"
+      style="width:100%;max-width:300px;padding:16px;font-size:20px;font-weight:900;letter-spacing:2px;border-radius:12px;border:none;background:#e8c84a;color:#111;cursor:pointer;text-transform:uppercase;transition:transform 0.1s,box-shadow 0.1s;box-shadow:0 4px 16px rgba(232,200,74,0.4);display:block;margin:0 auto;">
+      DIVEBOMB
+    </button>
+  `;
+
+  const canvas  = document.getElementById('img-gap-canvas');
+  const ctx     = canvas.getContext('2d');
+  const statusEl = document.getElementById('img-gap-status');
+  const btn      = document.getElementById('img-gap-btn');
+  const W = canvas.width, H = canvas.height;
+
+  // ── Timings (ms) ──────────────────────────────────────────
+  const rT = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+  const PHASE_OBSERVE   = rT(1500, 3200);  // pelotón compacto, el jugador solo mira
+  const PHASE_SPREAD    = rT(1000, 1600);  // los autos empiezan a abrirse
+  const GAP_OPEN_START  = PHASE_OBSERVE + PHASE_SPREAD;
+  const GAP_DURATION    = rT(800, 1300);  // ventana perfecta (~1 seg)
+  const GAP_CLOSING     = rT(600, 900);   // el hueco se empieza a cerrar
+  const GAME_END        = GAP_OPEN_START + GAP_DURATION + GAP_CLOSING + 600;
+
+  // ── State ──────────────────────────────────────────────────
+  let startTime   = null;
+  let elapsed     = 0;
+  let decided     = false;
+  let animFrame;
+
+  // ── Rival car positions (top-view, vista desde arriba) ────
+  // Cada auto: { bx, by } = posición base (compacta), spread{ x,y } = desplazamiento en fase abierta
+  // La curva es hacia la izquierda (interior = lado izquierdo del canvas)
+  const playerX = W / 2, playerY = H - 42;
+  const rO = (max) => (Math.random() - 0.5) * max * 2; // offset aleatorio para que no sea siempre igual
+
+  const rivals = [
+    // fila delantera
+    { bx: W*0.30 + rO(10), by: H*0.18 + rO(5), sx: -55 + rO(10), sy: -10 + rO(5) },
+    { bx: W*0.50 + rO(10), by: H*0.14 + rO(5), sx:  10 + rO(10), sy: -18 + rO(5) },
+    { bx: W*0.70 + rO(10), by: H*0.18 + rO(5), sx:  52 + rO(10), sy:  -6 + rO(5) },
+    // fila media
+    { bx: W*0.28 + rO(10), by: H*0.36 + rO(5), sx: -40 + rO(10), sy:   8 + rO(5) },
+    { bx: W*0.60 + rO(10), by: H*0.33 + rO(5), sx:  38 + rO(10), sy:   4 + rO(5) },
+    // fila trasera (delante del jugador)
+    { bx: W*0.38 + rO(10), by: H*0.52 + rO(5), sx: -22 + rO(10), sy:  12 + rO(5) },
+    { bx: W*0.62 + rO(10), by: H*0.52 + rO(5), sx:  24 + rO(10), sy:  10 + rO(5) },
+  ];
+
+  // ── Helpers ───────────────────────────────────────────────
+  function easeInOut(t) {
+    return t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
+  }
+
+  function getRivalPos(r, t) {
+    // t = 0→1 spread progress
+    const e = easeInOut(Math.min(1, t));
+    return { x: r.bx + r.sx * e, y: r.by + r.sy * e };
+  }
+
+  // ── Draw ──────────────────────────────────────────────────
+  function draw(elapsed, playerAnim) {
+    ctx.clearRect(0, 0, W, H);
+
+    // --- fondo: pista con curva ---
+    // Asfalto
+    ctx.fillStyle = '#1a1f2e';
+    ctx.fillRect(0, 0, W, H);
+
+    // Zona verde del interior de la curva (esquina superior izquierda)
+    const grd = ctx.createRadialGradient(0, 0, 30, 0, 0, W*0.80);
+    grd.addColorStop(0,   'rgba(30,80,30,0.55)');
+    grd.addColorStop(0.55,'rgba(20,55,20,0.18)');
+    grd.addColorStop(1,   'rgba(0,0,0,0)');
+    ctx.fillStyle = grd;
+    ctx.fillRect(0, 0, W, H);
+
+    // Borde exterior de la pista (arco superior derecho)
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+    ctx.lineWidth = 6;
+    ctx.beginPath();
+    ctx.arc(W + 40, -40, W * 0.95, Math.PI * 0.55, Math.PI * 1.05);
+    ctx.stroke();
+    ctx.restore();
+
+    // Línea interior de la curva (dentro, esquina izq)
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255,255,255,0.10)';
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.arc(-20, -20, W * 0.50, Math.PI * 0.1, Math.PI * 0.55);
+    ctx.stroke();
+    ctx.restore();
+
+    // Marcas de referencia (líneas de frenada)
+    ctx.save();
+    ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i < 5; i++) {
+      const y = H * 0.08 + i * H * 0.12;
+      ctx.beginPath();
+      ctx.moveTo(W * 0.05, y);
+      ctx.lineTo(W * 0.95, y);
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    // --- calcular fase ---
+    let spreadT = 0;
+    if (elapsed > PHASE_OBSERVE) {
+      spreadT = Math.min(1, (elapsed - PHASE_OBSERVE) / PHASE_SPREAD);
+    }
+
+    // --- highlight del hueco cuando está abierto ---
+    const gapOpen   = elapsed >= GAP_OPEN_START;
+    const gapClosing = elapsed >= GAP_OPEN_START + GAP_DURATION;
+    const gapClosed  = elapsed >= GAP_OPEN_START + GAP_DURATION + GAP_CLOSING;
+
+    if (gapOpen && !gapClosed && !decided) {
+      // Indicador visual sutil: leve resplandor verde en el interior
+      const intensity = gapClosing
+        ? 1 - Math.min(1, (elapsed - (GAP_OPEN_START + GAP_DURATION)) / GAP_CLOSING)
+        : Math.min(1, (elapsed - GAP_OPEN_START) / 300);
+
+      const glow = ctx.createRadialGradient(W*0.18, H*0.40, 5, W*0.18, H*0.40, 75);
+      glow.addColorStop(0,   `rgba(74,222,128,${0.22 * intensity})`);
+      glow.addColorStop(1,   'rgba(0,0,0,0)');
+      ctx.fillStyle = glow;
+      ctx.fillRect(0, 0, W, H);
+    }
+
+    // --- rivales ---
+    ctx.font = '26px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    rivals.forEach(r => {
+      const pos = getRivalPos(r, spreadT);
+      ctx.fillText('🏎️', pos.x, pos.y);
+    });
+
+    // --- jugador ---
+    if (playerAnim) {
+      // Animación de divebomb: se mueve hacia el interior (arriba-izquierda)
+      const pt = Math.min(1, (elapsed - playerAnim.startAt) / 900);
+      const pe = easeInOut(pt);
+      const px = playerX + (W * 0.17 - playerX) * pe;
+      const py = playerY + (H * 0.38 - playerY) * pe;
+      ctx.font = '28px sans-serif';
+      ctx.fillText('🚗', px, py);
+      // estela de velocidad
+      if (pt > 0.1) {
+        ctx.save();
+        ctx.globalAlpha = 0.3 * (1 - pt);
+        ctx.font = '22px sans-serif';
+        ctx.fillText('🚗', px + 8, py + 14);
+        ctx.fillText('🚗', px + 16, py + 28);
+        ctx.globalAlpha = 1;
+        ctx.restore();
+      }
+    } else {
+      ctx.font = '28px sans-serif';
+      ctx.fillText('🚗', playerX, playerY);
+    }
+
+    // --- "HUECO" arrow sutil ---
+    if (gapOpen && !gapClosed && !decided) {
+      const intensity = gapClosing
+        ? 1 - Math.min(1, (elapsed - (GAP_OPEN_START + GAP_DURATION)) / GAP_CLOSING)
+        : Math.min(1, (elapsed - GAP_OPEN_START) / 250);
+      ctx.save();
+      ctx.globalAlpha = 0.6 * intensity;
+      ctx.font = `${Math.round(18 * intensity)}px sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.fillStyle = '#4ade80';
+      ctx.fillText('▲', W * 0.18, H * 0.60);
+      ctx.globalAlpha = 1;
+      ctx.restore();
+    }
+  }
+
+  // ── Game Loop ─────────────────────────────────────────────
+  function loop(ts) {
+    if (!startTime) startTime = ts;
+    elapsed = ts - startTime;
+
+    if (decided) return;
+
+    // Actualizar status text
+    if (elapsed < PHASE_OBSERVE) {
+      statusEl.textContent = 'Observá el pelotón...';
+    } else if (elapsed < GAP_OPEN_START) {
+      statusEl.textContent = 'Los autos se empiezan a mover...';
+    } else if (elapsed < GAP_OPEN_START + GAP_DURATION) {
+      statusEl.textContent = 'Buscá tu oportunidad...';
+      // Mantenemos el botón amarillo (no lo ponemos verde brillante)
+      btn.style.boxShadow = '0 4px 16px rgba(232,200,74,0.4)';
+      btn.style.background = '#e8c84a';
+    } else if (elapsed < GAP_OPEN_START + GAP_DURATION + GAP_CLOSING) {
+      statusEl.textContent = 'El pelotón cambia...';
+      btn.style.boxShadow = '0 4px 16px rgba(232,200,74,0.4)';
+      btn.style.background = '#e8c84a';
+    } else {
+      statusEl.textContent = 'Hueco cerrado.';
+      btn.style.background = '#6b7280';
+      btn.style.boxShadow = 'none';
+    }
+
+    draw(elapsed, null);
+
+    if (elapsed < GAME_END) {
+      animFrame = requestAnimationFrame(loop);
+    } else {
+      // Se acabó el tiempo sin que presionara
+      decided = true;
+      resolveResult('timeout', elapsed);
+    }
+  }
+
+  // ── Result logic ──────────────────────────────────────────
+  function resolveResult(trigger, pressedAt) {
+    cancelAnimationFrame(animFrame);
+    btn.disabled = true;
+    btn.style.opacity = '0.5';
+
+    let outcome; // 'perfect' | 'good' | 'early' | 'late' | 'timeout'
+
+    if (trigger === 'press') {
+      if (pressedAt < GAP_OPEN_START) {
+        outcome = 'early';
+      } else if (pressedAt < GAP_OPEN_START + GAP_DURATION) {
+        outcome = 'perfect';
+      } else if (pressedAt < GAP_OPEN_START + GAP_DURATION + GAP_CLOSING) {
+        outcome = 'good';
+      } else {
+        outcome = 'late';
+      }
+    } else {
+      outcome = 'timeout';
+    }
+
+    // Pequeña animación antes de mostrar el resultado
+    const showResultAfter = outcome === 'perfect' || outcome === 'good' ? 1100 : 600;
+
+    if (outcome === 'perfect' || outcome === 'good') {
+      // Animar divebomb
+      const playerAnim = { startAt: 0 };
+      let animStart = null;
+      const animLoop = (ts) => {
+        if (!animStart) { animStart = ts; playerAnim.startAt = 0; }
+        const animElapsed = ts - animStart;
+        draw(GAP_OPEN_START + 200, { startAt: -animElapsed });
+        if (animElapsed < showResultAfter) requestAnimationFrame(animLoop);
+      };
+      requestAnimationFrame(animLoop);
+    }
+
+    setTimeout(() => {
+      switch (outcome) {
+        case 'perfect':
+          showIMGResult(
+            true,
+            '¡HUECO ENCONTRADO!',
+            '+3 posiciones ganadas',
+            'Viste la apertura exacta y te tiraste sin dudar. Tu auto se metió por el interior en el momento preciso y superaste a tres rivales de un solo movimiento.',
+            true
+          );
+          break;
+        case 'good':
+          showIMGResult(
+            true,
+            'LLEGASTE JUSTO',
+            '+1 posición ganada',
+            'Llegaste un poco tarde pero el espacio todavía estaba ahí. Entraste con el hueco medio cerrado, ganaste una posición con algo de riesgo.',
+            false
+          );
+          break;
+        case 'early':
+          showIMGResult(
+            false,
+            'PUERTA CERRADA',
+            'El pelotón todavía estaba cerrado',
+            'Te tiraste demasiado pronto. Los autos de adelante seguían compactos y no había espacio real. Tuviste que abortar el ataque y perder el impulso.'
+          );
+          break;
+        case 'late':
+          showIMGResult(
+            false,
+            'NO HABÍA ESPACIO',
+            'El hueco ya se había cerrado',
+            'Esperaste demasiado. Cuando te decidiste, el interior ya estaba bloqueado. Pequeño contacto con el auto de afuera y perdiste una posición.'
+          );
+          break;
+        case 'timeout':
+          showIMGResult(
+            false,
+            'OPORTUNIDAD PERDIDA',
+            'No reaccionaste a tiempo',
+            'Viste el hueco pero no te animaste. El pelotón se cerró y la primera curva quedó atrás. Los autos de adelante se acomodaron y vos quedaste donde estabas.'
+          );
+          break;
+      }
+    }, showResultAfter);
+  }
+
+  // ── Button handler ────────────────────────────────────────
+  btn.addEventListener('click', () => {
+    if (decided) return;
+    decided = true;
+    cancelAnimationFrame(animFrame);
+    const pressedAt = performance.now() - startTime;
+    resolveResult('press', pressedAt);
+  });
+
+  btn.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    btn.click();
+  }, { passive: false });
+
+  // ── Arrancar ──────────────────────────────────────────────
+  animFrame = requestAnimationFrame(loop);
+}
+
 // ═══════════════════════════════════════════════════════════
 //  CONTRACTS
 // ═══════════════════════════════════════════════════════════

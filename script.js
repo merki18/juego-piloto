@@ -606,6 +606,7 @@ const RANDOM_EVENTS = [
   {
   icon: '🏟️',
   title: 'Carrera de casa',
+  minCat: 5,
   desc: 'El siguiente GP se corre en {{COUNTRY}}. Tu familia está en las tribunas, la prensa local lleva semanas hablando solo de vos. La presión es diferente.',
   choices: [
     { text: 'Disfrutarlo como un impulso', stat: 'speed', delta: 0, skillStat: 'speed', skillBonus: 4, skillFail: -1, repDelta: 25, hint: '🏎️ Velocidad: la energía de la multitud puede darte alas o apagarte.', successDesc: 'El estadio entero coreaba tu nombre en la parada. Sacaste energías de donde no sabías que tenías. Fue tu mejor carrera de la temporada.', failDesc: 'La presión te bloqueó desde los entrenamientos libres. Cada declaración a la prensa local pesaba el doble. Cometiste un error básico en clasificación y largaste mas atras que lo habitual. La tribuna hizo silencio.' },
@@ -1582,6 +1583,34 @@ function playPressFlashes(targetElement = null) {
   for(let i=0; i<4; i++) spawnFlash();
 }
 
+window._pressDetails = [];
+window.showPressDetail = function(idx) {
+  const log = window._pressDetails[idx];
+  if (!log || !log.detail) return;
+  const overlay = document.createElement('div');
+  overlay.style.position = 'fixed';
+  overlay.style.inset = '0';
+  overlay.style.backgroundColor = 'rgba(0,0,0,0.8)';
+  overlay.style.zIndex = '10001';
+  overlay.style.display = 'flex';
+  overlay.style.alignItems = 'center';
+  overlay.style.justifyContent = 'center';
+  overlay.style.padding = '20px';
+  overlay.onclick = function(e) {
+    if (e.target === overlay) {
+      overlay.remove();
+    }
+  };
+  overlay.innerHTML = `
+    <div style="background:var(--bg, #0f172a); border: 2px solid var(--blue, #3b82f6); border-radius:12px; padding:20px; max-width:500px; width:100%; box-shadow: 0 4px 20px rgba(0,0,0,0.5);">
+      <div style="font-weight:bold; color:var(--blue, #3b82f6); margin-bottom:10px; font-size:14px;"><span style="margin-right:5px;">🎤</span>${log.q}</div>
+      <div style="color:#f8fafc; font-size:15px; line-height:1.5; margin-bottom:20px;">${log.detail}</div>
+      <button onclick="this.parentElement.parentElement.remove()" style="width:100%; padding:10px; border-radius:8px; border:none; background:var(--blue, #3b82f6); color:white; font-weight:bold; cursor:pointer;">Cerrar</button>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+};
+
 function showPressConference(queue, logs = [], isIntro = true) {
 
   if (isIntro && queue.length > 0) {
@@ -1623,23 +1652,25 @@ function showPressConference(queue, logs = [], isIntro = true) {
       return;
     }
     
+    window._pressDetails = logs;
     let summaryHtml = '<div class="press-summary-list">';
-    logs.forEach(l => {
+    logs.forEach((l, idx) => {
       if (l.isMonologue) {
          summaryHtml += `
-          <div class="press-log-external">
-            <div class="log-label">🎙️ Declaración Externa</div>
+          <div class="press-log-external" onclick="window.showPressDetail(${idx})" style="cursor:pointer; transition: transform 0.1s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
+            <div class="log-label">🎙️ Declaración Externa (Click para expandir)</div>
             <div class="log-text">${l.a}</div>
           </div>`;
       } else {
          summaryHtml += `
-          <div class="press-log-question">
+          <div class="press-log-question" onclick="window.showPressDetail(${idx})" style="cursor:pointer; transition: transform 0.1s;" onmouseover="this.style.transform='scale(1.02)'" onmouseout="this.style.transform='scale(1)'">
             <div class="q-text">
-              <span class="q-icon">📸</span> ${l.q}
+              <span class="q-icon">🎤</span> ${l.q}
             </div>
             <div class="a-text">
               "${l.a.replace(/^"|"$/g, '')}"
             </div>
+            <div style="font-size:11px; color:#64748b; margin-top:5px; text-align:right;">Click para ver los detalles de tu declaración</div>
           </div>`;
       }
     });
@@ -1693,12 +1724,14 @@ function showPressConference(queue, logs = [], isIntro = true) {
         text: 'Siguiente Pregunta',
         onClick: () => {
           let logText = iv.desc;
+          let detailText = iv.fixedDesc || iv.desc || "Sin detalles adicionales.";
           if (G.nemesis) {
             const nStyle = `<span style="color:${UI_COLORS.danger};font-weight:bold">${G.nemesis.name}</span>`;
-            const nemRegex = /tu n[éèe]mesis/gi;
+            const nemRegex = /tu n[e]mesis/gi;
             logText = logText.replace(/\{\{NEMESIS_NAME\}\}/g, nStyle).replace(nemRegex, nStyle);
+            detailText = detailText.replace(/\{\{NEMESIS_NAME\}\}/g, nStyle).replace(nemRegex, nStyle);
           }
-          logs.push({ q: ivTitle, a: logText, isMonologue: true });
+          logs.push({ q: ivTitle, a: logText, isMonologue: true, detail: detailText });
           showPressConference(queue, logs, false);
         }
       }]
@@ -1722,13 +1755,15 @@ function showPressConference(queue, logs = [], isIntro = true) {
         applyInterviewConsequences(c, iv.id);
         
         let logText = c.logText || `"${cText}"`;
+        let detailText = c.fixedDesc || "Sin detalles adicionales.";
         if (G.nemesis) {
           const nStyle = `<span style="color:${UI_COLORS.danger};font-weight:bold">${G.nemesis.name}</span>`;
-          const nemRegex = /tu n[éèe]mesis/gi;
+          const nemRegex = /tu n[e]mesis/gi;
           logText = logText.replace(/\{\{NEMESIS_NAME\}\}/g, nStyle).replace(nemRegex, nStyle);
+          detailText = detailText.replace(/\{\{NEMESIS_NAME\}\}/g, nStyle).replace(nemRegex, nStyle);
         }
         
-        logs.push({ q: ivTitle, a: logText, isMonologue: false });
+        logs.push({ q: ivTitle, a: logText, isMonologue: false, detail: detailText });
         showPressConference(queue, logs, false);
       }
     };
